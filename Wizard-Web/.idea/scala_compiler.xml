@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaCompilerConfiguration">
+    <option name="separateProdTestSources" value="true" />
+    <profile name="sbt 1" modules="Wizard-Web,Wizard-Web.main,Wizard-Web.test,Wizard-Web.wizard,Wizard-Web.wizard.main,Wizard-Web.wizard.test,Wizard-Web.wizardweb,wizardweb,wizardweb.main,wizardweb.test" />
+    <profile name="sbt 2" modules="Wizard-Web.wizardweb.main,Wizard-Web.wizardweb.test">
+      <option name="deprecationWarnings" value="true" />
+      <option name="uncheckedWarnings" value="true" />
+      <parameters>
+        <parameter value="-encoding" />
+        <parameter value="utf8" />
+      </parameters>
+    </profile>
+  </component>
+</project>
