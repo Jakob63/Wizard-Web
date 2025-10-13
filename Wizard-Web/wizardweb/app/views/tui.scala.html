@@ -1,0 +1,9 @@
+@(toRender: String)
+
+@main("Tui") {
+    <div id="tui">
+    @for(line <- toRender.split('\n')) {
+        <p>@line</p>
+    }
+    </div>
+}

@@ -21,4 +21,15 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
   def index() = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.index())
   }
+
+  def getTui() = Action {
+    val tui = wizard.Wizard.mesh2
+    Ok(tui)
+  }
+
+  def gameMenu(): Action[AnyContent] = {
+    Action { implicit request =>
+      Ok(views.html.tui.apply(WebTui.latestPrint))
+    }
+  }
 }
