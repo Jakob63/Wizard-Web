@@ -5,7 +5,7 @@ import wizard.actionmanagement.Observer
 import wizard.model.cards._
 import wizard.model.player.Player
 
-class WebTui @Inject()() extends Observer {
+object WebTui extends Observer {
   override def update(updateMSG: String, obj: Any*): Unit = {
     updateMSG match {
       case "which card" => println(s"${obj.head.asInstanceOf[Player].name}, which card do you want to play?")
@@ -17,7 +17,11 @@ class WebTui @Inject()() extends Observer {
       case "cards dealt" => println("Cards have been dealt to all players.")
       case "trick winner" => println(s"${obj.head.asInstanceOf[Player].name} won the trick.")
       case "points after round" => println("Points after this round:")
-      case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
+      case "main menu" => gameMenu()
+      case "input players" => inputPlayers()
+      case "game started" => println("Game officially started.")
+      case "player names" => playerNames(obj.head.asInstanceOf[Int], obj(1).asInstanceOf[Int], obj(2).asInstanceOf[List[Player]])
+      //case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
     }
     // Fetch new data von Controller und update die View
   }
@@ -52,7 +56,15 @@ class WebTui @Inject()() extends Observer {
       |""".stripMargin
   }
 
-  def inputPlayers(): List[Player] = {
+  def inputPlayers(): Unit = {
+    println("Enter the number of players (3-6): ")
+  }
+
+  def playerNames(numPlayers: Int, current: Int, players: List[Player]): Unit = {
+    println(s"Enter the name of player ${current + 1}: ")
+  }
+
+  def inputPlayers2(): List[Player] = {
     var numPlayers = -1
     while (numPlayers < 3 || numPlayers > 6) {
       print("Enter the number of players (3-6): ")
@@ -130,10 +142,10 @@ class WebTui @Inject()() extends Observer {
   }
 
   private def println(message: String): Unit = {
-    latestPrint = message + "\n"
+    latestPrint += message + "\n"
   }
 
   private def println(): Unit = {
-    latestPrint = "\n"
+    latestPrint += "\n"
   }
 }
