@@ -13,3 +13,11 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 GET     /tui                        controllers.HomeController.getTui()
 
 GET     /menu                       controllers.HomeController.gameMenu()
+
+GET     /makemenu                   controllers.HomeController.makeMenu()
+
+GET     /wizard                     controllers.HomeController.showWizard()
+
+GET     /wizard/start               controllers.HomeController.showPlayerForm()
+
+GET     /ersteKarte                 controllers.HomeController.showCard()

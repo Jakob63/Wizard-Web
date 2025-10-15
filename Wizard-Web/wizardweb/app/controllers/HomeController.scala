@@ -9,8 +9,11 @@ import play.api.mvc._
  * application's home page.
  */
 @Singleton
-class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController {
+class HomeController @Inject()(val controllerComponents: ControllerComponents,
+                               webTui: WebTui
+                              ) extends BaseController {
 
+  private var init = false
   /**
    * Create an Action to render an HTML page.
    *
@@ -18,8 +21,14 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    * will be called when the application receives a `GET` request with
    * a path of `/`.
    */
-  def index() = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.index())
+  def index() = {
+    if (!init) {
+      init = true
+      wizard.Wizard.main(new Array[String](_length = 0))
+    }
+    Action { implicit request: Request[AnyContent] =>
+      Ok(views.html.index())
+    }
   }
 
   def getTui() = Action {
@@ -29,7 +38,22 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
 
   def gameMenu(): Action[AnyContent] = {
     Action { implicit request =>
-      Ok(views.html.tui.apply(WebTui.latestPrint))
+      Ok(views.html.tui.apply(webTui.latestPrint))
     }
+  }
+
+  def makeMenu() = Action {
+    val tui = webTui.gameMenu()
+    Ok("cool")
+  }
+
+  def showWizard() = Action { implicit request: Request[AnyContent] =>
+    Ok(webTui.gameMenue()).as(HTML)
+  }
+  def showPlayerForm() = Action {
+    Ok(webTui.inputPlayersForm()).as(HTML)
+  }
+  def showCard() = Action {
+    Ok(webTui.showcard(wizard.model.cards.Dealer.allCards.head)).as(HTML)
   }
 }

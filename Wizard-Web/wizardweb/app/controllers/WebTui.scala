@@ -1,10 +1,11 @@
 package controllers
 
+import javax.inject._
 import wizard.actionmanagement.Observer
 import wizard.model.cards._
 import wizard.model.player.Player
 
-object WebTui extends Observer {
+class WebTui @Inject()() extends Observer {
   override def update(updateMSG: String, obj: Any*): Unit = {
     updateMSG match {
       case "which card" => println(s"${obj.head.asInstanceOf[Player].name}, which card do you want to play?")
@@ -29,6 +30,26 @@ object WebTui extends Observer {
     println()
     println("2. Exit")
     println("Please enter your choice (1 or 2): ")
+  }
+
+  def gameMenue(): String = {
+    """<h1>Welcome to Wizard!</h1>
+      |<form action="/wizard/start" method="get">
+      |  <button type="submit">Start Game</button>
+      |</form>
+      |<form action="/wizard/exit" method="get">
+      |  <button type="submit">Exit</button>
+      |</form>
+      |""".stripMargin
+  }
+
+  def inputPlayersForm(): String = {
+    """<h2>Enter number of players (3-6):</h2>
+      |<form action="/wizard/players" method="post">
+      |  <input type="number" name="numPlayers" min="3" max="6" required>
+      |  <button type="submit">Submit</button>
+      |</form>
+      |""".stripMargin
   }
 
   def inputPlayers(): List[Player] = {
