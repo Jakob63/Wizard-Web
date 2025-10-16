@@ -1,8 +1,9 @@
 package controllers
 
-import javax.inject._
+import javax.inject.*
 import wizard.actionmanagement.Observer
-import wizard.model.cards._
+import wizard.controller.GameLogic
+import wizard.model.cards.*
 import wizard.model.player.Player
 
 object WebTui extends Observer {
@@ -21,6 +22,7 @@ object WebTui extends Observer {
       case "input players" => inputPlayers()
       case "game started" => println("Game officially started.")
       case "player names" => playerNames(obj.head.asInstanceOf[Int], obj(1).asInstanceOf[Int], obj(2).asInstanceOf[List[Player]])
+      case "handle choice" => handleChoice(obj.head.asInstanceOf[Int])
       //case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
     }
     // Fetch new data von Controller und update die View
@@ -34,6 +36,16 @@ object WebTui extends Observer {
     println()
     println("2. Exit")
     println("Please enter your choice (1 or 2): ")
+  }
+
+  def handleChoice(choice: Int): Unit = {
+    if (choice == 2) {
+      println("Exiting the game. Goodbye!")
+    } else if (choice != 1) {
+      println("Invalid choice. Please enter 1 or 2.")
+    } else {
+      println("Starting the game...")
+    }
   }
 
   def gameMenue(): String = {

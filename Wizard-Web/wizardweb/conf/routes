@@ -14,11 +14,11 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 
 GET     /menu                        controllers.HomeController.gameMenu()
 
+GET     /menu_choice/:id             controllers.HomeController.handleChoice(id: Int)
+
 GET     /playernumber/:id            controllers.HomeController.enterPlayerNumber(id: Int)
 
-POST    /playernumber/:id            controllers.HomeController.enterPlayerNumber(id: Int)
-
-GET     /playername/:id              controllers.HomeController.enterPlayerName(id: String)
+GET     /create_players              controllers.HomeController.createPlayers()
 
 #GET     /makemenu                   controllers.HomeController.makeMenu()
 

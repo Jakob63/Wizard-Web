@@ -45,6 +45,11 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     }
   }
 
+  def handleChoice(choice: Int) = Action {
+    GameLogic.notifyObservers("handle choice", choice)
+    Ok("Choice handled")
+  }
+
   def enterPlayerNumber(playernumber: Int) = Action {
     val current = 0
     val players =  List()
@@ -52,9 +57,13 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     Ok("Next step initiated")
   }
   
-  def enterPlayerName(playername: String) = Action {
-    
-    Ok("name entered")
+  def createPlayers() = Action {
+    val player = Player("Player1")
+    val player2 = Player("Player2")
+    val player3 = Player("Player3")
+    val players = List(player, player2, player3)
+    GameLogic.createGame(players)
+    Ok("names entered")
   }
 
 //  def makeMenu() = Action {
