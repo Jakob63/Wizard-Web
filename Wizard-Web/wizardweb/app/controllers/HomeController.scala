@@ -48,7 +48,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
   def enterPlayerNumber(playernumber: Int) = Action {
     val current = 0
     val players =  List()
-    GameLogic.notifyObservers("player names", playernumber, current, List())
+    // GameLogic.notifyObservers("player names", playernumber, current, List())
     Ok("Next step initiated")
   }
   

@@ -64,38 +64,6 @@ object WebTui extends Observer {
     println(s"Enter the name of player ${current + 1}: ")
   }
 
-  def inputPlayers2(): List[Player] = {
-    var numPlayers = -1
-    while (numPlayers < 3 || numPlayers > 6) {
-      print("Enter the number of players (3-6): ")
-      try {
-        val input = scala.io.StdIn.readLine()
-        numPlayers = input.toInt
-        if (numPlayers < 3 || numPlayers > 6) {
-          println("Invalid number of players. Please enter a number between 3 and 6.")
-          numPlayers = -1
-        }
-      } catch {
-        case _: NumberFormatException =>
-          println("Invalid input. Please enter a valid number.")
-      }
-    }
-
-    val players = for (i <- 1 to numPlayers) yield {
-      var name = ""
-      val pattern = "^[a-zA-Z0-9]+$".r
-      while (name == "" || !pattern.pattern.matcher(name).matches()) {
-        print(s"Enter the name of player $i: ")
-        name = scala.io.StdIn.readLine()
-        if (name == "" || !pattern.pattern.matcher(name).matches()) {
-          println("Invalid name. Please enter a name containing only letters and numbers.")
-        }
-      }
-      Player(name)
-    }
-    players.toList
-  }
-
   def showHand(player: Player): Unit = {
     println(s"${player.name}'s hand: ${player.hand.cards.mkString(", ")}")
     if (player.hand.cards.isEmpty) {
