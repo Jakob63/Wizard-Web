@@ -6,6 +6,8 @@
         <div>Menu choice = @logic.getChoice.get</div>
         @if(logic.getChoice.get == 1) {
             <h1>Willkommen bei Wizard!</h1>
+        } else if(logic.getChoice.get == 2) {
+            <h1>Programm beendet!</h1>
         }
     </div>
 }
