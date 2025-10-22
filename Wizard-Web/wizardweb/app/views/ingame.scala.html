@@ -1,12 +1,54 @@
 @(logic: wizard.controller.aGameLogic)
 
 @main("Ingame") {
-    <div id="ingame">
-        <h1>Wizard</h1>
-        <div>@logic.getTrumpCard.get</div>
-        <div>Player = @logic.getPlayer.get</div>
-        @for(player <- logic.getPlayer.get) {
-            <div>@player.hand</div>
+
+    @defining((card: wizard.model.cards.Card) => {
+        card.value match {
+            case wizard.model.cards.Value.WizardKarte => "Wizard.png"
+            case wizard.model.cards.Value.Chester     => "Jester.png"
+            case v =>
+                val colorName = card.color.toString   // "Red", "Green", "Blue", "Yellow"
+                val number    = v.cardType()          // "1".."13"
+                s"${colorName}_${number}.png"
         }
-    </div>
+    }) { cardToFile =>
+
+        <div id="ingame">
+            <h1>Wizard</h1>
+
+            @* Trumpfkarte als Bild (falls vorhanden) *@
+            @logic.getTrumpCard.map { trump =>
+            <div>
+                <div><strong>Trumpf:</strong></div>
+                <div>
+                    <img src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
+                </div>
+            </div>
+            }.getOrElse {
+                <div>
+                    <div><strong>Trumpf:</strong></div>
+                    <div>—</div>
+                </div>
+            }
+
+                @* Spielerliste und deren Hände *@
+            @logic.getPlayer.foreach { players =>
+                <div><strong>Players:</strong> @players.map(_.name).mkString(", ")</div>
+            }
+
+            @for(player <- logic.getPlayer.getOrElse(Nil)) {
+                <div>
+                    <div><strong>@player.name:</strong></div>
+                    <div>
+                    @for(card <- player.hand.cards) {
+                        <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                        @* Debug (temporär): *@
+                            <!-- @routes.Assets.versioned("images/cards/" + cardToFile(card)) -->
+                    }
+                    </div>
+                </div>
+            }
+        </div>
+
+    }
 }
