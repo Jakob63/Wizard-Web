@@ -84,6 +84,15 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     Ok("started")
   }
 
+  def playRound8() = Action {
+    val player = Player("Player1")
+    val player2 = Player("Player2")
+    val player3 = Player("Player3")
+    val players = List(player, player2, player3)
+    WebTui.gameLogic.get.playRound(8, players)
+    Ok("round played")
+  }
+
 //  def makeMenu() = Action {
 //    val tui = WebTui2.gameMenu()
 //    Ok("cool")

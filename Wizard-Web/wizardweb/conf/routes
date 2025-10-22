@@ -20,3 +20,5 @@ GET     /player_names/:name1/:name2/:name3      controllers.HomeController.creat
 GET     /ingame                      controllers.HomeController.ingame()
 
 GET     /play_round                  controllers.HomeController.playRound()
+
+GET     /play_round_8                controllers.HomeController.playRound8()
