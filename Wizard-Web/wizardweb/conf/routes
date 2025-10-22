@@ -22,3 +22,8 @@ GET     /ingame                      controllers.HomeController.ingame()
 GET     /play_round                  controllers.HomeController.playRound()
 
 GET     /play_round_8                controllers.HomeController.playRound8()
+
+POST    /input                       controllers.HomeController.offer()
+GET     /input/empty                 controllers.HomeController.offerEmpty()
+
+GET     /demo_input/:input           controllers.HomeController.demoOffer(input: String)

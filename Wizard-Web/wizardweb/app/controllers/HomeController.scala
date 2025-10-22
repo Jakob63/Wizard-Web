@@ -9,13 +9,15 @@ import wizard.controller.aGameLogic
 import wizard.model.player.Player
 import wizard.controller.controllerBaseImpl.BaseGameLogic
 import wizard.model.rounds.Game
+import util.UserInput
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
  */
 @Singleton
-class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController {
+class HomeController @Inject()(val controllerComponents: ControllerComponents, input: UserInput)
+  extends BaseController {
 
   private var init = false
   /**
@@ -25,21 +27,21 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    * will be called when the application receives a `GET` request with
    * a path of `/`.
    */
-  def index() = {
+  def index(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     if (!init) {
       init = true
-      val thread = new Thread{wizard.Wizard.entry(WebConfiguration())}
+
+      // Web-Spezifische View hier verdrahten:
+      WebTui.userInput = input
+
+      val thread = new Thread(() => wizard.Wizard.entry(WebConfiguration(), input))
       thread.start()
     }
-    Action { implicit request: Request[AnyContent] =>
-      Ok(views.html.rules())
-    }
+    Ok(views.html.rules())
   }
   
-  def ingame() = {
-    Action { implicit request: Request[AnyContent] =>
+  def ingame(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
       Ok(views.html.ingame(WebTui.gameLogic.get))
-    }
   }
 
 //  def getTui() = Action {
@@ -47,10 +49,8 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
 //    Ok(tui)
 //  }
 
-  def gameMenu(): Action[AnyContent] = {
-    Action { implicit request =>
+  def gameMenu(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
       Ok(views.html.tui.apply(WebTui.latestPrint))
-    }
   }
 
   def handleChoice(choice: Int) = Action {
@@ -91,6 +91,24 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     val players = List(player, player2, player3)
     WebTui.gameLogic.get.playRound(8, players)
     Ok("round played")
+  }
+
+  // NEW: nimmt Text aus Form-POST (x-www-form-urlencoded) und bietet ihn an
+  def offer(): Action[Map[String, Seq[String]]] = Action(parse.formUrlEncoded) { (request: Request[Map[String, Seq[String]]]) =>
+    val text = request.body.get("text").flatMap(_.headOption).getOrElse("")
+    input.offer(text)
+    Ok("offered")
+  }
+
+  // NEW: bequemes Angebot eines leeren Strings per GET (z. B. um zu "+triggern+")
+  def offerEmpty() = Action {
+    input.offer("")
+    Ok("offered empty")
+  }
+
+  def demoOffer(eingabe: String) = Action {
+    input.offer(eingabe)
+    Ok(s"offered $input")
   }
 
 //  def makeMenu() = Action {

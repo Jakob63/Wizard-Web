@@ -6,10 +6,11 @@ import wizard.controller.{GameLogic, aGameLogic}
 import wizard.model.cards.*
 import wizard.model.player.Player
 import wizard.aView.View
+import util.UserInput
 
 object WebTui extends Observer with View{
-
   var gameLogic: Option[aGameLogic] = None
+  var userInput: UserInput = _ // wird beim Bootstrap gesetzt
 
     override def init(gameLogic: aGameLogic): Unit = {
         this.gameLogic = Some(gameLogic)
@@ -90,7 +91,7 @@ object WebTui extends Observer with View{
     while (numPlayers < 3 || numPlayers > 6) {
       print("Enter the number of players (3-6): ")
       try {
-        val input = scala.io.StdIn.readLine()
+        val input = userInput.readLine()
         numPlayers = input.toInt
         if (numPlayers < 3 || numPlayers > 6) {
           println("Invalid number of players. Please enter a number between 3 and 6.")
@@ -107,7 +108,7 @@ object WebTui extends Observer with View{
       val pattern = "^[a-zA-Z0-9]+$".r
       while (name == "" || !pattern.pattern.matcher(name).matches()) {
         print(s"Enter the name of player $i: ")
-        name = scala.io.StdIn.readLine()
+        name = userInput.readLine()
         if (name == "" || !pattern.pattern.matcher(name).matches()) {
           println("Invalid name. Please enter a name containing only letters and numbers.")
         }
