@@ -5,8 +5,9 @@ import components.WebConfiguration
 import javax.inject.*
 import play.api.*
 import play.api.mvc.*
+import wizard.controller.aGameLogic
 import wizard.model.player.Player
-import wizard.controller.GameLogic
+import wizard.controller.controllerBaseImpl.BaseGameLogic
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -33,6 +34,12 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       Ok(views.html.rules())
     }
   }
+  
+  def ingame() = {
+    Action { implicit request: Request[AnyContent] =>
+      Ok(views.html.ingame(WebTui.gameLogic.get))
+    }
+  }
 
 //  def getTui() = Action {
 //    val tui = wizard.Wizard.mesh2
@@ -46,14 +53,14 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
   }
 
   def handleChoice(choice: Int) = Action {
-    GameLogic.notifyObservers("handle choice", choice)
+    WebTui.gameLogic.get.handleChoice(choice)
     Ok("Choice handled")
   }
 
   def enterPlayerNumber(playernumber: Int) = Action {
     val current = 0
     val players =  List()
-    GameLogic.notifyObservers("player names", playernumber, current, List())
+    WebTui.gameLogic.get.enterPlayerNumber(playernumber, current, players)
     Ok("Next step initiated")
   }
   
@@ -62,7 +69,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     val player2 = Player("Player2")
     val player3 = Player("Player3")
     val players = List(player, player2, player3)
-    GameLogic.createGame(players)
+    WebTui.gameLogic.get.createGame(players)
     Ok("names entered")
   }
 

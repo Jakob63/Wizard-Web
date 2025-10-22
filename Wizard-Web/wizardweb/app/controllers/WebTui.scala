@@ -2,11 +2,19 @@ package controllers
 
 import javax.inject.*
 import wizard.actionmanagement.Observer
-import wizard.controller.GameLogic
+import wizard.controller.{GameLogic, aGameLogic}
 import wizard.model.cards.*
 import wizard.model.player.Player
+import wizard.aView.View
 
-object WebTui extends Observer {
+object WebTui extends Observer with View{
+
+  var gameLogic: Option[aGameLogic] = None
+  
+    override def init(gameLogic: aGameLogic): Unit = {
+        this.gameLogic = Some(gameLogic)
+    }
+  
   override def update(updateMSG: String, obj: Any*): Unit = {
     updateMSG match {
       case "which card" => println(s"${obj.head.asInstanceOf[Player].name}, which card do you want to play?")
