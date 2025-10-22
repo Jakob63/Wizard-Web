@@ -30,7 +30,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       thread.start()
     }
     Action { implicit request: Request[AnyContent] =>
-      Ok(views.html.index())
+      Ok(views.html.rules())
     }
   }
 
