@@ -65,11 +65,11 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     Ok("Next step initiated")
   }
   
-  def createPlayers() = Action {
-    val player = Player("Player1")
-    val player2 = Player("Player2")
-    val player3 = Player("Player3")
-    val players = List(player, player2, player3)
+  def createPlayers(name_1: String, name_2: String, name_3: String) = Action {
+    val player1 = Player(name_1)
+    val player2 = Player(name_2)
+    val player3 = Player(name_3)
+    val players = List(player1, player2, player3)
     WebTui.gameLogic.get.createGame(players)
     Ok("names entered")
   }

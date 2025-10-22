@@ -10,11 +10,11 @@ import wizard.aView.View
 object WebTui extends Observer with View{
 
   var gameLogic: Option[aGameLogic] = None
-  
+
     override def init(gameLogic: aGameLogic): Unit = {
         this.gameLogic = Some(gameLogic)
     }
-  
+
   override def update(updateMSG: String, obj: Any*): Unit = {
     updateMSG match {
       case "which card" => println(s"${obj.head.asInstanceOf[Player].name}, which card do you want to play?")
@@ -31,6 +31,7 @@ object WebTui extends Observer with View{
       case "game started" => println("Game officially started.")
       case "player names" => playerNames(obj.head.asInstanceOf[Int], obj(1).asInstanceOf[Int], obj(2).asInstanceOf[List[Player]])
       case "handle choice" => handleChoice(obj.head.asInstanceOf[Int])
+      case "show hand of Player x" => showHand(obj.head.asInstanceOf[Player])
       //case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
     }
     // Fetch new data von Controller und update die View
