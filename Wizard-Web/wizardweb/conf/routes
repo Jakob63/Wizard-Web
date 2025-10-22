@@ -22,6 +22,8 @@ GET     /create_players              controllers.HomeController.createPlayers()
 
 GET     /ingame                      controllers.HomeController.ingame()
 
+GET     /play_round                  controllers.HomeController.playRound()
+
 #GET     /makemenu                   controllers.HomeController.makeMenu()
 
 #GET     /wizard                     controllers.HomeController.showWizard()

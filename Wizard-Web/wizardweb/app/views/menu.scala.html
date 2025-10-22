@@ -1,0 +1,11 @@
+@(logic: wizard.controller.aGameLogic)
+
+@main("Menu") {
+    <div id="menu">
+        <h1>Wizard</h1>
+        <div>Menu choice = @logic.getChoice.get</div>
+        @if(logic.getChoice.get == 1) {
+            <h1>Willkommen bei Wizard!</h1>
+        }
+    </div>
+}

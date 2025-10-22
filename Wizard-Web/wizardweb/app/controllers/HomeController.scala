@@ -8,6 +8,7 @@ import play.api.mvc.*
 import wizard.controller.aGameLogic
 import wizard.model.player.Player
 import wizard.controller.controllerBaseImpl.BaseGameLogic
+import wizard.model.rounds.Game
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -71,6 +72,16 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     val players = List(player, player2, player3)
     WebTui.gameLogic.get.createGame(players)
     Ok("names entered")
+  }
+  
+  def playRound() = Action {
+    val player = Player("Player1")
+    val player2 = Player("Player2")
+    val player3 = Player("Player3")
+    val players = List(player, player2, player3)
+    var game = Game(players)
+    WebTui.gameLogic.get.playGame(game, players)
+    Ok("started")
   }
 
 //  def makeMenu() = Action {

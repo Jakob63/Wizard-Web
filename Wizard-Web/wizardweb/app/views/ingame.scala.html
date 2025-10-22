@@ -3,6 +3,10 @@
 @main("Ingame") {
     <div id="ingame">
         <h1>Wizard</h1>
-        <div>Menu choice = @logic.getChoice.get</div>
+        <div>@logic.getTrumpCard.get</div>
+        <div>Player = @logic.getPlayer.get</div>
+        @for(player <- logic.getPlayer.get) {
+            <div>@player.hand</div>
+        }
     </div>
 }
