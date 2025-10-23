@@ -1,7 +1,102 @@
 @(logic: wizard.controller.aGameLogic)
 
 @main("Endscreen") {
+    <style>
+            /* Vollbild-Hintergrund wie im Ingame */
+            #endscreen {
+                min-height: 100vh;
+                background: url('@routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png")')
+                no-repeat center center fixed;
+                background-size: cover;
+                display: flex;
+                align-items: center;  /* vertikal zentrieren */
+                justify-content: center; /* horizontal zentrieren */
+                padding: clamp(8px, 2vw, 24px);
+                color: #fff;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+                font-size: clamp(14px, 1.25vw, 18px);
+            }
+
+            /* zentriertes Panel für die Endergebnisse */
+            .panel {
+                background: rgba(0,0,0,0.45);
+                padding: clamp(16px, 3vw, 36px);
+                border-radius: 12px;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+                text-align: center;
+                max-width: min(90vw, 720px);
+                width: 100%;
+            }
+
+            h1 {
+                margin: 0 0 clamp(12px, 2vw, 20px) 0;
+                color: #fff;
+                font-size: clamp(20px, 2.2vw, 32px);
+            }
+
+            .score-list {
+                display: grid;
+                row-gap: clamp(6px, 1.2vw, 12px);
+                margin-bottom: clamp(12px, 2vw, 20px);
+            }
+
+            /* Zweispaltige Ausrichtung: Name (mit Rang) links, Punkte rechts */
+            .row {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                column-gap: 16px;
+                align-items: baseline;
+                font-variant-numeric: tabular-nums; /* schön ausgerichtete Ziffern */
+            }
+            .name {
+                justify-self: start;
+                font-weight: 600;
+                color: #fff;
+            }
+            .pts {
+                justify-self: end;
+                color: #fff;
+            }
+
+            .hint { opacity: .9; }
+
+            .actions { margin-top: clamp(12px, 2vw, 20px); }
+            .btn {
+                display: inline-block;
+                padding: 8px 14px;
+                background: rgba(255,255,255,0.15);
+                color: #fff;
+                border: 1px solid rgba(255,255,255,0.35);
+                border-radius: 8px;
+                text-decoration: none;
+                transition: background .2s ease, transform .05s ease;
+            }
+            .btn:hover { background: rgba(255,255,255,0.25); }
+            .btn:active { transform: translateY(1px); }
+    </style>
+
     <div id="endscreen">
-        <div>Ende Gelände!</div>
+        <div class="panel">
+            <h1>Spielende</h1>
+
+            @logic.getPlayer.map { players =>
+                @defining(players.sortBy(p => -p.points)) { sorted =>
+                    <div class="score-list">
+                        @for((p, idx) <- sorted.zipWithIndex) {
+                            <div class="row">
+                                <span class="name">@{s"${idx + 1}. ${p.name}"}</span>
+                                <span class="pts">@p.points</span>
+                            </div>
+                        }
+                    </div>
+                }
+            }.getOrElse {
+                <div class="hint">Keine Spieler gefunden.</div>
+            }
+
+            <div class="actions">
+                <a class="btn" href='@routes.HomeController.index()'>Zurück zum Menü</a>
+            </div>
+        </div>
     </div>
 }
