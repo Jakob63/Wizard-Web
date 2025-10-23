@@ -42,14 +42,16 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents, i
   
   def ingame(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
       val state = WebTui.gameLogic.get.getState.get
+      println(state)
       if (state == GameState.Menu) {
         Ok(views.html.menu(WebTui.gameLogic.get))
       } else if (state == GameState.Ingame) {
         Ok(views.html.ingame(WebTui.gameLogic.get))
       } else if (state == GameState.Endscreen) {
         Ok(views.html.endscreen(WebTui.gameLogic.get))
+      } else {
+        Ok(views.html.rules())
       }
-      Ok("")
 
   }
 
