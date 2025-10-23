@@ -2,12 +2,15 @@
 
 @main("Menu") {
     <div id="menu">
-        <h1>Wizard</h1>
-        <div>Menu choice = @logic.getChoice.get</div>
-        @if(logic.getChoice.get == 1) {
-            <h1>Willkommen bei Wizard!</h1>
+        @if(logic.getChoice.isEmpty) {
+            <h1>Welcome to Wizard!</h1>
+            <div>1. Start Game</div>
+            <div>2. Exit</div>
+            <div>Please enter your choice (1 or 2)</div>
         } else if(logic.getChoice.get == 2) {
             <h1>Programm beendet!</h1>
+        } else {
+            <h1>Spiel startet</h1>
         }
     </div>
 }

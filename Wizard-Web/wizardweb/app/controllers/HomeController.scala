@@ -5,7 +5,7 @@ import components.WebConfiguration
 import javax.inject.*
 import play.api.*
 import play.api.mvc.*
-import wizard.controller.aGameLogic
+import wizard.controller.{GameState, aGameLogic}
 import wizard.model.player.Player
 import wizard.controller.controllerBaseImpl.BaseGameLogic
 import wizard.model.rounds.Game
@@ -41,7 +41,16 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents, i
   }
   
   def ingame(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-      Ok(views.html.ingame(WebTui.gameLogic.get))
+      val state = WebTui.gameLogic.get.getState.get
+      if (state == GameState.Menu) {
+        Ok(views.html.menu(WebTui.gameLogic.get))
+      } else if (state == GameState.Ingame) {
+        Ok(views.html.ingame(WebTui.gameLogic.get))
+      } else if (state == GameState.Endscreen) {
+        Ok(views.html.endscreen(WebTui.gameLogic.get))
+      }
+      Ok("")
+
   }
 
 //  def getTui() = Action {
