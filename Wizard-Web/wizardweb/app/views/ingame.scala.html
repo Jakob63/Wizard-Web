@@ -14,16 +14,56 @@
     }) { cardToFile =>
 
         <style>
-                /* Hintergrundbild nur auf dem Ingame-Container */
+                /* Ingame-Container: weiße Schrift, responsives Padding und Baseline-Scaling */
                 #ingame {
                     min-height: 100vh;
                     background: url('@routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png")')
                     no-repeat center center fixed;
                     background-size: cover;
-                    padding: 16px;
+                    /* Abstände skalieren, aber gedeckelt */
+                    padding: clamp(8px, 2vw, 24px);
+                    color: #fff;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+                    /* Body-Schrift: min 14px, Baseline 16px at 1280px, max 18px */
+                    font-size: clamp(14px, 1.25vw, 18px);
                 }
 
-                /* kleine, fixierte Punktebox oben rechts */
+                /* H1: min 18px, Baseline 24px at 1280px, max 28px */
+                h1 {
+                    font-size: clamp(18px, 1.875vw, 28px);
+                    margin: 0 0 clamp(8px, 1.6vw, 16px) 0;
+                    color: #fff;
+                }
+
+                .trumpf-stich-row .title {
+                    margin-bottom: clamp(6px, 1vw, 10px);
+                    font-weight: 700;
+                    /* Titel/Labels etwas größer als Body, mit Baseline bei ~18px */
+                    font-size: clamp(15px, 1.4vw, 20px);
+                    color: #fff;
+                }
+
+                /* Kartenbilder – Baseline 120px at 1280px, min 72px, max 140px */
+                .cards img {
+                    height: clamp(72px, 9.375vw, 140px); /* 120 / 1280 * 100 = 9.375vw */
+                    width: auto;
+                    max-width: 100%;
+                    object-fit: contain;
+                    margin-right: clamp(4px, 1vw, 8px);
+                    /* weiche, hochwertige Skalierung (empfohlen für Karten) */
+                    image-rendering: auto; /* (kann auch weggelassen werden) */
+                }
+
+                /* Flex-Layout; Abstände skalierend */
+                .trumpf-stich-row {
+                    display: flex;
+                    gap: clamp(12px, 2.2vw, 24px);
+                    align-items: flex-start;
+                    flex-wrap: wrap;
+                }
+                .trumpf-stich-row .col { display: flex; flex-direction: column; }
+
+                /* Scoreboard oben rechts – unverändert */
                 .scoreboard {
                     position: fixed;
                     top: 12px;
@@ -39,33 +79,15 @@
                 }
                 .scoreboard .title { font-weight: bold; margin-bottom: 6px; }
 
-                /* Zweispaltiges Raster: links Bids, rechts Punkte */
-                .score-grid {
-                    display: grid;
-                    grid-template-columns: auto auto;
-                    column-gap: 12px;
-                    row-gap: 4px;
-                    align-items: center;
-                }
-                .score-grid .hdr {
-                    font-weight: 600;
-                    opacity: .9;
-                }
-                .score-grid .val {
-                    justify-self: end; /* Werte rechtsbündig */
-                    font-variant-numeric: tabular-nums;
-                }
-
-                /* vorhandenes Layout beibehalten */
-                .trumpf-stich-row { display: flex; gap: 24px; align-items: flex-start; }
-                .trumpf-stich-row .col { display: flex; flex-direction: column; }
-                .trumpf-stich-row .title { margin-bottom: 8px; font-weight: bold; }
-                .cards img { height: 120px; margin-right: 8px; }
-</style>
+                /* Zweispaltiges Raster für Bid/Punkte – unverändert */
+                .score-grid { display: grid; grid-template-columns: auto auto; column-gap: 12px; row-gap: 4px; align-items: center; }
+                .score-grid .hdr { font-weight: 600; opacity: .9; }
+                .score-grid .val { justify-self: end; font-variant-numeric: tabular-nums; }
+        </style>
 
         <div id="ingame">
 
-            <!-- Scoreboard: Namen und Punkte oben rechts -->
+                <!-- Scoreboard: Namen/Bids und Punkte oben rechts -->
             @logic.getPlayer.map { players =>
                 <div class="scoreboard">
                     <div class="title">Runde</div>
@@ -82,24 +104,24 @@
 
             <h1>Wizard</h1>
 
-            <!-- Trumpf (links) und aktueller Stich (rechts) in einer Zeile -->
+                <!-- Trumpf (links) und aktueller Stich (rechts) in einer Zeile -->
             <div class="trumpf-stich-row">
                 @logic.getTrumpCard.map { trump =>
-                    <div class="col">
-                        <div class="title">
+                <div class="col">
+                    <div class="title">
                             Trumpf:
-                            @{
-                                trump.value match {
-                                    case wizard.model.cards.Value.WizardKarte => "Wizard"
-                                    case wizard.model.cards.Value.Chester     => "Jester"
-                                    case _                                    => trump.color.toString
-                                }
+                        @{
+                            trump.value match {
+                                case wizard.model.cards.Value.WizardKarte => "Wizard"
+                                case wizard.model.cards.Value.Chester     => "Jester"
+                                case _                                    => trump.color.toString
                             }
+                        }
                         </div>
-                        <div class="cards">
-                            <img src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
-                        </div>
+                    <div class="cards">
+                        <img src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
                     </div>
+                </div>
                 }.getOrElse {
                     <div class="col">
                         <div class="title">Trumpf: —</div>
@@ -107,14 +129,14 @@
                 }
 
                 @logic.getTrickCards.filter(_.nonEmpty).map { cards =>
-                    <div class="col">
-                        <div class="title">Aktueller Stich:</div>
-                        <div class="cards">
-                            @for(card <- cards) {
-                                <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                            }
-                        </div>
+                <div class="col">
+                    <div class="title">Aktueller Stich:</div>
+                    <div class="cards">
+                        @for(card <- cards) {
+                            <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                        }
                     </div>
+                </div>
                 }.getOrElse {
                     <div class="col">
                         <div class="title">Aktueller Stich:</div>
@@ -122,7 +144,7 @@
                 }
             </div>
 
-            <!-- Rest: Spielerliste und Hände -->
+                <!-- Rest: Spielerliste und Hände -->
             @logic.getPlayer.foreach { players =>
                 <div><strong>Players:</strong> @players.map(_.name).mkString(", ")</div>
             }
@@ -131,9 +153,9 @@
                 <div>
                     <div><strong>@player.name:</strong></div>
                     <div class="cards">
-                        @for(card <- player.hand.cards) {
-                            <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                        }
+                    @for(card <- player.hand.cards) {
+                        <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                    }
                     </div>
                 </div>
             }
