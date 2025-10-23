@@ -13,25 +13,61 @@
         }
     }) { cardToFile =>
 
+        <style>
+                /* einfache, horizontale Anordnung */
+                .trumpf-stich-row { display: flex; gap: 24px; align-items: flex-start; }
+                .trumpf-stich-row .col { display: flex; flex-direction: column; }
+                .trumpf-stich-row .title { margin-bottom: 8px; font-weight: bold; }
+                /* Einheitliche Kartengröße überall (Trumpf, Stich, Spielerkarten) */
+                .cards img { height: 120px; margin-right: 8px; }
+        </style>
+
         <div id="ingame">
             <h1>Wizard</h1>
 
-            @* Trumpfkarte als Bild (falls vorhanden) *@
-            @logic.getTrumpCard.map { trump =>
-            <div>
-                <div><strong>Trumpf:</strong></div>
-                <div>
-                    <img src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
-                </div>
-            </div>
-            }.getOrElse {
-                <div>
-                    <div><strong>Trumpf:</strong></div>
-                    <div>—</div>
-                </div>
-            }
+                <!-- Trumpf (links) und aktueller Stich (rechts) in einer Zeile -->
+            <div class="trumpf-stich-row">
 
-                @* Spielerliste und deren Hände *@
+                @logic.getTrumpCard.map { trump =>
+                <div class="col">
+                    <div class="title">
+                        Trumpf:
+                        @{
+                            trump.value match {
+                                case wizard.model.cards.Value.WizardKarte => "Wizard"
+                                case wizard.model.cards.Value.Chester     => "Jester"
+                                case _                                    => trump.color.toString
+                            }
+                        }
+                        </div>
+                    <div class="cards">
+                        <img src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
+                    </div>
+                </div>
+                }.getOrElse {
+                    <div class="col">
+                        <div class="title">Trumpf: —</div>
+                    </div>
+                }
+
+                @logic.getTrickCards.filter(_.nonEmpty).map { cards =>
+                <div class="col">
+                    <div class="title">Aktueller Stich:</div>
+                    <div class="cards">
+                        @for(card <- cards) {
+                            <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                        }
+                    </div>
+                </div>
+                }.getOrElse {
+                    <div class="col">
+                        <div class="title">Aktueller Stich:</div>
+                    </div>
+                }
+
+            </div>
+
+                <!-- Rest wie gehabt: Spielerliste und Hände -->
             @logic.getPlayer.foreach { players =>
                 <div><strong>Players:</strong> @players.map(_.name).mkString(", ")</div>
             }
@@ -39,11 +75,9 @@
             @for(player <- logic.getPlayer.getOrElse(Nil)) {
                 <div>
                     <div><strong>@player.name:</strong></div>
-                    <div>
+                    <div class="cards">
                     @for(card <- player.hand.cards) {
                         <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                        @* Debug (temporär): *@
-                            <!-- @routes.Assets.versioned("images/cards/" + cardToFile(card)) -->
                     }
                     </div>
                 </div>
