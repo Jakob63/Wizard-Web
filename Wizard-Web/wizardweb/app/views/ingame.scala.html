@@ -14,36 +14,92 @@
     }) { cardToFile =>
 
         <style>
-                /* einfache, horizontale Anordnung */
+                /* Hintergrundbild nur auf dem Ingame-Container */
+                #ingame {
+                    min-height: 100vh;
+                    background: url('@routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png")')
+                    no-repeat center center fixed;
+                    background-size: cover;
+                    padding: 16px;
+                }
+
+                /* kleine, fixierte Punktebox oben rechts */
+                .scoreboard {
+                    position: fixed;
+                    top: 12px;
+                    right: 16px;
+                    z-index: 1000;
+                    font-size: 12px;
+                    line-height: 1.3;
+                    background: rgba(0, 0, 0, 0.45);
+                    color: #fff;
+                    padding: 8px 10px;
+                    border-radius: 6px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+                }
+                .scoreboard .title { font-weight: bold; margin-bottom: 6px; }
+
+                /* Zweispaltiges Raster: links Bids, rechts Punkte */
+                .score-grid {
+                    display: grid;
+                    grid-template-columns: auto auto;
+                    column-gap: 12px;
+                    row-gap: 4px;
+                    align-items: center;
+                }
+                .score-grid .hdr {
+                    font-weight: 600;
+                    opacity: .9;
+                }
+                .score-grid .val {
+                    justify-self: end; /* Werte rechtsbündig */
+                    font-variant-numeric: tabular-nums;
+                }
+
+                /* vorhandenes Layout beibehalten */
                 .trumpf-stich-row { display: flex; gap: 24px; align-items: flex-start; }
                 .trumpf-stich-row .col { display: flex; flex-direction: column; }
                 .trumpf-stich-row .title { margin-bottom: 8px; font-weight: bold; }
-                /* Einheitliche Kartengröße überall (Trumpf, Stich, Spielerkarten) */
                 .cards img { height: 120px; margin-right: 8px; }
-        </style>
+</style>
 
         <div id="ingame">
-            <h1>Wizard</h1>
 
-                <!-- Trumpf (links) und aktueller Stich (rechts) in einer Zeile -->
-            <div class="trumpf-stich-row">
-
-                @logic.getTrumpCard.map { trump =>
-                <div class="col">
-                    <div class="title">
-                        Trumpf:
-                        @{
-                            trump.value match {
-                                case wizard.model.cards.Value.WizardKarte => "Wizard"
-                                case wizard.model.cards.Value.Chester     => "Jester"
-                                case _                                    => trump.color.toString
-                            }
+            <!-- Scoreboard: Namen und Punkte oben rechts -->
+            @logic.getPlayer.map { players =>
+                <div class="scoreboard">
+                    <div class="title">Runde</div>
+                    <div class="score-grid">
+                        <div class="hdr">Bid</div>
+                        <div class="hdr">Punkte</div>
+                        @for(p <- players) {
+                            <div>@p.name: @p.roundBids</div>
+                            <div class="val">@p.points</div>
                         }
-                        </div>
-                    <div class="cards">
-                        <img src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
                     </div>
                 </div>
+            }
+
+            <h1>Wizard</h1>
+
+            <!-- Trumpf (links) und aktueller Stich (rechts) in einer Zeile -->
+            <div class="trumpf-stich-row">
+                @logic.getTrumpCard.map { trump =>
+                    <div class="col">
+                        <div class="title">
+                            Trumpf:
+                            @{
+                                trump.value match {
+                                    case wizard.model.cards.Value.WizardKarte => "Wizard"
+                                    case wizard.model.cards.Value.Chester     => "Jester"
+                                    case _                                    => trump.color.toString
+                                }
+                            }
+                        </div>
+                        <div class="cards">
+                            <img src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
+                        </div>
+                    </div>
                 }.getOrElse {
                     <div class="col">
                         <div class="title">Trumpf: —</div>
@@ -51,23 +107,22 @@
                 }
 
                 @logic.getTrickCards.filter(_.nonEmpty).map { cards =>
-                <div class="col">
-                    <div class="title">Aktueller Stich:</div>
-                    <div class="cards">
-                        @for(card <- cards) {
-                            <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                        }
+                    <div class="col">
+                        <div class="title">Aktueller Stich:</div>
+                        <div class="cards">
+                            @for(card <- cards) {
+                                <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                            }
+                        </div>
                     </div>
-                </div>
                 }.getOrElse {
                     <div class="col">
                         <div class="title">Aktueller Stich:</div>
                     </div>
                 }
-
             </div>
 
-                <!-- Rest wie gehabt: Spielerliste und Hände -->
+            <!-- Rest: Spielerliste und Hände -->
             @logic.getPlayer.foreach { players =>
                 <div><strong>Players:</strong> @players.map(_.name).mkString(", ")</div>
             }
@@ -76,13 +131,12 @@
                 <div>
                     <div><strong>@player.name:</strong></div>
                     <div class="cards">
-                    @for(card <- player.hand.cards) {
-                        <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                    }
+                        @for(card <- player.hand.cards) {
+                            <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                        }
                     </div>
                 </div>
             }
         </div>
-
     }
 }
