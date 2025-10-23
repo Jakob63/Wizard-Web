@@ -33,7 +33,7 @@ object WebTui extends Observer with View{
       case "player names" => playerNames(obj.head.asInstanceOf[Int], obj(1).asInstanceOf[Int], obj(2).asInstanceOf[List[Player]])
       case "handle choice" => handleChoice(obj.head.asInstanceOf[Int])
       case "show hand of Player x" => showHand(obj.head.asInstanceOf[Player])
-      //case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
+      case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
     }
     // Fetch new data von Controller und update die View
   }
