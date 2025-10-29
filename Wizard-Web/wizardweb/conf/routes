@@ -27,3 +27,5 @@ POST    /input                       controllers.HomeController.offer()
 GET     /input/empty                 controllers.HomeController.offerEmpty()
 
 GET     /demo_input/:input           controllers.HomeController.demoOffer(input: String)
+
+GET     /theme/toggle                controllers.ThemeController.toggleTheme(returnTo: String ?= "/menu")

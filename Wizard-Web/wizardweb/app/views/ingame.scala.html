@@ -1,4 +1,4 @@
-@(logic: wizard.controller.aGameLogic)
+@(logic: wizard.controller.aGameLogic)(implicit request: play.api.mvc.RequestHeader)
 
 @main("Ingame") {
 
@@ -13,152 +13,81 @@
         }
     }) { cardToFile =>
 
-        <style>
-                /* Ingame-Container: weiße Schrift, responsives Padding und Baseline-Scaling */
-                #ingame {
-                    min-height: 100vh;
-                    background: url('@routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png")')
-                    no-repeat center center fixed;
-                    background-size: cover;
-                    /* Abstände skalieren, aber gedeckelt */
-                    padding: clamp(8px, 2vw, 24px);
-                    color: #fff;
-                    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
-                    /* Body-Schrift: min 14px, Baseline 16px at 1280px, max 18px */
-                    font-size: clamp(14px, 1.25vw, 18px);
-                }
+        <main class="game__main bg-ingame" style="background-image: url('@routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png")')">
 
-                /* H1: min 18px, Baseline 24px at 1280px, max 28px */
-                h1 {
-                    font-size: clamp(18px, 1.875vw, 28px);
-                    margin: 0 0 clamp(8px, 1.6vw, 16px) 0;
-                    color: #fff;
-                }
-
-                .trumpf-stich-row .title {
-                    margin-bottom: clamp(6px, 1vw, 10px);
-                    font-weight: 700;
-                    /* Titel/Labels etwas größer als Body, mit Baseline bei ~18px */
-                    font-size: clamp(15px, 1.4vw, 20px);
-                    color: #fff;
-                }
-
-                /* Kartenbilder – Baseline 120px at 1280px, min 72px, max 140px */
-                .cards img {
-                    height: clamp(72px, 9.375vw, 140px); /* 120 / 1280 * 100 = 9.375vw */
-                    width: auto;
-                    max-width: 100%;
-                    object-fit: contain;
-                    margin-right: clamp(4px, 1vw, 8px);
-                    /* weiche, hochwertige Skalierung (empfohlen für Karten) */
-                    image-rendering: auto; /* (kann auch weggelassen werden) */
-                }
-
-                /* Flex-Layout; Abstände skalierend */
-                .trumpf-stich-row {
-                    display: flex;
-                    gap: clamp(12px, 2.2vw, 24px);
-                    align-items: flex-start;
-                    flex-wrap: wrap;
-                }
-                .trumpf-stich-row .col { display: flex; flex-direction: column; }
-
-                /* Scoreboard oben rechts – unverändert */
-                .scoreboard {
-                    position: fixed;
-                    top: 12px;
-                    right: 16px;
-                    z-index: 1000;
-                    font-size: 12px;
-                    line-height: 1.3;
-                    background: rgba(0, 0, 0, 0.45);
-                    color: #fff;
-                    padding: 8px 10px;
-                    border-radius: 6px;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-                }
-                .scoreboard .title { font-weight: bold; margin-bottom: 6px; }
-
-                /* Zweispaltiges Raster für Bid/Punkte – unverändert */
-                .score-grid { display: grid; grid-template-columns: auto auto; column-gap: 12px; row-gap: 4px; align-items: center; }
-                .score-grid .hdr { font-weight: 600; opacity: .9; }
-                .score-grid .val { justify-self: end; font-variant-numeric: tabular-nums; }
-        </style>
-
-        <div id="ingame">
-
-                <!-- Scoreboard: Namen/Bids und Punkte oben rechts -->
             @logic.getPlayer.map { players =>
-                <div class="scoreboard">
+                <aside class="game__scoreboard" aria-live="polite">
                     <div class="title">Runde</div>
                     <div class="score-grid">
+                        <div class="hdr">Spieler</div>
                         <div class="hdr">Bid</div>
                         <div class="hdr">Punkte</div>
                         @for(p <- players) {
-                            <div>@p.name: @p.roundBids</div>
+                            <div>@p.name</div>
+                            <div class="val">@p.roundBids</div>
                             <div class="val">@p.points</div>
                         }
                     </div>
-                </div>
+                </aside>
             }
 
-            <h1>Wizard</h1>
-
-                <!-- Trumpf (links) und aktueller Stich (rechts) in einer Zeile -->
-            <div class="trumpf-stich-row">
+            <div class="game__row">
                 @logic.getTrumpCard.map { trump =>
-                <div class="col">
+                <section class="game__section" aria-label="Trumpf">
                     <div class="title">
-                            Trumpf:
-                        @{
-                            trump.value match {
-                                case wizard.model.cards.Value.WizardKarte => "Wizard"
-                                case wizard.model.cards.Value.Chester     => "Jester"
-                                case _                                    => trump.color.toString
-                            }
+            Trumpf:
+                        @{ trump.value match {
+                            case wizard.model.cards.Value.WizardKarte => "Wizard"
+                            case wizard.model.cards.Value.Chester     => "Jester"
+                            case _                                    => trump.color.toString
+                        }
                         }
                         </div>
-                    <div class="cards">
-                        <img src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
+                    <div class="game__cards">
+                        <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
                     </div>
-                </div>
+                </section>
                 }.getOrElse {
-                    <div class="col">
+                    <section class="game__section" aria-label="Trumpf">
                         <div class="title">Trumpf: —</div>
-                    </div>
+                    </section>
                 }
 
                 @logic.getTrickCards.filter(_.nonEmpty).map { cards =>
-                <div class="col">
+                <section class="game__section" aria-label="Aktueller Stich">
                     <div class="title">Aktueller Stich:</div>
-                    <div class="cards">
+                    <div class="game__cards">
                         @for(card <- cards) {
-                            <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                            <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
                         }
                     </div>
-                </div>
+                </section>
                 }.getOrElse {
-                    <div class="col">
+                    <section class="game__section" aria-label="Aktueller Stich">
                         <div class="title">Aktueller Stich:</div>
-                    </div>
+                    </section>
                 }
             </div>
 
-                <!-- Rest: Spielerliste und Hände -->
             @logic.getPlayer.foreach { players =>
-                <div><strong>Players:</strong> @players.map(_.name).mkString(", ")</div>
+                <section class="game__section" aria-label="Spielerübersicht">
+                    <div class="title">Spieler:</div>
+                    <div>@players.map(_.name).mkString(", ")</div>
+                </section>
             }
 
             @for(player <- logic.getPlayer.getOrElse(Nil)) {
-                <div>
-                    <div><strong>@player.name:</strong></div>
-                    <div class="cards">
-                    @for(card <- player.hand.cards) {
-                        <img src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                    }
-                    </div>
+                <section class="game__section game__hand" aria-label={'Hand von ' + player.name}>
+                <div class="player-name">@player.name</div>
+                <div class="game__cards">
+                @for(card <- player.hand.cards) {
+                    <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                }
                 </div>
+                </section>
             }
-        </div>
+
+        </main>
+
     }
 }

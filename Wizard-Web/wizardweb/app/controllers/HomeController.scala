@@ -61,7 +61,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents, i
 //  }
 
   def gameMenu(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-      Ok(views.html.tui.apply(WebTui.latestPrint))
+    Ok(views.html.tui.apply(WebTui.latestPrint))
   }
 
   def handleChoice(choice: Int) = Action {

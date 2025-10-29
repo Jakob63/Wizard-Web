@@ -1,0 +1,190 @@
+@space-xs: 4px;
+@space-sm: 8px;
+@space-md: 16px;
+@space-lg: 24px;
+@space-xl: 32px;
+
+@radius-sm: 6px;
+@radius-md: 10px;
+
+@shadow-1: 0 4px 14px rgba(0,0,0,.25);
+
+:root {
+  --color-bg: #0b0d12;
+  --color-text: #ffffff;
+  --color-subtle: rgba(255,255,255,0.7);
+  --color-panel: rgba(0,0,0,0.45);
+  --color-accent: #8bd3ff;
+}
+
+// Automatisch syspräf als mode übernehmen
+.theme-auto {
+  @media (prefers-color-scheme: dark) {
+    --color-bg: #07090d;
+    --color-text: #e9eef6;
+    --color-subtle: rgba(233,238,246,0.75);
+    --color-panel: rgba(255,255,255,0.06);
+    --color-accent: #7ecbff;
+  }
+  @media (prefers-color-scheme: light) {
+    --color-bg: #f6f8fb;
+    --color-text: #0b0d12;
+    --color-subtle: rgba(11,13,18,0.7);
+    --color-panel: rgba(0,0,0,0.06);
+    --color-accent: #005ea6;
+  }
+}
+
+.theme-light {
+  --color-bg: #f6f8fb;
+  --color-text: #0b0d12;
+  --color-subtle: rgba(11,13,18,0.7);
+  --color-panel: rgba(0,0,0,0.06);
+  --color-accent: #005ea6;
+}
+
+.theme-dark {
+  --color-bg: #07090d;
+  --color-text: #e9eef6;
+  --color-subtle: rgba(233,238,246,0.75);
+  --color-panel: rgba(255,255,255,0.06);
+  --color-accent: #7ecbff;
+}
+
+// Layout
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+img { max-width: 100%; display: block; }
+
+// BEM konvention
+.game {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.game__header { padding: @space-md @space-xl; }
+
+.game__title {
+  margin: 0;
+  font-size: clamp(22px, 2.6vw, 36px);
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.game__main.bg-ingame {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  padding: @space-xl;
+  position: relative;
+}
+// Scoreboard
+.game__scoreboard {
+  position: absolute;
+  top: @space-lg;
+  right: @space-lg;
+  left: auto;
+  z-index: 100;
+
+  color: var(--color-text);
+  background: var(--color-panel);
+  backdrop-filter: blur(4px);
+  padding: @space-xs @space-md;
+  border-radius: @radius-md;
+  box-shadow: @shadow-1;
+  min-width: 220px;
+  font-size: 0.9rem;
+}
+.game__scoreboard .title { font-weight: 600; margin-bottom: @space-xs; }
+.game__scoreboard .score-grid {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  column-gap: 10px;
+  row-gap: 4px;
+  align-items: center;
+}
+.game__scoreboard .hdr { color: var(--color-subtle); font-size: 0.9rem; }
+.game__scoreboard .val { font-variant-numeric: tabular-nums; }
+
+.game__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: @space-xl;
+  margin: @space-xl 0;
+}
+
+.game__section {
+  background: var(--color-panel);
+  padding: @space-lg;
+  border-radius: @radius-md;
+  box-shadow: @shadow-1;
+  min-height: 120px;
+}
+.game__section .title { margin-bottom: @space-sm; font-weight: 600; }
+
+.game__cards {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(60px, 100px);
+  gap: @space-sm;
+  align-items: end;
+}
+
+// inklusive einfliegen
+.game__cards img {
+  border-radius: @radius-sm;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  transform-origin: center bottom;
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  animation: card-enter .22s ease-out both;
+}
+.game__cards img:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+  filter: brightness(1.05) saturate(1.02);
+}
+
+.game__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-switch {
+  margin-left: auto;           /* schiebt den Button nach rechts */
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.25);
+  color: var(--color-text);
+  padding: 6px 10px;
+  border-radius: @radius-sm;
+  text-decoration: none;
+}
+.theme-switch:hover {
+  background: rgba(255,255,255,.08);
+}
+.theme-light .theme-switch { border-color: rgba(0,0,0,.25); }
+.theme-light .theme-switch:hover { background: rgba(0,0,0,.06); }
+
+@keyframes card-enter {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+.game__hand { margin-bottom: @space-xl; }
+.game__hand .player-name { font-weight: 600; margin-bottom: @space-sm; }
+
+.game__footer { padding: @space-md @space-xl; color: var(--color-subtle); }
+
+@media (max-width: 900px) {
+  .game__row { grid-template-columns: 1fr; }
+  // .game__scoreboard { position: static; margin-bottom: @space-xl; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

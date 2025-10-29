@@ -7,10 +7,11 @@ import wizard.model.cards.*
 import wizard.model.player.Player
 import wizard.aView.View
 import util.UserInput
+import scala.compiletime.uninitialized
 
 object WebTui extends Observer with View{
   var gameLogic: Option[aGameLogic] = None
-  var userInput: UserInput = _ // wird beim Bootstrap gesetzt
+  var userInput: UserInput = uninitialized // wird beim Bootstrap gesetzt
 
     override def init(gameLogic: aGameLogic): Unit = {
         this.gameLogic = Some(gameLogic)
