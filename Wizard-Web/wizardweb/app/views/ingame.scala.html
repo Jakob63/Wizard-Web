@@ -13,8 +13,14 @@
         }
     }) { cardToFile =>
 
-        <main class="game__main bg-ingame" style="background-image: url('@routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png")')">
-
+        @defining(request.cookies.get("theme").map(_.value).getOrElse("auto")) { theme =>
+            <main class="game__main bg-ingame" style='background-image: url("@{
+                theme match {
+                    case "light" => routes.Assets.versioned("images/backgrounds/Wizard_game_background_light.png")
+                    case _        => routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png")
+                }
+            }")'>
+        }
             @logic.getPlayer.map { players =>
                 <aside class="game__scoreboard" aria-live="polite">
                     <div class="title">Runde</div>
@@ -34,8 +40,7 @@
             <div class="game__row">
                 @logic.getTrumpCard.map { trump =>
                 <section class="game__section" aria-label="Trumpf">
-                    <div class="title">
-            Trumpf:
+                    <div class="title">Trumpf:
                         @{ trump.value match {
                             case wizard.model.cards.Value.WizardKarte => "Wizard"
                             case wizard.model.cards.Value.Chester     => "Jester"

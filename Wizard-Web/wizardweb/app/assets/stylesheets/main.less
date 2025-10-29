@@ -113,9 +113,16 @@ img { max-width: 100%; display: block; }
 
 .game__row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: auto 1fr;
   gap: @space-xl;
   margin: @space-xl 0;
+  justify-items: stretch;
+}
+
+.game__section--trump {
+  justify-self: start;
+  padding: @space-md;
+  min-width: unset;
 }
 
 .game__section {
@@ -135,7 +142,7 @@ img { max-width: 100%; display: block; }
   align-items: end;
 }
 
-// inklusive einfliegen
+// einfliegen
 .game__cards img {
   border-radius: @radius-sm;
   box-shadow: 0 2px 8px rgba(0,0,0,0.35);
