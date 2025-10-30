@@ -100,15 +100,25 @@ img { max-width: 100%; display: block; }
   min-width: 220px;
   font-size: 0.9rem;
 }
-.game__scoreboard .title { font-weight: 600; margin-bottom: @space-xs; }
+.game__scoreboard .title {
+  font-weight: 700;
+  margin-bottom: @space-xs;
+}
+
 .game__scoreboard .score-grid {
   display: grid;
   grid-template-columns: auto auto auto;
   column-gap: 10px;
   row-gap: 4px;
   align-items: center;
+  font-weight: 700;
 }
-.game__scoreboard .hdr { color: var(--color-text); font-size: 0.9rem; }
+.game__scoreboard .hdr {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .game__scoreboard .val { font-variant-numeric: tabular-nums; }
 
 .game__row {
