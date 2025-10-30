@@ -82,13 +82,15 @@
             }
 
             @for(player <- logic.getPlayer.getOrElse(Nil)) {
-                <section class="game__section game__hand" aria-label={'Hand von ' + player.name}>
-                <div class="player-name">@player.name</div>
-                <div class="game__cards">
-                @for(card <- player.hand.cards) {
-                    <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                }
-                </div>
+                <section class="game__section game__hand" aria-label="Hand von @player.name">
+                    <div class="player-name">@player.name</div>
+                    <div class="game__cards">
+                    @for((card, idx) <- player.hand.cards.zipWithIndex) {
+                        <a href="@routes.HomeController.demoOffer(s"${idx + 1}")">
+                            <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                        </a>
+                    }
+                    </div>
                 </section>
             }
 
