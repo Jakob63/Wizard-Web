@@ -108,31 +108,42 @@ img { max-width: 100%; display: block; }
   row-gap: 4px;
   align-items: center;
 }
-.game__scoreboard .hdr { color: var(--color-subtle); font-size: 0.9rem; }
+.game__scoreboard .hdr { color: var(--color-text); font-size: 0.9rem; }
 .game__scoreboard .val { font-variant-numeric: tabular-nums; }
 
 .game__row {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   gap: @space-xl;
   margin: @space-xl 0;
   justify-items: stretch;
 }
 
-.game__section--trump {
+.game__section--trump,
+.game__section--scoreboard {
   justify-self: start;
   padding: @space-md;
   min-width: unset;
+  min-height: auto;
 }
 
 .game__section {
-  background: var(--color-panel);
   padding: @space-lg;
   border-radius: @radius-md;
   box-shadow: @shadow-1;
   min-height: 120px;
 }
 .game__section .title { margin-bottom: @space-sm; font-weight: 600; }
+
+.game__section--scoreboard .game__scoreboard {
+  position: static;
+  top: auto; right: auto; left: auto; z-index: auto;
+  backdrop-filter: none;
+  padding: 0;
+  min-width: unset;
+  box-shadow: none;
+  font-size: 0.9rem;
+}
 
 .game__cards {
   display: grid;
@@ -163,7 +174,7 @@ img { max-width: 100%; display: block; }
 }
 
 .theme-switch {
-  margin-left: auto;           /* schiebt den Button nach rechts */
+  margin-left: auto;
   background: transparent;
   border: 1px solid rgba(255,255,255,.25);
   color: var(--color-text);

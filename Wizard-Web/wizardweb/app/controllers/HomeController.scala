@@ -41,18 +41,19 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents, i
   }
   
   def ingame(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-      val state = WebTui.gameLogic.get.getState.get
-      println(state)
-      if (state == GameState.Menu) {
-        Ok(views.html.menu(WebTui.gameLogic.get))
-      } else if (state == GameState.Ingame) {
-        Ok(views.html.ingame(WebTui.gameLogic.get))
-      } else if (state == GameState.Endscreen) {
-        Ok(views.html.endscreen(WebTui.gameLogic.get))
-      } else {
-        Ok(views.html.rules())
-      }
+    WebTui.gameLogic match {
+      case None =>
+        // erst index()
+        Redirect(routes.HomeController.index())
 
+      case Some(gl) =>
+        gl.getState match {
+          case Some(GameState.Menu) => Ok(views.html.menu(gl))
+          case Some(GameState.Ingame) => Ok(views.html.ingame(gl))
+          case Some(GameState.Endscreen)  => Ok(views.html.endscreen(gl))
+          case _  => Ok(views.html.rules())
+        }
+    }
   }
 
 //  def getTui() = Action {
@@ -104,14 +105,12 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents, i
     Ok("round played")
   }
 
-  // NEW: nimmt Text aus Form-POST (x-www-form-urlencoded) und bietet ihn an
   def offer(): Action[Map[String, Seq[String]]] = Action(parse.formUrlEncoded) { (request: Request[Map[String, Seq[String]]]) =>
     val text = request.body.get("text").flatMap(_.headOption).getOrElse("")
     input.offer(text)
     Ok("offered")
   }
 
-  // NEW: bequemes Angebot eines leeren Strings per GET (z. B. um zu "+triggern+")
   def offerEmpty() = Action {
     input.offer("")
     Ok("offered empty")

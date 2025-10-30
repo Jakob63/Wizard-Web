@@ -2,7 +2,6 @@
 
 @main("Endscreen") {
     <style>
-            /* Vollbild-Hintergrund wie im Ingame */
             #endscreen {
                 min-height: 100vh;
                 background: url('@routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png")')
@@ -17,7 +16,6 @@
                 font-size: clamp(14px, 1.25vw, 18px);
             }
 
-            /* zentriertes Panel für die Endergebnisse */
             .panel {
                 background: rgba(0,0,0,0.45);
                 padding: clamp(16px, 3vw, 36px);
@@ -40,13 +38,12 @@
                 margin-bottom: clamp(12px, 2vw, 20px);
             }
 
-            /* Zweispaltige Ausrichtung: Name (mit Rang) links, Punkte rechts */
             .row {
                 display: grid;
                 grid-template-columns: 1fr auto;
                 column-gap: 16px;
                 align-items: baseline;
-                font-variant-numeric: tabular-nums; /* schön ausgerichtete Ziffern */
+                font-variant-numeric: tabular-nums;
             }
             .name {
                 justify-self: start;

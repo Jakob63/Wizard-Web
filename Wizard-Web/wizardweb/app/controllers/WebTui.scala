@@ -36,7 +36,6 @@ object WebTui extends Observer with View{
       case "show hand of Player x" => showHand(obj.head.asInstanceOf[Player])
       case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
     }
-    // Fetch new data von Controller und update die View
   }
 
   var latestPrint: String = ""
