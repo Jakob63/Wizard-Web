@@ -8,23 +8,14 @@ GET     /                           controllers.HomeController.index()
 # von /public to assets
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
-GET     /menu                        controllers.HomeController.gameMenu()
+GET     /menu                       controllers.HomeController.gameMenu()
 
-GET     /menu_choice/:id             controllers.HomeController.handleChoice(id: Int)
+GET     /ingame                     controllers.HomeController.ingame()
 
-GET     /playernumber/:id            controllers.HomeController.enterPlayerNumber(id: Int)
+GET     /demo_input/:input          controllers.HomeController.demoOffer(input: String)
 
-GET     /player_names/:name1/:name2/:name3      controllers.HomeController.createPlayers(name1: String, name2: String, name3: String)
+GET     /theme/toggle               controllers.ThemeController.toggleTheme(returnTo: String ?= "/home")
 
-GET     /ingame                      controllers.HomeController.ingame()
+GET     /home                       controllers.HomeController.home()
 
-GET     /play_round                  controllers.HomeController.playRound()
-
-GET     /play_round_8                controllers.HomeController.playRound8()
-
-POST    /input                       controllers.HomeController.offer()
-GET     /input/empty                 controllers.HomeController.offerEmpty()
-
-GET     /demo_input/:input           controllers.HomeController.demoOffer(input: String)
-
-GET     /theme/toggle                controllers.ThemeController.toggleTheme(returnTo: String ?= "/menu")
+GET     /rules                      controllers.HomeController.rules()

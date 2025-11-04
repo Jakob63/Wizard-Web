@@ -1,0 +1,13 @@
+@(refreshUrl: String)(implicit request: play.api.mvc.RequestHeader)
+@import controllers.routes
+
+@main("Wizard – Starting …") {
+    <main class="home-hero">
+        <h1>Starting the game …</h1>
+        <p>Please wait a moment.</p>
+        <meta http-equiv="refresh" content="0.8; URL=@refreshUrl">
+        <noscript>
+            <p><a class="btn btn-primary" href="@refreshUrl">Continue</a></p>
+        </noscript>
+    </main>
+}

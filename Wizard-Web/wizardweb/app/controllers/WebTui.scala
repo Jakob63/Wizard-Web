@@ -35,6 +35,8 @@ object WebTui extends Observer with View{
       case "handle choice" => handleChoice(obj.head.asInstanceOf[Int])
       case "show hand of Player x" => showHand(obj.head.asInstanceOf[Player])
       case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
+      case "main menu wrong input" => println("Invalid input. Please enter 1 or 2.")
+      case other => println(s"[WARN] Unhandled update: $other")
     }
   }
 

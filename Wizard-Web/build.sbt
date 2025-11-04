@@ -1,3 +1,6 @@
+import com.typesafe.sbt.less.Import.LessKeys
+import com.typesafe.sbt.web.Import.Assets
+
 ThisBuild / scalaVersion := "3.5.1"
 
 lazy val commonSettings = Seq(

@@ -1,0 +1,14 @@
+@()(implicit request: play.api.mvc.RequestHeader)
+@import controllers.routes
+
+@main("Wizard – Home") {
+    <main class="home-hero">
+        <!-- <h1 class="home-hero__title">Wizard</h1> // normal-->
+        <!-- Glow nur um die Buchstaben herum -->
+        <h1 class="home-hero__title" data-text="Wizard">Wizard</h1>
+        <div class="home-cta">
+            <a class="btn btn-primary btn-lg" href="@routes.HomeController.ingame()">Start Game</a>
+            <a class="btn btn-outline-primary btn-lg" href="@routes.HomeController.rules()">Rules</a>
+        </div>
+    </main>
+}

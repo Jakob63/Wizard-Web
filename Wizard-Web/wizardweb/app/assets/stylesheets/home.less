@@ -1,0 +1,101 @@
+.home-hero {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;        /* Kinder horizontal zentriert */
+  justify-content: flex-start;/* oben ausrichten */
+  padding-top: clamp(1rem, 4vh, 3rem);
+  text-align: center;         /* Titel/Buttons textlich mittig */
+}
+
+.home-hero__title {
+  margin: 0 0 2rem 0;
+  font-size: clamp(3rem, 9vw, 6rem);
+  // Magische Schriftart
+  font-family: 'Cinzel Decorative', 'Times New Roman', Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--color-text);
+
+  // schimmer
+  background: linear-gradient(
+    135deg,
+    #7d3cff 0%,
+    #22d3ee 40%,
+    #fdd835 60%,
+    #ff3cac 85%,
+    #7d3cff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; // gradient sichtbar machen
+
+  background-size: 200% 200%;
+  animation: wizard-sheen 12s ease-in-out infinite;
+  // position: relative; um den glow am rand der buchstaben
+  position: relative;
+}
+
+@keyframes wizard-sheen {
+  0%    { background-position: 0% 50%; }
+  50%   { background-position: 100% 50%; }
+  100%  { background-position: 0% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero__title { animation: none; }
+}
+
+// Glow am rand buchstaben
+.home-hero__title::before { display: none; }
+
+.theme-light .home-hero__title::before {
+  -webkit-text-stroke-color: rgba(0, 94, 166, 0.7);
+  filter: drop-shadow(0 0 6px rgba(0, 94, 166, 0.26))
+  drop-shadow(0 0 12px rgba(125, 60, 255, 0.18));
+}
+
+// Stärkerer glow im darkmode
+//.theme-dark .home-hero__title {
+//  text-shadow:
+//          0 0 12px rgba(125, 60, 255, 0.55),
+//          0 0 28px rgba(34, 211, 238, 0.45),
+//          0 0 44px rgba(253, 216, 53, 0.35);
+//}
+//
+//.theme-light .home-hero__title {
+//  text-shadow:
+//          0 0 6px rgba(125, 60, 255, 0.25),
+//          0 0 14px rgba(34, 211, 238, 0.18),
+//          0 0 22px rgba(253, 216, 53, 0.12);
+//}
+
+// Schwächerer Glow
+//.theme-dark .home-hero__title {
+//  text-shadow:
+//          0 0 6px rgba(125, 60, 255, 0.18),
+//          0 0 14px rgba(34, 211, 238, 0.12),
+//          0 0 20px rgba(253, 216, 53, 0.10);
+//}
+//
+//.theme-light .home-hero__title {
+//  text-shadow:
+//          0 0 4px rgba(125, 60, 255, 0.12),
+//          0 0 10px rgba(34, 211, 238, 0.08),
+//          0 0 16px rgba(253, 216, 53, 0.06);
+//}
+
+.home-cta {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 1.2vw, 1.25rem);
+  width: auto;
+  max-width: clamp(0px, 92vw, 28rem);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.home-cta .btn {
+  width: auto;
+  min-width: clamp(10rem, 24vw, 12rem);
+}

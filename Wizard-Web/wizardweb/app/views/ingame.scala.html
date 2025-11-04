@@ -20,7 +20,7 @@
                 if(theme == "light") light else dark
             }) { bgUrl =>
 
-                <main class="game__main bg-ingame" style='background-image: url("@bgUrl")'>
+                <main class="game__main bg-ingame" style="background-image: url('@bgUrl')">
 
                     <div class="game__row">
                         @logic.getTrumpCard.map { trump =>
