@@ -7,14 +7,15 @@
 @radius-sm: 6px;
 @radius-md: 10px;
 
-@shadow-1: 0 4px 14px rgba(0,0,0,.25);
+@shadow-1: 0 4px 14px rgba(0, 0, 0, .25);
 
-::root {
+:root {
   --color-bg: #0b0d12;
   --color-text: #ffffff;
-  --color-subtle: rgba(255,255,255,0.7);
-  --color-panel: rgba(0,0,0,0.45);
+  --color-subtle: rgba(255, 255, 255, 0.7);
+  --color-panel: rgba(0, 0, 0, 0.45);
   --color-accent: #8bd3ff;
+  --card-h: clamp(100px, 18vh, 240px);
 }
 
 html {
@@ -25,17 +26,33 @@ body {
   line-height: 1.5;
 }
 
-.body-padding { padding: 2rem; }
+.body-padding {
+  padding: 2rem;
+}
 
 .rules {
   padding: clamp(1rem, 3vw, 2rem);
   max-width: clamp(42rem, 86vw, 70rem);
   margin: 0 auto;
 
-  h1 { font-size: clamp(1.8rem, 3.6vw, 2.6rem); margin: 0 0 clamp(0.75rem, 1.5vw, 1rem); }
-  h2 { font-size: clamp(1.2rem, 2.4vw, 1.6rem); margin: clamp(1rem, 2vw, 1.2rem) 0 clamp(0.5rem, 1vw, 0.8rem); }
-  p, li { font-size: clamp(1rem, 1.4vw, 1.125rem); color: var(--color-subtle); }
-  ul, ol { padding-left: clamp(1rem, 2vw, 1.5rem); }
+  h1 {
+    font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+    margin: 0 0 clamp(0.75rem, 1.5vw, 1rem);
+  }
+
+  h2 {
+    font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+    margin: clamp(1rem, 2vw, 1.2rem) 0 clamp(0.5rem, 1vw, 0.8rem);
+  }
+
+  p, li {
+    font-size: clamp(1rem, 1.4vw, 1.125rem);
+    color: var(--color-subtle);
+  }
+
+  ul, ol {
+    padding-left: clamp(1rem, 2vw, 1.5rem);
+  }
 }
 
 // Automatisch syspräf als mode übernehmen
@@ -43,15 +60,15 @@ body {
   @media (prefers-color-scheme: dark) {
     --color-bg: #07090d;
     --color-text: #e9eef6;
-    --color-subtle: rgba(233,238,246,0.75);
-    --color-panel: rgba(255,255,255,0.06);
+    --color-subtle: rgba(233, 238, 246, 0.75);
+    --color-panel: rgba(255, 255, 255, 0.06);
     --color-accent: #7ecbff;
   }
   @media (prefers-color-scheme: light) {
     --color-bg: #f6f8fb;
     --color-text: #0b0d12;
-    --color-subtle: rgba(11,13,18,0.7);
-    --color-panel: rgba(0,0,0,0.06);
+    --color-subtle: rgba(11, 13, 18, 0.7);
+    --color-panel: rgba(0, 0, 0, 0.06);
     --color-accent: #005ea6;
   }
 }
@@ -59,27 +76,36 @@ body {
 .theme-light {
   --color-bg: #f6f8fb;
   --color-text: #0b0d12;
-  --color-subtle: rgba(11,13,18,0.7);
-  --color-panel: rgba(0,0,0,0.06);
+  --color-subtle: rgba(11, 13, 18, 0.7);
+  --color-panel: rgba(0, 0, 0, 0.06);
   --color-accent: #005ea6;
 }
 
 .theme-dark {
   --color-bg: #07090d;
   --color-text: #e9eef6;
-  --color-subtle: rgba(233,238,246,0.75);
-  --color-panel: rgba(255,255,255,0.06);
+  --color-subtle: rgba(233, 238, 246, 0.75);
+  --color-panel: rgba(255, 255, 255, 0.06);
   --color-accent: #7ecbff;
 }
 
 // Layout
-html, body { margin: 0; padding: 0; height: 100%; }
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, "Apple Color Emoji", "Segoe UI Emoji";
   color: var(--color-text);
   background: var(--color-bg);
 }
-img { max-width: 100%; display: block; }
+
+img {
+  max-width: 100%;
+  display: block;
+}
 
 // BEM konvention
 .game {
@@ -88,35 +114,35 @@ img { max-width: 100%; display: block; }
   grid-template-rows: auto 1fr auto;
 }
 
-.game__header { padding: clamp(0.6rem, 1.2vw, 1rem) clamp(1rem, 2vw, 2rem); }
+.game__header {
+  padding: clamp(0.6rem, 1.2vw, 1rem) clamp(1rem, 2vw, 2rem);
+}
 
 .game__title {
   margin: 0;
   font-size: clamp(22px, 2.6vw, 36px);
   letter-spacing: 0.5px;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .game__main.bg-ingame {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-
   min-height: 100dvh;
   min-height: 100svh;
   width: 100%;
+  padding: clamp(1rem, 3vw, 2rem);
 }
 
-
-/* Falls andere Regeln den Hintergrund „abschneiden“: Unterelemente dürfen wachsen */
 .game__row, .game__section {
   min-height: 0;
 }
 
-// Scoreboard
 .game__scoreboard {
   position: static;
 }
+
 .game__scoreboard .title {
   font-weight: 700;
   margin-bottom: @space-xs;
@@ -131,6 +157,7 @@ img { max-width: 100%; display: block; }
   align-items: center;
   font-weight: 700;
 }
+
 .game__scoreboard .hdr {
   color: var(--color-text);
   font-size: 0.9rem;
@@ -144,9 +171,10 @@ img { max-width: 100%; display: block; }
 
 .game__row {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 0.8fr 2.4fr 1fr;
   gap: clamp(0.6rem, 1.6vw, 1rem);
   align-items: stretch;
+  margin-bottom: clamp(1rem, 2.2vw, 1.5rem);
 }
 
 // zu klein -> untereinander
@@ -158,10 +186,9 @@ img { max-width: 100%; display: block; }
 
 .game__section--trump,
 .game__section--scoreboard {
-  justify-self: start;
-  padding: @space-md;
-  min-width: unset;
-  min-height: auto;
+  justify-self: stretch;
+  padding: clamp(0.5rem, 1vw, 0.8rem);
+  min-height: 0;
 }
 
 .game__section {
@@ -169,12 +196,12 @@ img { max-width: 100%; display: block; }
   backdrop-filter: blur(4px);
   border-radius: @radius-md;
   box-shadow: @shadow-1;
-  min-height: 120px;
-  max-height: none;
-  padding: clamp(0.75rem, 2vw, 1.25rem);
+  padding: clamp(0.6rem, 2vw, 1.1rem);
   display: flex;
   flex-direction: column;
+  height: auto;
 }
+
 .game__section .title {
   font-size: clamp(1rem, 1.8vw, 1.25rem);
   margin-bottom: clamp(0.4rem, 1vw, 0.6rem);
@@ -182,12 +209,16 @@ img { max-width: 100%; display: block; }
 
 .game__section--scoreboard .game__scoreboard {
   position: static;
-  top: auto; right: auto; left: auto; z-index: auto;
+  top: auto;
+  right: auto;
+  left: auto;
+  z-index: auto;
   backdrop-filter: none;
   padding: 0;
   min-width: unset;
   box-shadow: none;
   font-size: 0.9rem;
+  background: transparent;
 }
 
 .game__cards {
@@ -200,28 +231,41 @@ img { max-width: 100%; display: block; }
   justify-content: flex-start;
 }
 
-// einfliegen
 .game__cards img {
   width: clamp(52px, 9vw, 140px);
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
   border-radius: @radius-sm;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   transform-origin: center bottom;
   transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
   animation: card-enter .22s ease-out both;
 }
+
 .game__cards img:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
   filter: brightness(1.05) saturate(1.02);
 }
 
-.game__section--trump .game__cards { justify-content: center; }
-.game__section--trump .game__cards img { height: clamp(90px, 14vh, 180px); width: auto; }
+.game__section--trump .game__cards {
+  justify-content: center;
+}
 
-[aria-label="Aktueller Stich"] .game__cards img { height: clamp(72px, 10vh, 150px); width: auto; }
+.game__section--trump .game__cards img {
+  height: var(--card-h);
+  width: auto !important;
+}
+
+[aria-label="Aktueller Stich"] {
+  padding: clamp(0.6rem, 1.2vw, 1rem);
+}
+
+[aria-label="Aktueller Stich"] .game__cards img {
+  height: clamp(72px, 11vh, 150px);
+  width: auto !important;
+}
 
 .game__header {
   display: flex;
@@ -232,37 +276,69 @@ img { max-width: 100%; display: block; }
 .theme-switch {
   margin-left: auto;
   background: transparent;
-  border: 1px solid rgba(255,255,255,.25);
+  border: 1px solid rgba(255, 255, 255, .25);
   color: var(--color-text);
   padding: 6px 10px;
   border-radius: @radius-sm;
   text-decoration: none;
 }
+
 .theme-switch:hover {
-  background: rgba(255,255,255,.08);
+  background: rgba(255, 255, 255, .08);
 }
-.theme-light .theme-switch { border-color: rgba(0,0,0,.25); }
-.theme-light .theme-switch:hover { background: rgba(0,0,0,.06); }
+
+.theme-light .theme-switch {
+  border-color: rgba(0, 0, 0, .25);
+}
+
+.theme-light .theme-switch:hover {
+  background: rgba(0, 0, 0, .06);
+}
 
 @keyframes card-enter {
-  from { transform: translateY(6px); opacity: 0; }
-  to   { transform: translateY(0);   opacity: 1; }
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .game__hand {
-  .player-name {
-    font-weight: 700;
-    margin-bottom: clamp(0.4rem, 1vw, 0.6rem);
-  }
-  .game__cards {
-    justify-content: flex-start;
-  }
+  display: flex;
+  align-items: center;
+  gap: clamp(0.4rem, 0.9vw, 0.75rem);
+  //padding: clamp(0.3rem, 0.7vw, 0.5rem);
+  min-height: 0;
 }
-.game__hand { min-height: auto; padding: clamp(0.5rem, 1.2vw, 0.9rem); }
-.game__hand .game__cards img { width: clamp(42px, 7vw, 96px); }
-.game__hand .player-name { font-weight: 600; margin-bottom: @space-sm; }
 
-.game__footer { padding: clamp(0.6rem, 1.2vw, 1rem) clamp(1rem, 2vw, 2rem); color: var(--color-subtle); }
+.game__hand .player-name {
+  margin: 0;
+  line-height: 1;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.game__hand .game__cards {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  gap: clamp(0.3rem, 0.8vw, 0.6rem);
+  align-items: center;
+}
+
+.game__hand .game__cards img {
+  height: var(--card-h);
+  width: auto !important;
+}
+
+.game__footer {
+  padding: clamp(0.6rem, 1.2vw, 1rem) clamp(1rem, 2vw, 2rem);
+  color: var(--color-subtle);
+}
 
 @media (max-width: 900px) {
   .game__row {
@@ -271,14 +347,42 @@ img { max-width: 100%; display: block; }
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
+/* If Bootstrap's .row is used together with .game__row, disable our CSS Grid to prevent width shrinking */
+.game__row.row {
+  display: flex; /* let Bootstrap handle the layout */
+  grid-template-columns: none;
+  gap: 0; /* gutters come from g-classes */
 }
 
-h1, .h1 { font-size: clamp(1.8rem, 4vw, 3rem); }
-h2, .h2 { font-size: clamp(1.4rem, 3vw, 2.25rem); }
-h3, .h3 { font-size: clamp(1.2rem, 2.2vw, 1.8rem); }
-h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
+@media (max-width: 900px) {
+  .game__row.row {
+    grid-template-columns: none;
+    gap: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+h1, .h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+h2, .h2 {
+  font-size: clamp(1.4rem, 3vw, 2.25rem);
+}
+
+h3, .h3 {
+  font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+}
+
+h4, .h4 {
+  font-size: clamp(1.05rem, 1.8vw, 1.4rem);
+}
 
 .btn {
   font-size: clamp(0.95rem, 1.2vw, 1.1rem);
@@ -291,122 +395,96 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
   padding: clamp(0.7rem, 1.1vw, 1rem) clamp(1.2rem, 2vw, 2rem);
 }
 
-/* Obere 3er-Reihe: gleiche Breite links/rechts, Mitte doppelt; gleiche Höhe, sauberer Abstand nach unten */
-.game__row {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  gap: clamp(0.6rem, 1.6vw, 1rem);
-  align-items: stretch;
-  margin-bottom: clamp(0.8rem, 2vw, 1.25rem); /* Abstand zu den Spielerhänden */
+
+/* Ensure player hand cards are left-aligned within their panel */
+section.game__section.game__hand > .game__cards {
+  justify-content: flex-start !important;
+  align-content: flex-start !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  text-align: left;
 }
 
-/* Trumpf/Scoreboard: keine Sonderausrichtung/-padding → symmetrisch */
-.game__section--trump,
-.game__section--scoreboard {
-  justify-self: stretch; /* statt start */
-  padding: inherit;      /* wie .game__section */
+section.game__section.game__hand > .game__cards > * {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
-/* Sektionen füllen die Zeilenhöhe, Inhalt ordentlich stacken */
-.game__section {
+/* Player names left-aligned inside hand panels */
+section.game__section.game__hand .player-name {
+  text-align: left !important;
+  align-self: flex-start !important;
+  justify-self: flex-start !important;
+  margin-left: 0 !important;
+}
+
+/* Slightly reduce spacing between player hand blocks */
+section.game__section.game__hand {
+  margin-bottom: clamp(1.25rem, 3.5vw, 2.5rem);
+}
+
+
+/* Ensure equal heights for top panels when using Bootstrap grid */
+.game__row .game__section {
   height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.game__section .title { margin-bottom: clamp(0.4rem, 1vw, 0.6rem); }
-
-.game__section.game__section--scoreboard .game__scoreboard {
-  position: static !important;
 }
 
-/* Panel flacher halten */
-.game__hand { min-height: auto; padding: clamp(0.5rem, 1.2vw, 0.9rem); }
 
-/* Karten links beginnen (überschreibt evtl. frühere center-Regeln) */
-.game__hand .game__cards { justify-content: flex-start; }
-
-/* Handkarten kleiner als die Karten oben */
-.game__hand .game__cards img { width: clamp(42px, 7vw, 96px); height: auto; }
-
-/* Top-Row: Mitte deutlich größer, Items nur so hoch wie Inhalt, Abstand nach unten */
-.game__row {
-  display: grid;
-  grid-template-columns: 0.9fr 2.4fr 0.9fr; /* Mitte größer als Seiten */
-  gap: clamp(0.6rem, 1.6vw, 1rem);
-  align-items: start;                        /* nicht gleichhoch strecken */
-  margin-bottom: clamp(1rem, 2.2vw, 1.5rem); /* Platz zu den Händen */
+:root {
+  --navbar-h: 56px;
 }
 
-/* Seitenpanels (Trumpf/Scoreboard) kompakt halten */
-.game__section--trump,
-.game__section--scoreboard {
-  justify-self: stretch;             /* symmetrisch mit der Mitte */
-  padding: clamp(0.5rem, 1vw, 0.8rem);
-  min-height: 0 !important;          /* überschreibt globale 120px */
+/* Default: add top padding to accommodate fixed-top navbar */
+body.game {
+  padding-top: var(--navbar-h);
 }
 
-/* Trumpfkarte: über Höhe steuern, Panel bleibt klein */
-.game__section--trump .game__cards { justify-content: center; }
-.game__section--trump .game__cards img {
-  height: clamp(84px, 12vh, 140px);
-  width: auto !important;           /* nicht über Breite aufblasen */
+/* Ingame page: no extra padding, navbar should not be fixed nor draw a full bar */
+body.page-ingame {
+  padding-top: 0 !important;
 }
 
-/* Aktueller Stich: leicht größer als Trumpf, aber kompakt */
-[aria-label="Aktueller Stich"] { padding: clamp(0.6rem, 1.2vw, 1rem); }
-[aria-label="Aktueller Stich"] .game__cards img {
-  height: clamp(72px, 11vh, 150px);
-  width: auto !important;
+body.page-ingame .navbar {
+  background-color: transparent !important;
+  box-shadow: none;
+  border-bottom: 0;
 }
 
-/* Scoreboard sicher im normalen Flow (gegen Überlappungen) */
-.game__section.game__section--scoreboard .game__scoreboard {
-  position: static !important;
+
+/* Navbar brand W with magical gradient */
+.brand-w {
+  display: inline-block;
+  font-family: 'Cinzel Decorative', 'Times New Roman', Georgia, serif;
+  font-weight: 900;
+  font-size: clamp(22px, 2.2rem, 32px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg,
+  #7d3cff 0%,
+  #22d3ee 40%,
+  #fdd835 60%,
+  #ff3cac 85%,
+  #7d3cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% 200%;
+  animation: wizard-sheen 12s ease-in-out infinite;
 }
 
-/* Hände: wirklich flach, eine Zeile, links beginnend, Höhe über die Karten steuern */
-.game__hand {
-  min-height: 0 !important;
-  padding: clamp(0.4rem, 0.9vw, 0.75rem);
-}
-.game__hand .game__cards { justify-content: flex-start; gap: clamp(0.3rem, 0.8vw, 0.6rem); }
-
-/* Handkarten: Höhe definieren, Breite automatisch → Panel wird genau so hoch wie die Karten */
-.game__hand .game__cards img {
-  height: clamp(60px, 8.5vh, 84px);
-  width: auto !important;           /* überschreibt frühere width-Regeln */
-}
-
-/* === HAND PANELS: Höhe ≈ Kartenhöhe, eine Zeile, Karten links === */
-.game__hand {
-  display: flex;                  /* Name + Karten nebeneinander */
-  align-items: center;            /* vertikal an Kartenhöhe ausrichten */
-  gap: clamp(0.4rem, 0.9vw, 0.75rem);
-  padding: clamp(0.3rem, 0.7vw, 0.5rem);  /* sehr kompakt */
-  min-height: 0 !important;      /* keine feste Mindesthöhe */
-}
-
-/* Spielernamen kompakt, ohne zusätzlichen Bottom-Margin */
-.game__hand .player-name {
-  margin: 0;                      /* kein Abstand nach unten */
-  line-height: 1;                 /* klein halten */
-  white-space: nowrap;            /* kein Zeilenumbruch im Namen */
-}
-
-/* Karten in EINER Zeile, ggf. horizontales Scrollen */
-.game__hand .game__cards {
-  display: flex;
-  flex-wrap: nowrap;              /* verhindert das Umbrechen (keine zweite Zeile) */
-  overflow-x: auto;               /* wenn zu viele Karten, dann scrollen */
-  -webkit-overflow-scrolling: touch; /* smoother auf Mobile */
-  gap: clamp(0.3rem, 0.8vw, 0.6rem);
-  align-items: center;            /* vertikal an Kartenhöhe ausrichten */
-}
-
-/* Kartenhöhe definiert die Panelhöhe; Breite automatisch */
-.game__hand .game__cards img {
-  height: clamp(60px, 8vh, 82px);   /* passe bei Bedarf an */
-  width: auto !important;           /* überschreibt frühere width-Regeln */
+/* Duplicate keyframes here so the brand works even if home stylesheet isn't loaded */
+@keyframes wizard-sheen {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @import "home.less";
+@import "modify.less";

@@ -99,3 +99,102 @@
   width: auto;
   min-width: clamp(10rem, 24vw, 12rem);
 }
+
+/* Kleine funkelnde Sterne im Dark Mode nur auf der Home-Route */
+.theme-dark.page-home {
+  /* eigener Stacking-Context, damit wir die Sterne sicher hinter den Inhalt legen können */
+  position: relative;
+  isolation: isolate;
+}
+
+.theme-dark.page-home::before {
+  content: "";
+  position: fixed; /* über den gesamten Viewport */
+  inset: 0;
+  pointer-events: none; /* klicks nicht blockieren */
+
+  /* Vordere Stern-Schicht (größer/heller) – nur größere Sterne, keine 1px-Punkte */
+  /* Größenmix: mittel (1.4–1.7px), groß (1.8–2.4px), wenige Highlights (2.8–3.2px) */
+  background-image:
+    /* groß/hell */
+    radial-gradient(2.4px 2.4px at 12% 8%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(2.2px 2.2px at 20% 10%, rgba(255,255,255,0.95) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(2px 2px at 66% 18%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%),
+    /* mittel */
+    radial-gradient(1.7px 1.7px at 40% 80%, rgba(255,255,255,0.92) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.6px 1.6px at 5% 48%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.5px 1.5px at 62% 72%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.4px 1.4px at 10% 65%, rgba(255,255,255,0.86) 60%, rgba(255,255,255,0) 61%),
+    /* zusätzliche größere Punkte statt 1px */
+    radial-gradient(1.8px 1.8px at 70% 30%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.9px 1.9px at 85% 60%, rgba(255,255,255,0.88) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.6px 1.6px at 55% 15%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.7px 1.7px at 30% 55%, rgba(255,255,255,0.88) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.5px 1.5px at 12% 22%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.8px 1.8px at 78% 12%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,0) 61%),
+    /* seltene sehr große, weiche Highlights */
+    radial-gradient(2.8px 2.8px at 82% 42%, rgba(255,255,255,0.6) 55%, rgba(255,255,255,0) 56%),
+    radial-gradient(3px 3px at 28% 32%, rgba(255,255,255,0.55) 55%, rgba(255,255,255,0) 56%),
+    radial-gradient(3.2px 3.2px at 92% 12%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 51%);
+
+  background-repeat: repeat;
+  background-size: 620px 620px; /* etwas dichter, größere Sterne */
+
+  /* Sichtbarer und schnelleres Funkeln */
+  opacity: 0.24;
+  animation: star-twinkle 4.5s ease-in-out infinite alternate;
+  animation-delay: -1s;
+  z-index: 0; /* hinter dem Inhalt der Home-Page */
+}
+
+/* Zweite, feinere Schicht mit anderer Geschwindigkeit */
+.theme-dark.page-home::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    /* Mittlere Hintergrund-Schicht – keine 1px/Unterpixel, nur 1.3–2.1px */
+    radial-gradient(1.3px 1.3px at 15% 35%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.4px 1.4px at 45% 20%, rgba(255,255,255,0.88) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.5px 1.5px at 75% 75%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.6px 1.6px at 25% 85%, rgba(255,255,255,0.92) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.7px 1.7px at 88% 48%, rgba(255,255,255,0.88) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.8px 1.8px at 35% 58%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.9px 1.9px at 6% 18%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(2px 2px at 52% 54%, rgba(255,255,255,0.86) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(2.1px 2.1px at 8% 12%, rgba(255,255,255,0.84) 55%, rgba(255,255,255,0) 56%),
+    radial-gradient(1.6px 1.6px at 58% 44%, rgba(255,255,255,0.88) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.7px 1.7px at 72% 66%, rgba(255,255,255,0.82) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.5px 1.5px at 92% 68%, rgba(255,255,255,0.86) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.4px 1.4px at 34% 8%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.9px 1.9px at 22% 52%, rgba(255,255,255,0.88) 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(1.8px 1.8px at 82% 86%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0) 61%);
+  background-repeat: repeat;
+  background-size: 720px 720px;
+  opacity: 0.16;
+  animation: star-twinkle-2 6.8s ease-in-out infinite alternate;
+  animation-delay: -2.2s;
+  z-index: -1;
+}
+
+@keyframes star-twinkle {
+  0%   { opacity: 0.14; filter: brightness(0.9); }
+  50%  { opacity: 0.42; filter: brightness(1.18); }
+  100% { opacity: 0.20; filter: brightness(0.96); }
+}
+
+@keyframes star-twinkle-2 {
+  0%   { opacity: 0.12; filter: brightness(0.9); }
+  50%  { opacity: 0.34; filter: brightness(1.12); }
+  100% { opacity: 0.16; filter: brightness(0.96); }
+}
+
+/* Respektiert reduzierte Bewegungen */
+@media (prefers-reduced-motion: reduce) {
+  .theme-dark.page-home::before,
+  .theme-dark.page-home::after {
+    animation: none !important;
+    opacity: 0.18;
+  }
+}

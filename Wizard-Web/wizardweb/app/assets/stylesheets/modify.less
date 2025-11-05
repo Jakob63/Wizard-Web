@@ -1,0 +1,86 @@
+/* Styles for Modify page */
+
+.modify-page {
+  max-width: 1000px;
+
+  .modifier-group {
+    margin-bottom: clamp(1rem, 3vw, 2rem);
+  }
+
+  .slider-card {
+    background: var(--color-panel);
+    border-radius: clamp(8px, 1.2vw, 14px);
+    padding: clamp(0.9rem, 2vw, 1.25rem);
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .value-pill {
+    display: inline-block;
+    min-width: 62px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    background: ~"color-mix(in oklab, var(--color-accent) 18%, transparent)";
+    border: ~"1px solid color-mix(in oklab, var(--color-accent) 40%, transparent)";
+    color: var(--color-text);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+  }
+
+  /* Range input styling (WebKit/Blink/Edge/Firefox) */
+  .modifier-range {
+    height: 32px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+  }
+
+  .modifier-range:focus { outline: none; }
+
+  /* Track */
+  .modifier-range::-webkit-slider-runnable-track {
+    height: 8px;
+    background: ~"linear-gradient(90deg, var(--color-accent), color-mix(in oklab, var(--color-accent) 30%, transparent))";
+    border-radius: 999px;
+    opacity: .65;
+  }
+  .modifier-range::-moz-range-track {
+    height: 8px;
+    background: linear-gradient(90deg, var(--color-accent), color-mix(in oklab, var(--color-accent) 30%, transparent));
+    border-radius: 999px;
+    opacity: .65;
+  }
+
+  /* Thumb */
+  .modifier-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px; height: 22px;
+    margin-top: -7px; /* center on 8px track */
+    background: radial-gradient(circle at 30% 30%, #fff 0, #fff 30%, var(--color-accent) 32%, var(--color-accent) 100%);
+    border: 2px solid color-mix(in oklab, var(--color-accent) 60%, #000);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
+  .modifier-range::-moz-range-thumb {
+    width: 22px; height: 22px;
+    background: radial-gradient(circle at 30% 30%, #fff 0, #fff 30%, var(--color-accent) 32%, var(--color-accent) 100%);
+    border: 2px solid color-mix(in oklab, var(--color-accent) 60%, #000);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
+
+  /* Active state */
+  .modifier-range:active::-webkit-slider-thumb {
+    transform: scale(1.06);
+  }
+  .modifier-range:active::-moz-range-thumb {
+    transform: scale(1.06);
+  }
+
+  /* Help text color harmonization */
+  .form-text {
+    color: var(--color-subtle);
+  }
+}

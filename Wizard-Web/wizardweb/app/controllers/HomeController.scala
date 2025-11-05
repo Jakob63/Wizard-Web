@@ -71,4 +71,8 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
     input.offer(eingabe)
     Ok(s"offered $input")
   }
+
+  def modify(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.modify())
+  }
 }
