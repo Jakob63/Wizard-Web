@@ -210,7 +210,7 @@ img { max-width: 100%; display: block; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.35);
   transform-origin: center bottom;
   transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-  animation: card-enter .22s ease-out both;
+  animation: card-enter .80s ease-out both;
 }
 .game__cards img:hover {
   transform: translateY(-2px) scale(1.02);
@@ -218,10 +218,18 @@ img { max-width: 100%; display: block; }
   filter: brightness(1.05) saturate(1.02);
 }
 
-.game__section--trump .game__cards { justify-content: center; }
-.game__section--trump .game__cards img { height: clamp(90px, 14vh, 180px); width: auto; }
+.game__section--trump .game__cards {
+  justify-content: center;
+}
+.game__section--trump .game__cards img {
+  height: clamp(90px, 14vh, 180px);
+  width: auto;
+}
 
-[aria-label="Aktueller Stich"] .game__cards img { height: clamp(72px, 10vh, 150px); width: auto; }
+[aria-label="Aktueller Stich"] .game__cards img {
+  height: clamp(72px, 10vh, 150px);
+  width: auto;
+}
 
 .game__header {
   display: flex;
@@ -259,7 +267,7 @@ img { max-width: 100%; display: block; }
   }
 }
 .game__hand { min-height: auto; padding: clamp(0.5rem, 1.2vw, 0.9rem); }
-.game__hand .game__cards img { width: clamp(42px, 7vw, 96px); }
+
 .game__hand .player-name { font-weight: 600; margin-bottom: @space-sm; }
 
 .game__footer { padding: clamp(0.6rem, 1.2vw, 1rem) clamp(1rem, 2vw, 2rem); color: var(--color-subtle); }
@@ -325,9 +333,6 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
 /* Karten links beginnen (überschreibt evtl. frühere center-Regeln) */
 .game__hand .game__cards { justify-content: flex-start; }
 
-/* Handkarten kleiner als die Karten oben */
-.game__hand .game__cards img { width: clamp(42px, 7vw, 96px); height: auto; }
-
 /* Top-Row: Mitte deutlich größer, Items nur so hoch wie Inhalt, Abstand nach unten */
 .game__row {
   display: grid;
@@ -348,14 +353,14 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
 /* Trumpfkarte: über Höhe steuern, Panel bleibt klein */
 .game__section--trump .game__cards { justify-content: center; }
 .game__section--trump .game__cards img {
-  height: clamp(84px, 12vh, 140px);
+  height: clamp(100px, 8vh, 99999px);
   width: auto !important;           /* nicht über Breite aufblasen */
 }
 
 /* Aktueller Stich: leicht größer als Trumpf, aber kompakt */
 [aria-label="Aktueller Stich"] { padding: clamp(0.6rem, 1.2vw, 1rem); }
 [aria-label="Aktueller Stich"] .game__cards img {
-  height: clamp(72px, 11vh, 150px);
+  height: clamp(100px, 11vh, 160px);
   width: auto !important;
 }
 
@@ -371,16 +376,10 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
 }
 .game__hand .game__cards { justify-content: flex-start; gap: clamp(0.3rem, 0.8vw, 0.6rem); }
 
-/* Handkarten: Höhe definieren, Breite automatisch → Panel wird genau so hoch wie die Karten */
-.game__hand .game__cards img {
-  height: clamp(60px, 8.5vh, 84px);
-  width: auto !important;           /* überschreibt frühere width-Regeln */
-}
-
 /* === HAND PANELS: Höhe ≈ Kartenhöhe, eine Zeile, Karten links === */
 .game__hand {
   display: flex;                  /* Name + Karten nebeneinander */
-  align-items: center;            /* vertikal an Kartenhöhe ausrichten */
+  align-items: start;            /* vertikal an Kartenhöhe ausrichten */
   gap: clamp(0.4rem, 0.9vw, 0.75rem);
   padding: clamp(0.3rem, 0.7vw, 0.5rem);  /* sehr kompakt */
   min-height: 0 !important;      /* keine feste Mindesthöhe */
@@ -405,7 +404,7 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
 
 /* Kartenhöhe definiert die Panelhöhe; Breite automatisch */
 .game__hand .game__cards img {
-  height: clamp(60px, 8vh, 82px);   /* passe bei Bedarf an */
+  height: clamp(100px, 8vh, 400px);   /* Hand Karten Größe */
   width: auto !important;           /* überschreibt frühere width-Regeln */
 }
 

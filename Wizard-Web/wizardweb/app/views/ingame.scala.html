@@ -22,80 +22,93 @@
 
                 <main class="game__main bg-ingame" style="background-image: url('@bgUrl')">
 
-                    <div class="game__row">
-                        @logic.getTrumpCard.map { trump =>
-                        <section class="game__section game__section--trump" aria-label="Trumpf">
-                            <div class="title">Trumpf:
-                                @{
-                                    trump.value match {
-                                        case wizard.model.cards.Value.WizardKarte => "Wizard"
-                                        case wizard.model.cards.Value.Chester => "Jester"
-                                        case _ => trump.color.toString
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-2">
+                                    @logic.getTrumpCard.map { trump =>
+                                    <section class="game__section game__section--trump" aria-label="Trumpf">
+                                        <div class="title">Trumpf:
+                                            @{
+                                                trump.value match {
+                                                    case wizard.model.cards.Value.WizardKarte => "Wizard"
+                                                    case wizard.model.cards.Value.Chester => "Jester"
+                                                    case _ => trump.color.toString
+                                                }
+                                            }
+                                            </div>
+                                        <div class="game__cards">
+                                            <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
+                                        </div>
+                                    </section>
+                                    }.getOrElse {
+                                        <section class="game__section game__section--trump" aria-label="Trumpf">
+                                            <div class="title">Trumpf: —</div>
+                                        </section>
                                     }
-                                }
                                 </div>
-                            <div class="game__cards">
-                                <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(trump))' alt='@trump.toString' />
-                            </div>
-                        </section>
-                        }.getOrElse {
-                            <section class="game__section game__section--trump" aria-label="Trumpf">
-                                <div class="title">Trumpf: —</div>
-                            </section>
-                        }
-
-                        @logic.getTrickCards.filter(_.nonEmpty).map { cards =>
-                        <section class="game__section" aria-label="Aktueller Stich">
-                            <div class="title">Aktueller Stich:</div>
-                            <div class="game__cards">
-                                @for(card <- cards) {
-                                    <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                                }
-                            </div>
-                        </section>
-                        }.getOrElse {
-                            <section class="game__section" aria-label="Aktueller Stich">
-                                <div class="title">Aktueller Stich:</div>
-                            </section>
-                        }
-
-                        @logic.getPlayer.map { players =>
-                            <section class="game__section game__section--scoreboard" aria-label="Scoreboard">
-                                <div class="game__scoreboard">
-                                    <div class="title">Runde</div>
-                                    <div class="score-grid">
-                                        <div class="hdr">Spieler</div>
-                                        <div class="hdr">Bid</div>
-                                        <div class="hdr">Punkte</div>
-                                        @for(p <- players) {
-                                            <div>@p.name</div>
-                                            <div class="val">@p.roundBids</div>
-                                            <div class="val">@p.points</div>
+                                <div class="col">
+                                @logic.getTrickCards.filter(_.nonEmpty).map { cards =>
+                                <section class="game__section" aria-label="Aktueller Stich">
+                                    <div class="title">Aktueller Stich:</div>
+                                    <div class="game__cards">
+                                        @for(card <- cards) {
+                                            <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
                                         }
                                     </div>
+                                </section>
+                                }.getOrElse {
+                                    <section class="game__section" aria-label="Aktueller Stich">
+                                        <div class="title">Aktueller Stich:</div>
+                                    </section>
+                                }
+                                </div>
+                                <div class="col-3">
+                                @logic.getPlayer.map { players =>
+                                    <section class="game__section game__section--scoreboard" aria-label="Scoreboard">
+                                        <div class="game__scoreboard">
+                                            <div class="title">Runde</div>
+                                            <div class="score-grid">
+                                                <div class="hdr">Spieler</div>
+                                                <div class="hdr">Bid</div>
+                                                <div class="hdr">Punkte</div>
+                                                @for(p <- players) {
+                                                    <div>@p.name</div>
+                                                    <div class="val">@p.roundBids</div>
+                                                    <div class="val">@p.points</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </section>
+                                }
+                                </div>
+                        </div>
+                    </div>
+                    <div class="container">
+                        @logic.getPlayer.foreach { players =>
+                            <div class="row py-1">
+                                <section class="game__section" aria-label="Spielerübersicht">
+                                    <div class="title">Spieler:</div>
+                                    <div>@players.map(_.name).mkString(", ")</div>
+                                </section>
+                            </div>
+                        }
+
+                        @for(player <- logic.getPlayer.getOrElse(Nil)) {
+                            <div class="row py-1">
+                            <section class="game__section game__hand" aria-label="Hand von @player.name">
+                                <div class="player-name">@player.name</div>
+                                <div class="game__cards">
+                                @for((card, idx) <- player.hand.cards.zipWithIndex) {
+                                    <a href="@routes.HomeController.demoOffer(s"${idx + 1}")">
+                                        <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                                    </a>
+                                }
                                 </div>
                             </section>
+                            </div>
                         }
                     </div>
-                    @logic.getPlayer.foreach { players =>
-                        <section class="game__section" aria-label="Spielerübersicht">
-                            <div class="title">Spieler:</div>
-                            <div>@players.map(_.name).mkString(", ")</div>
-                        </section>
-                    }
 
-                    @for(player <- logic.getPlayer.getOrElse(Nil)) {
-                        <section class="game__section game__hand" aria-label="Hand von @player.name">
-                            <div class="player-name">@player.name</div>
-                            <div class="game__cards">
-                            @for((card, idx) <- player.hand.cards.zipWithIndex) {
-                                <a href="@routes.HomeController.demoOffer(s"${idx + 1}")">
-                                    <img loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                                </a>
-                            }
-                            </div>
-                        </section>
-                    }
 
                 </main>
 
