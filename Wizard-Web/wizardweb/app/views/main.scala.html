@@ -21,12 +21,58 @@
                         </head>
                         <body class="game @themeClass @pageClass">
                             <header class="game__header">
-                                @if(!isHome) {
-                                    <h1 class="game__title">Wizard</h1>
-                                }
-                                <a class="theme-switch" href='@controllers.routes.ThemeController.toggleTheme(returnTo = request.uri)'>
-                                @toggleLabel
-                                </a>
+                                <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                                    <div class="container-fluid">
+                                        <a class="navbar-brand" href="http://localhost:9000/home">
+                                            <div class="home-hero__title" style="font-size: clamp(3rem, 1vw, 3rem) !important; margin: 0 0 0 0;" data-text="W">W</div>
+                                        </a>
+                                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                                            <span class="navbar-toggler-icon"></span>
+                                        </button>
+                                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" aria-current="page" href="http://localhost:9000/rules">Rules</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" href="http://localhost:9000/modify">Modify</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" href='@controllers.routes.ThemeController.toggleTheme(returnTo = request.uri)' class="btn btn-outline-secondary">
+                                                        <button type="button"
+                                                        class="btn btn-outline-secondary"
+                                                        style="
+                                                            position: relative;
+                                                            width: 50px;
+                                                            height: 28px;
+                                                            background-color: @if(toggleLabel == "Light Mode"){#0d6efd}else{#ccc};
+                                                            border: none;
+                                                            border-radius: 50px;
+                                                            cursor: pointer;
+                                                            transition: background-color 0.3s;
+                                                            padding: 0;
+                                                            ">
+                                                            <span style="
+                                                                position: absolute;
+                                                                top: 3px;
+                                                                left: @if(toggleLabel == "Light Mode"){24px}else{3px};
+                                                                width: 22px;
+                                                                height: 22px;
+                                                                background-color: white;
+                                                                border-radius: 50%;
+                                                                transition: left 0.3s;
+                                                                display: block;
+                                                            "></span>
+                                                        </button>
+                                                    @toggleLabel
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                    </div>
+                                </nav>
+
                             </header>
 
                             @content

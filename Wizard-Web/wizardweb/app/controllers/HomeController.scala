@@ -90,4 +90,7 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
     val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
     Redirect(returnTo.getOrElse(routes.HomeController.home().url))
   }
+  def modify(): Action[AnyContent] = Action { implicit request =>
+    Ok(views.html.modify())
+  }
 }
