@@ -25,7 +25,7 @@
                     <div class="game__main bg-ingame" style="background-image: url('@bgUrl')">
                         <div class="container">
                             <div class="row">
-                                <div class="col-2">
+                                <div class="col-4 col-md-3">
                                     @logic.getTrumpCard.map { trump =>
                                     <section class="game__section game__section--trump" aria-label="Trumpf">
                                         <div class="title">Trumpf:
@@ -47,14 +47,14 @@
                                         </section>
                                     }
                                 </div>
-                                <div class="col">
+                                <div class="col-8 col-md-6">
                                 @logic.getTrickCards.filter(_.nonEmpty).map { cards =>
                                 <section class="game__section" aria-label="Aktueller Stich">
                                     <div class="title">Aktueller Stich:</div>
                                     <div style="display: flex">
                                         @for(card <- cards) {
-                                            <card>
-                                                <img class="img-fluid" style="max-width: 33%" loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                                            <card class="px-1">
+                                                <img class="img-fluid" loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
                                             </card>
                                         }
                                     </div>
@@ -65,7 +65,7 @@
                                     </section>
                                 }
                                 </div>
-                                <div class="col-3">
+                                <div class="col col-md-3">
                                 @logic.getPlayer.map { players =>
                                     <section class="game__section game__section--scoreboard" aria-label="Scoreboard">
                                         <div class="game__scoreboard">
@@ -100,13 +100,13 @@
                             <div class="row py-1">
                             <section class="game__section game__hand" aria-label="Hand von @player.name">
                                 <div class="player-name">@player.name</div>
-                                <div style="display: flex">
+                                <div class="d-flex gap-2 p-1">
                                 @for((card, idx) <- player.hand.cards.zipWithIndex) {
                                     <card class="card md-3">
                                         <form action="@("/demo_input/" + (idx + 1))" method="get" style="display:inline;">
                                             <input type="hidden" name="returnTo" value="@request.uri">
                                             <button type="submit" class="dropdown-item">
-                                                <img style="border-radius: 0.3em" loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
+                                                <img class="img-fluid" loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
                                             </button>
                                         </form>
                                     </card>
