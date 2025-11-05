@@ -1,16 +1,109 @@
 @(logic: wizard.controller.aGameLogic)(implicit request: play.api.mvc.RequestHeader)
+@import helper._
 
 @main("Menu") {
     <div id="menu">
-        @if(logic.getChoice.isEmpty) {
-            <h1>Welcome to Wizard!</h1>
-            <div>1. Start Game</div>
-            <div>2. Exit</div>
-            <div>Please enter your choice (1 or 2)</div>
-        } else if(logic.getChoice.get == 2) {
-        <h1>Programm beendet!</h1>
-        } else {
-        <h1>Spiel startet</h1>
-        }
+        <div class="container">
+            @if(logic.getChoice.isEmpty) {
+                <div class="row">
+                    <h1>Welcome to Wizard!</h1>
+                </div>
+                <div class="row">
+                    <div>1. Start Game</div>
+                </div>
+                <div class="row">
+                    <div>2. Exit</div>
+                </div>
+                <div class="row">
+                    <div class="col-3">Please enter your choice (1 or 2)</div>
+                    <div class="col">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Choose
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <form action="/demo_input/1" method="get" style="display:inline;">
+                                        <input type="hidden" name="returnTo" value="@request.uri">
+                                        <button type="submit" class="dropdown-item">1</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="/demo_input/2" method="get" style="display:inline;">
+                                        <input type="hidden" name="returnTo" value="@request.uri">
+                                        <button type="submit" class="dropdown-item">2</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            } else if(logic.getChoice.get == 2) {
+                <h1>Programm beendet!</h1>
+            } else {
+                @if(logic.getPlayerNumber.isEmpty) {
+                    <div class="row">
+                        <h1>Welcome to Wizard!</h1>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">Please enter the number of Players</div>
+                        <div class="col">
+                            <div class="dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Choose
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form action="/demo_input/3" method="get" style="display:inline;">
+                                            <input type="hidden" name="returnTo" value="@request.uri">
+                                            <button type="submit" class="dropdown-item">3</button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="/demo_input/4" method="get" style="display:inline;">
+                                            <input type="hidden" name="returnTo" value="@request.uri">
+                                            <button type="submit" class="dropdown-item">4</button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="/demo_input/5" method="get" style="display:inline;">
+                                            <input type="hidden" name="returnTo" value="@request.uri">
+                                            <button type="submit" class="dropdown-item">5</button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="/demo_input/6" method="get" style="display:inline;">
+                                            <input type="hidden" name="returnTo" value="@request.uri">
+                                            <button type="submit" class="dropdown-item">6</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                } else {
+                    <form action="@routes.HomeController.createPlayers()" method="post">
+                        @CSRF.formField
+                        <input type="hidden" name="returnTo" value="@request.uri">
+
+                    <div class="mb-3">
+                            <label for="name1" class="form-label">Spieler 1</label>
+                            <input type="text" class="form-control" id="name1" placeholder="Name" name="name1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="name2" class="form-label">Spieler 2</label>
+                            <input type="text" class="form-control" id="name2" placeholder="Name" name="name2" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="name3" class="form-label">Spieler 3</label>
+                            <input type="text" class="form-control" id="name3" placeholder="Name" name="name3" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                    <h1>Spiel startet</h1>
+                }
+            }
+        </div>
     </div>
 }

@@ -19,3 +19,5 @@ GET     /theme/toggle               controllers.ThemeController.toggleTheme(retu
 GET     /home                       controllers.HomeController.home()
 
 GET     /rules                      controllers.HomeController.rules()
+
+POST    /createPlayers              controllers.HomeController.createPlayers()
