@@ -40,6 +40,10 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
     Ok(views.html.rules())
   }
 
+  def modify(): Action[AnyContent] = Action { implicit request =>
+    Ok(views.html.modify())
+  }
+
   def ingame(): Action[AnyContent] = Action { implicit request =>
     // TUI lazy starten
     if (!init) {
@@ -89,5 +93,20 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
 
     val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
     Redirect(returnTo.getOrElse(routes.HomeController.home().url))
+  }
+
+  def offerPlayers(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    val form = request.body.asFormUrlEncoded.getOrElse(Map.empty)
+    val name1 = form.get("name1").flatMap(_.headOption).getOrElse("")
+    val name2 = form.get("name2").flatMap(_.headOption).getOrElse("")
+    val name3 = form.get("name3").flatMap(_.headOption).getOrElse("")
+
+    input.offer(name1)
+    input.offer(name2)
+    input.offer(name3)
+
+    val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
+    Thread.sleep(500)
+    Redirect(returnTo.getOrElse(routes.HomeController.ingame().url))
   }
 }

@@ -49,46 +49,46 @@
                         <h1>Welcome to Wizard!</h1>
                     </div>
                     <div class="row">
-                        Please enter the number of Players
-                    </div>
-                    <div class="row">
-                        <div class="col-4">
-                            <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Choose
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <form action="/demo_input/3" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">3</button>
-                                        </form>
-                                    </li>
-                                    <li>
-                                        <form action="/demo_input/4" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">4</button>
-                                        </form>
-                                    </li>
-                                    <li>
-                                        <form action="/demo_input/5" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">5</button>
-                                        </form>
-                                    </li>
-                                    <li>
-                                        <form action="/demo_input/6" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">6</button>
-                                        </form>
-                                    </li>
-                                </ul>
+                        <div class="col-12 col-md-8 col-lg-6">
+                            <div class="card p-3 shadow-sm">
+                                <h2 class="h4 mb-2">Please enter the number of players</h2>
+                                <p class="text-muted mb-3">Choose between 3 and 6 players.</p>
+
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label for="playerCount" class="form-label mb-0">Players</label>
+                                    <output id="playerCountOut" class="badge bg-primary" aria-live="polite">3</output>
+                                </div>
+                                <input type="range" class="form-range" id="playerCount" min="3" max="6" step="1" value="3">
+
+                                <div class="mt-3 d-flex gap-2">
+                                    <button id="startWithPlayers" type="button" class="btn btn-primary">Start</button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    <script>
+                        (function(){
+                            const slider = document.getElementById('playerCount');
+                            const out = document.getElementById('playerCountOut');
+                            const btn = document.getElementById('startWithPlayers');
+                            if (slider && out) {
+                                const update = () => { out.textContent = slider.value; };
+                                slider.addEventListener('input', update);
+                                update();
+                            }
+                            if (btn && slider) {
+                                btn.addEventListener('click', () => {
+                                    const value = slider.value || '3';
+                                    const ret = encodeURIComponent('@request.uri');
+                                    window.location.href = `/demo_input/${value}?returnTo=${ret}`;
+                                });
+                            }
+                        })();
+                    </script>
+
                 } else {
-                    <form action="@routes.HomeController.createPlayers()" method="post">
+                    <form action="@routes.HomeController.offerPlayers()" method="post" class="mt-4">
                         @CSRF.formField
                         <input type="hidden" name="returnTo" value="@request.uri">
 
@@ -104,9 +104,8 @@
                             <label for="name3" class="form-label">Spieler 3</label>
                             <input type="text" class="form-control" id="name3" placeholder="Name" name="name3" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="submit" class="btn btn-outline-primary">Submit</button>
                     </form>
-                    <h1>Spiel startet</h1>
                 }
             }
         </div>

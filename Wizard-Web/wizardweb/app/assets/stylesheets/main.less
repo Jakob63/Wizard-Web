@@ -9,12 +9,13 @@
 
 @shadow-1: 0 4px 14px rgba(0,0,0,.25);
 
-::root {
+:root {
   --color-bg: #0b0d12;
   --color-text: #ffffff;
   --color-subtle: rgba(255,255,255,0.7);
   --color-panel: rgba(0,0,0,0.45);
   --color-accent: #8bd3ff;
+  --navbar-h: 56px;
 }
 
 html {
@@ -26,6 +27,32 @@ body {
 }
 
 .body-padding { padding: 2rem; }
+
+body:not(.page-ingame) {
+  padding-top: var(--navbar-h);
+}
+
+.navbar .brand-w {
+  display: inline-block;
+  font-weight: 900;
+  font-family: 'Cinzel Decorative', 'Times New Roman', Georgia, serif;
+  letter-spacing: -0.04em;
+  font-size: 1.4rem;
+  // Wizard Title mit regenbogen
+  background: linear-gradient(
+    135deg,
+    #7d3cff 0%,
+    #22d3ee 40%,
+    #fdd835 60%,
+    #ff3cac 85%,
+    #7d3cff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% 200%;
+  animation: wizard-sheen 12s ease-in-out infinite;
+}
 
 .rules {
   padding: clamp(1rem, 3vw, 2rem);
@@ -107,8 +134,6 @@ img { max-width: 100%; display: block; }
   width: 100%;
 }
 
-
-/* Falls andere Regeln den Hintergrund „abschneiden“: Unterelemente dürfen wachsen */
 .game__row, .game__section {
   min-height: 0;
 }
@@ -299,23 +324,20 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
   padding: clamp(0.7rem, 1.1vw, 1rem) clamp(1.2rem, 2vw, 2rem);
 }
 
-/* Obere 3er-Reihe: gleiche Breite links/rechts, Mitte doppelt; gleiche Höhe, sauberer Abstand nach unten */
 .game__row {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   gap: clamp(0.6rem, 1.6vw, 1rem);
   align-items: stretch;
-  margin-bottom: clamp(0.8rem, 2vw, 1.25rem); /* Abstand zu den Spielerhänden */
+  margin-bottom: clamp(0.8rem, 2vw, 1.25rem);
 }
 
-/* Trumpf/Scoreboard: keine Sonderausrichtung/-padding → symmetrisch */
 .game__section--trump,
 .game__section--scoreboard {
-  justify-self: stretch; /* statt start */
-  padding: inherit;      /* wie .game__section */
+  justify-self: stretch;
+  padding: inherit;
 }
 
-/* Sektionen füllen die Zeilenhöhe, Inhalt ordentlich stacken */
 .game__section {
   height: 100%;
   display: flex;
@@ -327,85 +349,74 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
   position: static !important;
 }
 
-/* Panel flacher halten */
 .game__hand { min-height: auto; padding: clamp(0.5rem, 1.2vw, 0.9rem); }
 
-/* Karten links beginnen (überschreibt evtl. frühere center-Regeln) */
+// Karten linksbündig
 .game__hand .game__cards { justify-content: flex-start; }
 
-/* Top-Row: Mitte deutlich größer, Items nur so hoch wie Inhalt, Abstand nach unten */
 .game__row {
   display: grid;
-  grid-template-columns: 0.9fr 2.4fr 0.9fr; /* Mitte größer als Seiten */
+  grid-template-columns: 0.9fr 2.4fr 0.9fr;
   gap: clamp(0.6rem, 1.6vw, 1rem);
-  align-items: start;                        /* nicht gleichhoch strecken */
-  margin-bottom: clamp(1rem, 2.2vw, 1.5rem); /* Platz zu den Händen */
+  align-items: start;
+  margin-bottom: clamp(1rem, 2.2vw, 1.5rem);
 }
 
-/* Seitenpanels (Trumpf/Scoreboard) kompakt halten */
 .game__section--trump,
 .game__section--scoreboard {
-  justify-self: stretch;             /* symmetrisch mit der Mitte */
+  justify-self: stretch;
   padding: clamp(0.5rem, 1vw, 0.8rem);
-  min-height: 0 !important;          /* überschreibt globale 120px */
+  min-height: 0 !important;
 }
 
-/* Trumpfkarte: über Höhe steuern, Panel bleibt klein */
 .game__section--trump .game__cards { justify-content: center; }
 .game__section--trump .game__cards img {
   height: clamp(100px, 8vh, 99999px);
-  width: auto !important;           /* nicht über Breite aufblasen */
+  width: auto !important;
 }
 
-/* Aktueller Stich: leicht größer als Trumpf, aber kompakt */
 [aria-label="Aktueller Stich"] { padding: clamp(0.6rem, 1.2vw, 1rem); }
 [aria-label="Aktueller Stich"] .game__cards img {
   height: clamp(100px, 11vh, 160px);
   width: auto !important;
 }
 
-/* Scoreboard sicher im normalen Flow (gegen Überlappungen) */
 .game__section.game__section--scoreboard .game__scoreboard {
   position: static !important;
 }
 
-/* Hände: wirklich flach, eine Zeile, links beginnend, Höhe über die Karten steuern */
 .game__hand {
   min-height: 0 !important;
   padding: clamp(0.4rem, 0.9vw, 0.75rem);
 }
 .game__hand .game__cards { justify-content: flex-start; gap: clamp(0.3rem, 0.8vw, 0.6rem); }
 
-/* === HAND PANELS: Höhe ≈ Kartenhöhe, eine Zeile, Karten links === */
 .game__hand {
-  display: flex;                  /* Name + Karten nebeneinander */
-  align-items: start;            /* vertikal an Kartenhöhe ausrichten */
+  display: flex;
+  align-items: start;
   gap: clamp(0.4rem, 0.9vw, 0.75rem);
-  padding: clamp(0.3rem, 0.7vw, 0.5rem);  /* sehr kompakt */
-  min-height: 0 !important;      /* keine feste Mindesthöhe */
+  padding: clamp(0.3rem, 0.7vw, 0.5rem);
+  min-height: 0 !important;
 }
 
-/* Spielernamen kompakt, ohne zusätzlichen Bottom-Margin */
 .game__hand .player-name {
-  margin: 0;                      /* kein Abstand nach unten */
-  line-height: 1;                 /* klein halten */
-  white-space: nowrap;            /* kein Zeilenumbruch im Namen */
+  margin: 0;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-/* Karten in EINER Zeile, ggf. horizontales Scrollen */
 .game__hand .game__cards {
   display: flex;
-  flex-wrap: nowrap;              /* verhindert das Umbrechen (keine zweite Zeile) */
-  overflow-x: auto;               /* wenn zu viele Karten, dann scrollen */
-  -webkit-overflow-scrolling: touch; /* smoother auf Mobile */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   gap: clamp(0.3rem, 0.8vw, 0.6rem);
-  align-items: center;            /* vertikal an Kartenhöhe ausrichten */
+  align-items: center;
 }
 
-/* Kartenhöhe definiert die Panelhöhe; Breite automatisch */
 .game__hand .game__cards img {
-  height: clamp(200px, 200vh, 400px);   /* Hand Karten Größe */
-  width: auto !important;           /* überschreibt frühere width-Regeln */
+  height: clamp(200px, 200vh, 400px);
+  width: auto !important;
 }
 
 .img-fluid {
@@ -414,3 +425,16 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
 }
 
 @import "home.less";
+@import "modify.less";
+
+.container-ingame {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 .5rem;
+  margin-left: 0;
+  margin-right: auto;
+  width: auto;
+}
+
+

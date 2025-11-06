@@ -20,4 +20,8 @@ GET     /home                       controllers.HomeController.home()
 
 GET     /rules                      controllers.HomeController.rules()
 
+GET     /modify                     controllers.HomeController.modify()
+
 POST    /createPlayers              controllers.HomeController.createPlayers()
+
+POST    /offerPlayers               controllers.HomeController.offerPlayers()

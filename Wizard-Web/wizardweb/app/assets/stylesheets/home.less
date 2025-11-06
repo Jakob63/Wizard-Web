@@ -99,3 +99,111 @@
   width: auto;
   min-width: clamp(10rem, 24vw, 12rem);
 }
+
+/* Extra Abstand unter der festen Navbar auf der Startseite */
+.page-home .home-hero {
+  padding-top: clamp(15rem, 12vh, 7rem);
+}
+
+/* CSS-only starry sky twinkling (no JavaScript) */
+.home-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.starry-sky {
+  position: fixed; /* cover entire viewport/body, not just inside main */
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Single star */
+.star {
+  position: absolute;
+  --star-size: 2px;
+  width: var(--star-size);
+  height: var(--star-size);
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255,255,255,0.98) 0%,
+    rgba(255,255,255,0.75) 45%,
+    rgba(255,255,255,0.25) 70%,
+    rgba(255,255,255,0.0) 72%
+  );
+  opacity: 0;
+  box-shadow:
+    0 0 6px rgba(255,255,255,0.55),
+    0 0 10px rgba(125,60,255,0.20);
+  animation: star-twinkle var(--twinkle-duration, 3.2s) ease-in-out infinite;
+}
+
+.star--big {
+  --star-size: 4px;
+  box-shadow:
+    0 0 8px rgba(255,255,255,0.75),
+    0 0 14px rgba(125,60,255,0.35),
+    0 0 20px rgba(34,211,238,0.18);
+}
+
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+  60% { opacity: 0.55; transform: scale(0.9); }
+}
+
+/* Ensure content sits above the sky */
+.home-hero__title,
+.home-cta { position: relative; z-index: 1; }
+
+/* Distribute positions, sizes and timing for 40 stars using nth-child */
+/* The numbers are chosen to look organic and non-repeating */
+.starry-sky .star:nth-child(1)  { left: 6%;   top: 8%;   --twinkle-duration: 2.8s; animation-delay: .1s; }
+.starry-sky .star:nth-child(2)  { left: 18%;  top: 22%;  --twinkle-duration: 3.9s; animation-delay: .6s; }
+.starry-sky .star:nth-child(3)  { left: 28%;  top: 12%;  --twinkle-duration: 2.4s; animation-delay: 1.2s; }
+.starry-sky .star:nth-child(4)  { left: 40%;  top: 6%;   --twinkle-duration: 3.3s; animation-delay: .8s; }
+.starry-sky .star:nth-child(5)  { left: 52%;  top: 20%;  --twinkle-duration: 4.2s; animation-delay: .3s; }
+.starry-sky .star:nth-child(6)  { left: 64%;  top: 10%;  --twinkle-duration: 3.1s; animation-delay: 1.5s; }
+.starry-sky .star:nth-child(7)  { left: 76%;  top: 16%;  --twinkle-duration: 2.2s; animation-delay: .4s; }
+.starry-sky .star:nth-child(8)  { left: 88%;  top: 8%;   --twinkle-duration: 3.6s; animation-delay: 1.0s; }
+.starry-sky .star:nth-child(9)  { left: 10%;  top: 34%;  --twinkle-duration: 2.9s; animation-delay: .2s; }
+.starry-sky .star:nth-child(10) { left: 22%;  top: 40%;  --twinkle-duration: 3.8s; animation-delay: 1.1s; }
+.starry-sky .star:nth-child(11) { left: 34%;  top: 28%;  --twinkle-duration: 2.5s; animation-delay: .7s; }
+.starry-sky .star:nth-child(12) { left: 46%;  top: 36%;  --twinkle-duration: 3.4s; animation-delay: 1.7s; }
+.starry-sky .star:nth-child(13) { left: 58%;  top: 30%;  --twinkle-duration: 4.0s; animation-delay: .9s; }
+.starry-sky .star:nth-child(14) { left: 70%;  top: 38%;  --twinkle-duration: 2.1s; animation-delay: .5s; }
+.starry-sky .star:nth-child(15) { left: 82%;  top: 24%;  --twinkle-duration: 3.2s; animation-delay: 1.3s; }
+.starry-sky .star:nth-child(16) { left: 94%;  top: 32%;  --twinkle-duration: 2.6s; animation-delay: .1s; }
+.starry-sky .star:nth-child(17) { left: 4%;   top: 52%;  --twinkle-duration: 3.7s; animation-delay: .6s; }
+.starry-sky .star:nth-child(18) { left: 16%;  top: 60%;  --twinkle-duration: 2.3s; animation-delay: 1.4s; }
+.starry-sky .star:nth-child(19) { left: 28%;  top: 48%;  --twinkle-duration: 3.5s; animation-delay: .3s; }
+.starry-sky .star:nth-child(20) { left: 40%;  top: 56%;  --twinkle-duration: 2.7s; animation-delay: 1.0s; }
+.starry-sky .star:nth-child(21) { left: 52%;  top: 44%;  --twinkle-duration: 3.9s; animation-delay: .8s; }
+.starry-sky .star:nth-child(22) { left: 64%;  top: 50%;  --twinkle-duration: 2.0s; animation-delay: .5s; }
+.starry-sky .star:nth-child(23) { left: 76%;  top: 62%;  --twinkle-duration: 3.3s; animation-delay: 1.6s; }
+.starry-sky .star:nth-child(24) { left: 88%;  top: 46%;  --twinkle-duration: 2.8s; animation-delay: .2s; }
+.starry-sky .star:nth-child(25) { left: 10%;  top: 72%;  --twinkle-duration: 3.6s; animation-delay: 1.2s; }
+.starry-sky .star:nth-child(26) { left: 22%;  top: 80%;  --twinkle-duration: 2.4s; animation-delay: .4s; }
+.starry-sky .star:nth-child(27) { left: 34%;  top: 68%;  --twinkle-duration: 3.1s; animation-delay: .9s; }
+.starry-sky .star:nth-child(28) { left: 46%;  top: 76%;  --twinkle-duration: 2.2s; animation-delay: 1.8s; }
+.starry-sky .star:nth-child(29) { left: 58%;  top: 70%;  --twinkle-duration: 4.1s; animation-delay: .7s; }
+.starry-sky .star:nth-child(30) { left: 70%;  top: 78%;  --twinkle-duration: 2.5s; animation-delay: .3s; }
+.starry-sky .star:nth-child(31) { left: 82%;  top: 66%;  --twinkle-duration: 3.0s; animation-delay: 1.4s; }
+.starry-sky .star:nth-child(32) { left: 94%;  top: 74%;  --twinkle-duration: 2.9s; animation-delay: .1s; }
+.starry-sky .star:nth-child(33) { left: 6%;   top: 88%;  --twinkle-duration: 3.4s; animation-delay: .5s; }
+.starry-sky .star:nth-child(34) { left: 18%;  top: 92%;  --twinkle-duration: 2.6s; animation-delay: 1.1s; }
+.starry-sky .star:nth-child(35) { left: 30%;  top: 86%;  --twinkle-duration: 3.8s; animation-delay: .9s; }
+.starry-sky .star:nth-child(36) { left: 42%;  top: 90%;  --twinkle-duration: 2.1s; animation-delay: .6s; }
+.starry-sky .star:nth-child(37) { left: 54%;  top: 84%;  --twinkle-duration: 3.2s; animation-delay: 1.3s; }
+.starry-sky .star:nth-child(38) { left: 66%;  top: 92%;  --twinkle-duration: 2.7s; animation-delay: .2s; }
+.starry-sky .star:nth-child(39) { left: 78%;  top: 86%;  --twinkle-duration: 3.5s; animation-delay: 1.6s; }
+.starry-sky .star:nth-child(40) { left: 90%;  top: 90%;  --twinkle-duration: 2.3s; animation-delay: .4s; }
+
+/* Some size variation via nth-child patterning */
+.starry-sky .star:nth-child(odd)   { --star-size: 1.6px; }
+.starry-sky .star:nth-child(3n)    { --star-size: 2.2px; }
+.starry-sky .star:nth-child(5n)    { --star-size: 2.6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .star { animation: none; opacity: .4; }
+}

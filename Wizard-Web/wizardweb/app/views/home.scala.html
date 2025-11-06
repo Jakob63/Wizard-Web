@@ -3,12 +3,105 @@
 
 @main("Wizard – Home") {
     <main class="home-hero">
-        <!-- <h1 class="home-hero__title">Wizard</h1> // normal-->
-        <!-- Glow nur um die Buchstaben herum -->
+        <div class="starry-sky" aria-hidden="true">
+            <!-- funkelnde Sterne -->
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star star--big"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+            <span class="star"></span>
+        </div>
         <h1 class="home-hero__title" data-text="Wizard">Wizard</h1>
         <div class="home-cta">
-            <a class="btn btn-primary btn-lg" href="@routes.HomeController.ingame()">Start Game</a>
-            <a class="btn btn-outline-primary btn-lg" href="@routes.HomeController.rules()">Rules</a>
+            <a class="btn btn-outline-primary btn-lg" href='@routes.HomeController.ingame()'>Start Game</a>
         </div>
+
+        <script>
+            (function(){
+                const stars = document.querySelectorAll('.starry-sky .star');
+                const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                function rerollStar(star, alsoTiming = false, alsoSize = false) {
+                    // neue zufall xyz
+                    const left = Math.random() * 100;
+                    const top = Math.random() * 100;
+                    star.style.left = left.toFixed(2) + '%';
+                    star.style.top = top.toFixed(2) + '%';
+
+                    if (alsoTiming) {
+                        const duration = (Math.random() * 2.2 + 2.2).toFixed(2) + 's'; // 2.2s–4.4s
+                        const delay = (Math.random() * 2.0).toFixed(2) + 's';          // 0–2s
+                        star.style.setProperty('--twinkle-duration', duration);
+                        star.style.animationDelay = delay;
+                    }
+
+                    if (alsoSize) {
+                        const min = star.classList.contains('star--big') ? 3.0 : 1.2;
+                        const max = star.classList.contains('star--big') ? 4.2 : 2.8;
+                        const size = (Math.random() * (max - min) + min).toFixed(2) + 'px';
+                        star.style.setProperty('--star-size', size);
+                    }
+                }
+
+                stars.forEach((star) => {
+                    // zufall: position, timing, size
+                    rerollStar(star, true, true);
+
+                    if (prefersReduced) {
+                        star.style.animation = 'none';
+                        star.style.opacity = '.4';
+                        return;
+                    }
+
+                    // wenn done, neue xyz
+                    star.addEventListener('animationiteration', () => {
+                        rerollStar(star, false, false);
+                    });
+                });
+            })();
+        </script>
     </main>
 }

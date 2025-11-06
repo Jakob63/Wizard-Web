@@ -1,0 +1,93 @@
+@(implicit request: play.api.mvc.RequestHeader)
+
+@main("Modify") {
+    <main class="modify-page container py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <h1 class="text-center mb-3">Game Modifier</h1>
+                <p class="lead text-center mb-4">
+                    Adjust the display/scaling in the UI here.
+                </p>
+
+                <section class="modifier-group">
+                    <h2 class="h4 text-center mb-3">Negative Points</h2>
+                    <div class="slider-card">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label for="minusMultiplier" class="form-label mb-0">Multiplier for incorrect guess</label>
+                            <output id="minusOut" class="value-pill" for="minusMultiplier">1.0×</output>
+                        </div>
+                        <input type="range"
+                        class="form-range modifier-range"
+                        id="minusMultiplier"
+                        name="minusMultiplier"
+                        min="0.5" max="3" step="0.5" value="1"
+                        aria-describedby="minusHelp">
+                        <div id="minusHelp" class="form-text">For example, choose 0.5x, 2x, 3x... for the deduction.</div>
+                    </div>
+                </section>
+
+                <section class="modifier-group mt-4">
+                    <h2 class="h4 text-center mb-3">Points</h2>
+                    <div class="slider-card">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label for="plusMultiplier" class="form-label mb-0">Multiplier for correct guess</label>
+                            <output id="plusOut" class="value-pill" for="plusMultiplier">1.0×</output>
+                        </div>
+                        <input type="range"
+                        class="form-range modifier-range"
+                        id="plusMultiplier"
+                        name="plusMultiplier"
+                        min="0.5" max="3" step="0.5" value="1"
+                        aria-describedby="plusHelp">
+                        <div id="plusHelp" class="form-text">Choose e.g. 0.5×, 2×, 3× … as the bonus.</div>
+                    </div>
+                </section>
+
+                <section class="modifier-group mt-4">
+                    <h2 class="h4 text-center mb-3">Streak-Bonus</h2>
+                    <div class="slider-card">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label for="streakBonus" class="form-label mb-0">Streak-Bonus</label>
+                            <output id="streakBonusOut" class="value-pill" for="streakBonus">0%</output>
+                        </div>
+                        <input type="range" class="form-range modifier-range" id="streakBonus" min="0" max="100" step="10" value="0" aria-describedby="streakHelp">
+                        <div id="streakHelp" class="form-text">Bonus (%) for streaks.</div>
+                    </div>
+                </section>
+
+                <div class="text-center mt-4">
+                    <button id="resetBtn" type="button" class="btn btn-outline-secondary">Reset</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+            (function() {
+                const $ = (sel) => document.querySelector(sel);
+                const setOut = (id, fmt) => {
+                    const el = $(id); if (!el) return;
+                    const out = $(id + 'Out');
+                    const update = () => { if (out) out.textContent = fmt(el.value); };
+                    el.addEventListener('input', update); update();
+                };
+
+                setOut('#minusMultiplier', v => parseFloat(v).toFixed(1) + '×');
+                setOut('#plusMultiplier', v => parseFloat(v).toFixed(1) + '×');
+                setOut('#streakBonus', v => parseInt(v, 10) + '%');
+
+                const resetBtn = document.getElementById('resetBtn');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => {
+                        const defaults = {
+                            minusMultiplier: 1, plusMultiplier: 1, streakBonus: 0
+                        };
+                        for (const [id, val] of Object.entries(defaults)) {
+                            const el = document.getElementById(id);
+                            if (el) { el.value = String(val); el.dispatchEvent(new Event('input', { bubbles: true })); }
+                        }
+                    });
+                }
+            })();
+    </script>
+}
