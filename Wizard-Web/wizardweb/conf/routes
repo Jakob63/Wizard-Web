@@ -24,4 +24,4 @@ GET     /modify                     controllers.HomeController.modify()
 
 POST    /createPlayers              controllers.HomeController.createPlayers()
 
-POST    /offerPlayers               controllers.HomeController.offerPlayers()
+POST    /bid                        controllers.HomeController.bid()

@@ -91,22 +91,16 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
     input.offer(name3)
     Ok(s"Created players: $name1, $name2, $name3")
 
+    Thread.sleep(1000)
     val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
     Redirect(returnTo.getOrElse(routes.HomeController.home().url))
   }
-
-  def offerPlayers(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+  def bid() = Action { implicit request: Request[AnyContent] =>
     val form = request.body.asFormUrlEncoded.getOrElse(Map.empty)
-    val name1 = form.get("name1").flatMap(_.headOption).getOrElse("")
-    val name2 = form.get("name2").flatMap(_.headOption).getOrElse("")
-    val name3 = form.get("name3").flatMap(_.headOption).getOrElse("")
-
-    input.offer(name1)
-    input.offer(name2)
-    input.offer(name3)
+    val bid = form.get("bid").flatMap(_.headOption).getOrElse("")
+    input.offer(bid)
 
     val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
-    Thread.sleep(500)
-    Redirect(returnTo.getOrElse(routes.HomeController.ingame().url))
+    Redirect(returnTo.getOrElse(routes.HomeController.home().url))
   }
 }

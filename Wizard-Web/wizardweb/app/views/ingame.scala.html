@@ -1,4 +1,5 @@
 @(logic: wizard.controller.aGameLogic)(implicit request: play.api.mvc.RequestHeader)
+@import helper._
 
 @main("Ingame") {
 
@@ -98,7 +99,17 @@
                         @for(player <- logic.getPlayer.getOrElse(Nil)) {
                             <div class="row py-1">
                             <section class="game__section game__hand" aria-label="Hand von @player.name">
-                                <div class="player-name">@player.name</div>
+                                <form action="@routes.HomeController.bid()" method="post">
+                                    @CSRF.formField
+                                <input type="hidden" name="returnTo" value="@request.uri">
+
+                                <div class="d-flex gap-2 p-1">
+                                    <div class="player-name">@player.name</div>
+                                    <label for="bid" class="form-label"></label>
+                                    <input type="number" class="form-control" id="bid" placeholder="Bid" name="bid" required>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                                </form>
                                 <div class="d-flex gap-2 p-1">
                                 @for((card, idx) <- player.hand.cards.zipWithIndex) {
                                     <card class="card md-3">
