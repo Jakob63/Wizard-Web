@@ -56,7 +56,7 @@
         </div>
         <h1 class="home-hero__title" data-text="Wizard">Wizard</h1>
         <div class="home-cta">
-            <a class="btn btn-outline-primary btn-lg" href='@routes.HomeController.ingame()'>Start Game</a>
+            <a class="btn btn-outline-primary btn-lg" onclick="start_game()">Start Game</a>
         </div>
 
         <script>
@@ -103,5 +103,15 @@
                 });
             })();
         </script>
+        <script>
+                // Route für JS verfügbar machen (nutze .url für den String)
+                window.INGAME_URL = "@routes.HomeController.ingame().url";
+
+                // Globale Funktion, aufrufbar via onclick="game_start()"
+                window.start_game = function() {
+                    window.location.href = window.INGAME_URL;
+                };
+        </script>
+
     </main>
 }

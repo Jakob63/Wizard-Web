@@ -52,42 +52,25 @@
                     </div>
                     <div class="row">
                         <div class="col-4">
-                            <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Choose
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <form action="/demo_input/3" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">3</button>
-                                        </form>
-                                    </li>
-                                    <li>
-                                        <form action="/demo_input/4" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">4</button>
-                                        </form>
-                                    </li>
-                                    <li>
-                                        <form action="/demo_input/5" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">5</button>
-                                        </form>
-                                    </li>
-                                    <li>
-                                        <form action="/demo_input/6" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">6</button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
+                            <form id="choiceForm" method="get">
+                                <input type="hidden" name="returnTo" value="@request.uri">
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Choose
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><button type="button" class="dropdown-item" data-val="3" onclick="submitChoice(this)">3</button></li>
+                                        <li><button type="button" class="dropdown-item" data-val="4" onclick="submitChoice(this)">4</button></li>
+                                        <li><button type="button" class="dropdown-item" data-val="5" onclick="submitChoice(this)">5</button></li>
+                                        <li><button type="button" class="dropdown-item" data-val="6" onclick="submitChoice(this)">6</button></li>
+                                    </ul>
+                                </div>
+                            </form>
                         </div>
                     </div>
 
                 } else {
-                    <form action="@routes.HomeController.createPlayers()" method="post">
+                    <form id="nameForm" method="post">
                         @CSRF.formField
                         <input type="hidden" name="returnTo" value="@request.uri">
 
@@ -103,10 +86,26 @@
                             <label for="name3" class="form-label">Spieler 3</label>
                             <input type="text" class="form-control" id="name3" placeholder="Name" name="name3" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="submit" onclick="submitNames()" class="btn btn-primary">Submit</button>
                     </form>
                 }
             }
         </div>
     </div>
+
+    <script>
+            function submitChoice(btn) {
+                var val = btn.dataset.val;
+                var form = document.getElementById('choiceForm');
+                form.action = '/demo_input/' + encodeURIComponent(val);
+                form.submit();
+            }
+    </script>
+    <script>
+            function submitNames() {
+                var form = document.getElementById('nameForm');
+                form.action = '/createPlayers'
+                form.submit();
+            }
+    </script>
 }
