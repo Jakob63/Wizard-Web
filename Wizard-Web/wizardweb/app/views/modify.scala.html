@@ -14,7 +14,7 @@
                     <div class="slider-card">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <label for="minusMultiplier" class="form-label mb-0">Multiplier for incorrect guess</label>
-                            <output id="minusOut" class="value-pill" for="minusMultiplier">1.0×</output>
+                            <output id="minusMultiplierOut" class="value-pill" for="minusMultiplier">1x</output>
                         </div>
                         <input type="range"
                         class="form-range modifier-range"
@@ -31,7 +31,7 @@
                     <div class="slider-card">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <label for="plusMultiplier" class="form-label mb-0">Multiplier for correct guess</label>
-                            <output id="plusOut" class="value-pill" for="plusMultiplier">1.0×</output>
+                            <output id="plusMultiplierOut" class="value-pill" for="plusMultiplier">1x</output>
                         </div>
                         <input type="range"
                         class="form-range modifier-range"
@@ -71,9 +71,13 @@
                     const update = () => { if (out) out.textContent = fmt(el.value); };
                     el.addEventListener('input', update); update();
                 };
+                const formatMultiplier = (v) => {
+                    const n = parseFloat(v);
+                    return (Number.isInteger(n) ? n.toString() : n.toFixed(1)) + 'x';
+                };
 
-                setOut('#minusMultiplier', v => parseFloat(v).toFixed(1) + '×');
-                setOut('#plusMultiplier', v => parseFloat(v).toFixed(1) + '×');
+                setOut('#minusMultiplier', formatMultiplier);
+                setOut('#plusMultiplier', formatMultiplier);
                 setOut('#streakBonus', v => parseInt(v, 10) + '%');
 
                 const resetBtn = document.getElementById('resetBtn');
