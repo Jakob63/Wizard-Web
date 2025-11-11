@@ -23,89 +23,94 @@
                                     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@@400;700;900&display=swap" rel="stylesheet">
                                 </head>
                                 <body class="game @themeClass @pageClass">
+                                    <canvas id="starfield" aria-hidden="true"></canvas>
+                                    <div id="page-layer">
+                                            <!-- Neue Navbar -->
+                                        @defining({
+                                            if(isIngame) {
+                                                if(theme == "light") "navbar navbar-expand-lg navbar-light bg-white" else "navbar navbar-expand-lg navbar-dark bg-dark"
+                                            } else {
+                                                if(theme == "light") "navbar navbar-expand-lg navbar-light bg-white fixed-top px-0" else "navbar navbar-expand-lg navbar-dark bg-dark fixed-top px-0"
+                                            }
+                                        }) { navbarCls =>
+                                            <nav class="@navbarCls">
+                                            @if(isIngame) {
+                                                <div class="container-ingame">
+                                                    <a class="navbar-brand d-flex align-items-center" href='@controllers.routes.HomeController.home()'>
+                                                        <span class="brand-w">W</span>
+                                                    </a>
 
-                                        <!-- Neue Navbar -->
-                                    @defining({
-                                        if(isIngame) {
-                                            if(theme == "light") "navbar navbar-expand-lg navbar-light bg-white" else "navbar navbar-expand-lg navbar-dark bg-dark"
-                                        } else {
-                                            if(theme == "light") "navbar navbar-expand-lg navbar-light bg-white fixed-top px-0" else "navbar navbar-expand-lg navbar-dark bg-dark fixed-top px-0"
+                                                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Navigation umschalten">
+                                                        <span class="navbar-toggler-icon"></span>
+                                                    </button>
+
+                                                    <div class="collapse navbar-collapse" id="mainNav">
+                                                        <ul class="navbar-nav mb-2 mb-lg-0">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link @if(path == controllers.routes.HomeController.rules().url) {active}" href='@controllers.routes.HomeController.rules()'>
+                                                                    Rules</a>
+                                                            </li>
+                                                            <li class="nav-item">
+                                                                <a class="nav-link @if(path == controllers.routes.HomeController.ingame().url) {active}" href='@controllers.routes.HomeController.ingame()'>
+                                                                    Game</a>
+                                                            </li>
+                                                                <!-- Modify in Navbar nicht in /ingame anzeigen -->
+                                                        </ul>
+                                                    </div>
+
+                                                    <div class="ms-auto d-flex align-items-center">
+                                                        <a class="btn btn-sm @if(theme == "light") {btn-outline-dark} else {btn-outline-light}" href='@controllers.routes.ThemeController.toggleTheme(returnTo = request.uri)'>@toggleLabel</a>
+                                                    </div>
+                                                </div>
+                                            } else {
+                                                <div class="container-fluid ps-2">
+                                                    <a class="navbar-brand d-flex align-items-center" href='@controllers.routes.HomeController.home()'>
+                                                        <span class="brand-w">W</span>
+                                                    </a>
+
+                                                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Navigation umschalten">
+                                                        <span class="navbar-toggler-icon"></span>
+                                                    </button>
+
+                                                    <div class="collapse navbar-collapse" id="mainNav">
+                                                        <ul class="navbar-nav mb-2 mb-lg-0">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link @if(path == controllers.routes.HomeController.rules().url) {active}" href='@controllers.routes.HomeController.rules()'>
+                                                                    Rules</a>
+                                                            </li>
+                                                            <li class="nav-item">
+                                                                <a class="nav-link @if(path == controllers.routes.HomeController.ingame().url) {active}" href='@controllers.routes.HomeController.ingame()'>
+                                                                    Game</a>
+                                                            </li>
+                                                            <li class="nav-item">
+                                                                <a class="nav-link @if(path == controllers.routes.HomeController.modify().url) {active}" href='@controllers.routes.HomeController.modify()'>
+                                                                    Modify</a>
+                                                            </li>
+                                                                <!-- NICHT entfernen (drunter) -->
+                                                            <a class="nav-link active" href='@controllers.routes.ThemeController.toggleTheme(returnTo = request.uri)' class="btn btn-outline-secondary">
+                                                                <button type="button"
+                                                                class="btn btn-outline-secondary switch__style"
+                                                                style="background-color: @if(toggleLabel == "Light Mode"){#0d6efd}else{#ccc
+                                                                };">
+                                                                    <span class="switch__style_span" style="left: @if(toggleLabel == "Light Mode"){24px}else{3px
+                                                                    };"></span>
+                                                                </button>
+                                                                @toggleLabel
+                                                            </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+
+                                                </div>
+                                            }
+                                            </nav>
                                         }
-                                    }) { navbarCls =>
-                                        <nav class="@navbarCls">
-                                        @if(isIngame) {
-                                            <div class="container-ingame">
-                                                <a class="navbar-brand d-flex align-items-center" href='@controllers.routes.HomeController.home()'>
-                                                    <span class="brand-w">W</span>
-                                                </a>
 
-                                                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Navigation umschalten">
-                                                    <span class="navbar-toggler-icon"></span>
-                                                </button>
-
-                                                <div class="collapse navbar-collapse" id="mainNav">
-                                                    <ul class="navbar-nav mb-2 mb-lg-0">
-                                                        <li class="nav-item">
-                                                            <a class="nav-link @if(path == controllers.routes.HomeController.rules().url) {active}" href='@controllers.routes.HomeController.rules()'>
-                                                                Rules</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                            <a class="nav-link @if(path == controllers.routes.HomeController.ingame().url) {active}" href='@controllers.routes.HomeController.ingame()'>
-                                                                Game</a>
-                                                        </li>
-                                                            <!-- Modify in Navbar nicht in /ingame anzeigen -->
-                                                    </ul>
-                                                </div>
-
-                                                <div class="ms-auto d-flex align-items-center">
-                                                    <a class="btn btn-sm @if(theme == "light") {btn-outline-dark} else {btn-outline-light}" href='@controllers.routes.ThemeController.toggleTheme(returnTo = request.uri)'>@toggleLabel</a>
-                                                </div>
-                                            </div>
-                                        } else {
-                                            <div class="container-fluid ps-2">
-                                                <a class="navbar-brand d-flex align-items-center" href='@controllers.routes.HomeController.home()'>
-                                                    <span class="brand-w">W</span>
-                                                </a>
-
-                                                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Navigation umschalten">
-                                                    <span class="navbar-toggler-icon"></span>
-                                                </button>
-
-                                                <div class="collapse navbar-collapse" id="mainNav">
-                                                    <ul class="navbar-nav mb-2 mb-lg-0">
-                                                        <li class="nav-item">
-                                                            <a class="nav-link @if(path == controllers.routes.HomeController.rules().url) {active}" href='@controllers.routes.HomeController.rules()'>
-                                                                Rules</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                            <a class="nav-link @if(path == controllers.routes.HomeController.ingame().url) {active}" href='@controllers.routes.HomeController.ingame()'>
-                                                                Game</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                            <a class="nav-link @if(path == controllers.routes.HomeController.modify().url) {active}" href='@controllers.routes.HomeController.modify()'>
-                                                                Modify</a>
-                                                        </li>
-                                                        <a class="nav-link active" href='@controllers.routes.ThemeController.toggleTheme(returnTo = request.uri)' class="btn btn-outline-secondary">
-                                                            <button type="button"
-                                                            class="btn btn-outline-secondary switch__style"
-                                                            style="background-color: @if(toggleLabel == "Light Mode"){#0d6efd}else{#ccc
-                                                            };">
-                                                                <span class="switch__style_span" style="left: @if(toggleLabel == "Light Mode"){24px}else{3px
-                                                                };"></span>
-                                                            </button>
-                                                            @toggleLabel
-                                                        </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-
-                                            </div>
-                                        }
-                                        </nav>
-                                    }
-
-                                    @content
-
+                                        @content
+                                    </div>
+                                    <! -- Abgabe JavaScript -->
+                                    <script src='@controllers.routes.Assets.versioned("javascripts/stars.js")' defer></script>
+                                    <script src='@controllers.routes.Assets.versioned("javascripts/runes.js")' defer></script>
                                     <script src="https://cdn.jsdelivr.net/npm/bootstrap@@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
                                 </body>
                             </html>

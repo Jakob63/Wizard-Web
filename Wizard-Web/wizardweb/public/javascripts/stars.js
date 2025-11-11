@@ -35,7 +35,7 @@
 
   - Schleifen: Wiederhole Code mehrfach.
       // Beispiel-Schleife: wiederholt den Block 10-mal
-      // for (let i = 0; i < 10; i++) { /* hier käme Code rein */ }
+      // for (let i = 0; i < 10; i++) { // hier käme Code rein }
 
   Keine Sorge: Im folgenden Code liest du Kommentare direkt neben jedem Schritt.
 */
@@ -58,13 +58,19 @@
 
   // 4) Einstellungen für den Sternenhimmel – du kannst damit das Aussehen ändern
   const SETTINGS = {
-    starDensity: 0.0014, // Anzahl Sterne pro Pixel (0.0014 ist moderat). Größer = dichter Himmel.
+    starDensity: 0.00075, // noch etwas weniger kleine Sterne (sehr dezente Reduktion)
     minSize: 0.6,        // kleinster Sternradius (in Pixeln)
     maxSize: 1.8,        // größter Sternradius
-    minSpeed: 0.02,      // langsamster Stern (Pixel pro Frame)
-    maxSpeed: 0.6,       // schnellster Stern
+    minSpeed: 0.02,      // (bei Pop-in/out nicht genutzt, bleibt für evtl. spätere Effekte)
+    maxSpeed: 0.6,
     twinkleChance: 0.02, // Wahrscheinlichkeit pro Frame, dass ein Stern leicht flackert
-    parallax: 0.12       // wie stark sich Sterne bei Mausbewegung verschieben (Parallaxe)
+    parallax: 0,         // Parallaxe deaktiviert (keine Mausabhängigkeit)
+
+    // Zusätzliche, etwas größere und auffälligere Sterne (sehr selten)
+    specialDensity: 0.00001, // etwas mehr "größere" Sterne, aber weiterhin selten
+    specialMinSize: 2.2,
+    specialMaxSize: 3.8,
+    specialTwinkleBoost: 0.02 // twinkle etwas stärker für Specials
   };
 
   // 5) Interne Zustände
@@ -100,22 +106,33 @@
   function createStars() {
     // Berechne die Anzahl Sterne basierend auf der Fläche (Breite*Höhe) und der Dichte
     const count = Math.floor(width * height * SETTINGS.starDensity);
+    const specialCount = Math.max(1, Math.floor(width * height * SETTINGS.specialDensity));
     stars = []; // Liste leeren
 
+    // Normale, kleine Sterne
     for (let i = 0; i < count; i++) {
-      // Jeder Stern hat:
-      // - x, y: Position (Pixel)
-      // - size: Radius
-      // - speed: vertikale Geschwindigkeit (je größer, desto schneller)
-      // - alpha: Transparenz (0..1)
-      // - twinkleDir: Richtung des Flackerns (+1 oder -1)
       stars.push({
         x: rand(0, width),
         y: rand(0, height),
         size: rand(SETTINGS.minSize, SETTINGS.maxSize),
         speed: rand(SETTINGS.minSpeed, SETTINGS.maxSpeed),
         alpha: rand(0.5, 1),
-        twinkleDir: Math.random() < 0.5 ? -1 : 1
+        twinkleDir: Math.random() < 0.5 ? -1 : 1,
+        isSpecial: false
+      });
+    }
+
+    // Ein paar auffälligere, aber immer noch nicht zu große Sterne
+    for (let i = 0; i < specialCount; i++) {
+      stars.push({
+        x: rand(0, width),
+        y: rand(0, height),
+        size: rand(SETTINGS.specialMinSize, SETTINGS.specialMaxSize),
+        // etwas langsamere Bewegung, damit sie "präsenter" wirken
+        speed: rand(SETTINGS.minSpeed * 0.5, SETTINGS.maxSpeed * 0.75),
+        alpha: rand(0.6, 1),
+        twinkleDir: Math.random() < 0.5 ? -1 : 1,
+        isSpecial: true
       });
     }
   }
@@ -132,42 +149,76 @@
 
   function updateAndDrawStars() {
     // Parallax-Offset: verschiebt Sterne leicht zur Maus, tiefer = weniger parallax
-    const offsetX = (mouseX - 0.5) * SETTINGS.parallax * width;
-    const offsetY = (mouseY - 0.5) * SETTINGS.parallax * height;
+    // Parallax deaktiviert: Mausbewegung hat keinen Einfluss mehr
+    const offsetX = 0;
+    const offsetY = 0;
 
     // Sterne nacheinander updaten und zeichnen
     for (let i = 0; i < stars.length; i++) {
       const s = stars[i];
 
-      // Y-Position erhöhen: s.y = s.y + s.speed
-      s.y += s.speed;
-
-      // Wenn ein Stern unten aus dem Bild fällt, oben neu erscheinen lassen
-      if (s.y - s.size > height) {
-        s.y = -s.size;          // wieder oben starten
-        s.x = rand(0, width);   // zufällige X-Position
-        s.speed = rand(SETTINGS.minSpeed, SETTINGS.maxSpeed);
-        s.size = rand(SETTINGS.minSize, SETTINGS.maxSize);
-      }
+      // Pop-in/out: Keine konstante Vertikalbewegung mehr.
+      // Sterne bleiben an ihrer Position und "atmen" über die Transparenz.
+      // Wenn ein Stern fast unsichtbar wird, spawnt er an einer neuen Zufallsposition.
+      // (Wir lassen s.y unverändert – nur Parallax sorgt für leichte Verschiebung.)
 
       // Twinkle/Flackern: Alpha (Transparenz) leicht rauf/runter bewegen
       if (Math.random() < SETTINGS.twinkleChance) {
         // Richtung zufällig umkehren (mit 50% Chance)
         if (Math.random() < 0.5) s.twinkleDir *= -1; // *= ist Kurzform für: s.twinkleDir = s.twinkleDir * -1
       }
-      s.alpha += s.twinkleDir * 0.01; // 0.01 = kleine Stufe
-      // Grenzen setzen, damit alpha zwischen 0.3 und 1 bleibt
-      if (s.alpha > 1) { s.alpha = 1; s.twinkleDir = -1; }
-      if (s.alpha < 0.3) { s.alpha = 0.3; s.twinkleDir = 1; }
+      const twinkleStep = s.isSpecial ? (0.012 + SETTINGS.specialTwinkleBoost) : 0.012;
+      s.alpha += s.twinkleDir * twinkleStep; // Specials twinklen etwas stärker
+      // Pop-in/out Logik:
+      // Obere Grenze: kurz vorm Maximum umkehren, damit sie wieder ausfaden
+      if (s.alpha > 0.95) { s.alpha = 0.95; s.twinkleDir = -1; }
+      // Untere Grenze: statt einfach umzudrehen -> an neuer Position neu erscheinen lassen (Pop-in)
+      if (s.alpha < 0.06) {
+        s.x = rand(0, width);
+        s.y = rand(0, height);
+        if (s.isSpecial) {
+          s.size = rand(SETTINGS.specialMinSize, SETTINGS.specialMaxSize);
+        } else {
+          s.size = rand(SETTINGS.minSize, SETTINGS.maxSize);
+        }
+        s.alpha = rand(0.06, 0.18); // sanftes Einblenden beginnen
+        s.twinkleDir = 1;           // von hier aus wieder heller werden
+      }
 
-      // Stern zeichnen – Kreis mit weichem Schein (Radial-Gradient)
-      const gradient = ctx.createRadialGradient(s.x + offsetX, s.y + offsetY, 0, s.x + offsetX, s.y + offsetY, s.size * 2);
-      gradient.addColorStop(0, `rgba(255,255,255,${(0.8 * s.alpha).toFixed(3)})`);
-      gradient.addColorStop(1, `rgba(255,255,255,0)`);
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(s.x + offsetX, s.y + offsetY, s.size, 0, Math.PI * 2);
-      ctx.fill();
+      // Sterne zeichnen: Alle Sterne als Punkte/Kreise (Special mit etwas stärkerem Glow)
+      ctx.save();
+      ctx.globalAlpha = s.alpha;
+      ctx.shadowColor = "rgba(255,255,255,0.6)";
+
+      if (s.isSpecial) {
+        // Größere Sterne als Punkte (Kreis) mit weichem Radial-Glow zeichnen
+        const glowRadius = s.size * 3; // etwas stärkerer Glow als bei kleinen
+        const cx = s.x + offsetX;
+        const cy = s.y + offsetY;
+        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
+        gradient.addColorStop(0, `rgba(255,255,255,${(0.85 * s.alpha).toFixed(3)})`);
+        gradient.addColorStop(1, `rgba(255,255,255,0)`);
+        ctx.shadowBlur = s.size * 3;
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(cx, cy, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Normale kleine Sterne als Punkt/Kreis mit sehr dezenter Leuchtwirkung zeichnen
+        const cx = s.x + offsetX;
+        const cy = s.y + offsetY;
+        const glowRadius = s.size * 2; // schwächerer Glow als bei Specials
+        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
+        gradient.addColorStop(0, `rgba(255,255,255,${(0.85 * s.alpha).toFixed(3)})`);
+        gradient.addColorStop(1, `rgba(255,255,255,0)`);
+        ctx.shadowBlur = s.size * 1.8;
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(cx, cy, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
     }
   }
 
@@ -181,12 +232,11 @@
     requestAnimationFrame(frame);
   }
 
-  // 7) Mausbewegungen für Parallax-Effekt mitlesen
-  window.addEventListener("mousemove", (ev) => {
-    // clientX/Y ist Pixelposition innerhalb des sichtbaren Bereichs
-    mouseX = ev.clientX / (width || 1); // geteilt durch Breite -> 0..1
-    mouseY = ev.clientY / (height || 1);
-  });
+  // 7) Mausbewegungen waren für Parallax gedacht – deaktiviert, damit sich nichts mit der Maus bewegt
+  // window.addEventListener("mousemove", (ev) => {
+  //   mouseX = ev.clientX / (width || 1);
+  //   mouseY = ev.clientY / (height || 1);
+  // });
 
   // 8) Wenn sich die Fenstergröße ändert, Canvas neu anpassen
   window.addEventListener("resize", resizeCanvas);
