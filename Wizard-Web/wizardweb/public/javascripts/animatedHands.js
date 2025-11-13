@@ -3,7 +3,7 @@
     const perCardDelay = 300;
     const betweenPlayersDelay = 420;
     const animationDuration = 320;
-    const initialDelay = 60;
+    const initialDelay = 420;
 
     const css = `
 .animate-hidden {
