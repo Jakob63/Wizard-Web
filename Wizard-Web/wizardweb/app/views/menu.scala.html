@@ -92,15 +92,6 @@
             }
         </div>
     </div>
-
-    <script>
-            function submitChoice(btn) {
-                var val = btn.dataset.val;
-                var form = document.getElementById('choiceForm');
-                form.action = '/demo_input/' + encodeURIComponent(val);
-                form.submit();
-            }
-    </script>
     <script>
             function submitNames() {
                 var form = document.getElementById('nameForm');

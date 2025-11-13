@@ -25,3 +25,5 @@ GET     /modify                     controllers.HomeController.modify()
 POST    /createPlayers              controllers.HomeController.createPlayers()
 
 POST    /bid                        controllers.HomeController.bid()
+
+GET     /javascriptRoutes           controllers.javascriptControllerRoutes.javaScriptRoutes()

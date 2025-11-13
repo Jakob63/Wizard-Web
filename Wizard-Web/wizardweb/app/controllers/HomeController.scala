@@ -2,9 +2,10 @@ package controllers
 
 import components.WebConfiguration
 
-import javax.inject._
-import play.api._
-import play.api.mvc._
+import javax.inject.*
+import play.api.*
+import play.api.libs.json.Json
+import play.api.mvc.*
 import wizard.controller.{GameState, aGameLogic}
 import wizard.model.player.Player
 import wizard.controller.controllerBaseImpl.BaseGameLogic
@@ -74,10 +75,14 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
   def demoOffer(eingabe: String) = Action { implicit request: Request[AnyContent] =>
     val form = request.body.asFormUrlEncoded.getOrElse(Map.empty)
     input.offer(eingabe)
-    Ok(s"offered $input")
 
     val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
-    Redirect(returnTo.getOrElse(routes.HomeController.home().url))
+    val jsonObj = Json.obj(
+      "status" -> "success",
+      "message" -> routes.HomeController.ingame().url
+    )
+    Ok(jsonObj)
+    //Redirect(returnTo.getOrElse(routes.HomeController.home().url))
   }
 
   def createPlayers() = Action { implicit request: Request[AnyContent] =>
