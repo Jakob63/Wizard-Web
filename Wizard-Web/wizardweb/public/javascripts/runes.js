@@ -60,6 +60,11 @@
             var visiblePref = localStorage.getItem(LS_KEY);
             var isVisible = (visiblePref == null) ? true : (visiblePref === '1');
 
+            // basic opacity
+            var DEFAULT_OPACITY = 1.0;
+            var DIMMED_OPACITY  = 0.85;
+            var HOVER_DIM_OPACITY = 0.35;
+
             function applyVisibility(animate){
                 if (isVisible) {
                     if (animate) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY); else $runes.css('opacity', DEFAULT_OPACITY);
@@ -118,8 +123,12 @@
             // hover-Effekt
             var $brand = $('.brand-w');
             if ($brand.length) {
-                $brand.on('mouseenter', function(){ if (isVisible) $runes.stop(true).fadeTo(120, Math.min(0.4, DEFAULT_OPACITY + 0.12)); });
-                $brand.on('mouseleave', function(){ if (isVisible) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY); });
+                $brand.on('mouseenter', function(){
+                    if (isVisible) $runes.stop(true).fadeTo(140, HOVER_DIM_OPACITY);
+                });
+                $brand.on('mouseleave', function(){
+                    if (isVisible) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY);
+                });
             }
         });
     }
