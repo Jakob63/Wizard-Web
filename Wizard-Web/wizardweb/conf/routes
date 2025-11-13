@@ -11,6 +11,7 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 GET     /menu                       controllers.HomeController.gameMenu()
 
 GET     /ingame                     controllers.HomeController.ingame()
+POST    /ingame                     controllers.HomeController.ingame()
 
 GET     /demo_input/:input          controllers.HomeController.demoOffer(input: String)
 
@@ -22,7 +23,7 @@ GET     /rules                      controllers.HomeController.rules()
 
 GET     /modify                     controllers.HomeController.modify()
 
-POST    /createPlayers              controllers.HomeController.createPlayers()
+GET     /createPlayers/:names       controllers.HomeController.createPlayers(names: String)
 
 POST    /bid                        controllers.HomeController.bid()
 

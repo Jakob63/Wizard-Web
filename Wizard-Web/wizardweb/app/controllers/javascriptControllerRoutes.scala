@@ -23,7 +23,8 @@ class javascriptControllerRoutes @Inject() (cc: ControllerComponents, input: Use
         routes.javascript.HomeController.rules,
         routes.javascript.HomeController.modify,
         routes.javascript.HomeController.ingame,
-        routes.javascript.HomeController.demoOffer
+        routes.javascript.HomeController.demoOffer,
+        routes.javascript.HomeController.createPlayers,
       )
     ).as("text/javascript")
   }

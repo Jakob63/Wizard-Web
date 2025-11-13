@@ -85,20 +85,29 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
     //Redirect(returnTo.getOrElse(routes.HomeController.home().url))
   }
 
-  def createPlayers() = Action { implicit request: Request[AnyContent] =>
-    val form = request.body.asFormUrlEncoded.getOrElse(Map.empty)
-    val name1 = form.get("name1").flatMap(_.headOption).getOrElse("")
-    val name2 = form.get("name2").flatMap(_.headOption).getOrElse("")
-    val name3 = form.get("name3").flatMap(_.headOption).getOrElse("")
+  def createPlayers(names: String) = Action { implicit request: Request[AnyContent] =>
 
-    input.offer(name1)
-    input.offer(name2)
-    input.offer(name3)
-    Ok(s"Created players: $name1, $name2, $name3")
-
+    val nameList = names.split(",").map(_.trim).toList
+    nameList.foreach(name => input.offer(name))
     Thread.sleep(1000)
-    val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
-    Redirect(returnTo.getOrElse(routes.HomeController.home().url))
+    val jsonObj = Json.obj(
+      "status" -> "success",
+      "message" -> routes.HomeController.ingame().url
+    )
+    Ok(jsonObj)
+//    val form = request.body.asFormUrlEncoded.getOrElse(Map.empty)
+//    val name1 = form.get("name1").flatMap(_.headOption).getOrElse("")
+//    val name2 = form.get("name2").flatMap(_.headOption).getOrElse("")
+//    val name3 = form.get("name3").flatMap(_.headOption).getOrElse("")
+//
+//    input.offer(name1)
+//    input.offer(name2)
+//    input.offer(name3)
+//    Ok(s"Created players: $name1, $name2, $name3")
+//
+//    Thread.sleep(1000)
+//    val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
+//    Redirect(returnTo.getOrElse(routes.HomeController.home().url))
   }
   def bid() = Action { implicit request: Request[AnyContent] =>
     val form = request.body.asFormUrlEncoded.getOrElse(Map.empty)
