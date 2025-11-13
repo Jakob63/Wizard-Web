@@ -115,7 +115,7 @@
                                     <card class="card md-3">
                                         <form action="@("/demo_input/" + (idx + 1))" method="get" style="display:inline;">
                                             <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item">
+                                            <button type="submit" class="dropdown-item" data-val="@(idx + 1)" onclick="playCard(this)">
                                                 <img class="img-fluid" loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
                                             </button>
                                         </form>
