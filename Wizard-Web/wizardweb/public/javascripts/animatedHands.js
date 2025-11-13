@@ -1,9 +1,9 @@
 // javascript
 (function($) {
-    const perCardDelay = 120;          // ms zwischen den Karten eines Spielers
-    const betweenPlayersDelay = 420;   // ms Pause zwischen Spielern
-    const animationDuration = 320;     // Transition-Dauer in ms
-    const initialDelay = 60;
+    const perCardDelay = 300;
+    const betweenPlayersDelay = 420;
+    const animationDuration = 320;
+    const initialDelay = 420;
 
     const css = `
 .animate-hidden {
@@ -29,13 +29,12 @@
         const $hands = $('.game__hand');
         if ($hands.length === 0) return;
 
-        // Alle Karten initial verstecken und Transition setzen
+        // Karten verstecken
         $hands.find('.card').each(function() {
             $(this).addClass('animate-hidden').removeClass('animate-visible')
                 .css('transition', `transform ${animationDuration}ms ease, opacity ${animationDuration}ms ease`);
         });
 
-        // Nacheinander pro Spieler anzeigen
         let totalDelay = initialDelay;
         $hands.each(function() {
             const $cards = $(this).find('.card');
