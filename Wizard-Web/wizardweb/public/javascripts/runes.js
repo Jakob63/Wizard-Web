@@ -141,7 +141,7 @@
     document.head.appendChild(style);
   })();
 
-  // Try to find external SVG rune assets in /assets/images/runes/
+  // SVG dateien
   var base = '/assets/images/runes/';
   var nameSets = [
     Array.from({length: 40}, function(_,i){ var n=i+1; return 'rune' + (n<10?('0'+n):n) + '.svg'; }),
