@@ -28,3 +28,19 @@ GET     /createPlayers/:names       controllers.HomeController.createPlayers(nam
 POST    /bid                        controllers.HomeController.bid()
 
 GET     /javascriptRoutes           controllers.javascriptControllerRoutes.javaScriptRoutes()
+
+# Json POST
+POST    /api/demoOffer              controllers.HomeController.demoOfferJson()
+POST    /api/players                controllers.HomeController.createPlayersJson()
+POST    /api/playCard               controllers.HomeController.playCardJson()
+POST    /api/bid                    controllers.HomeController.bidJson()
+
+# Json GET
+GET     /api/gameState              controllers.HomeController.gameState()
+GET     /api/starSettings           controllers.HomeController.starSettings()
+
+GET     /api/playerPresets/:id      controllers.HomeController.playerPreset(id: Long)
+
+POST    /api/players/save           controllers.HomeController.savePlayersJson()
+
+GET     /jsroutes                   controllers.HomeController.jsRoutes()

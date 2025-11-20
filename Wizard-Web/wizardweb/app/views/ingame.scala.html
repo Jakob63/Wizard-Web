@@ -53,9 +53,9 @@
                                     <div class="title">Aktueller Stich:</div>
                                     <div style="display: flex">
                                         @for(card <- cards) {
-                                            <card class="px-1">
+                                            <div class="card">
                                                 <img class="img-fluid" loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                                            </card>
+                                            </div>
                                         }
                                     </div>
                                 </section>
@@ -98,44 +98,40 @@
 
                         @for((player, indx) <- logic.getPlayer.getOrElse(Nil).zipWithIndex) {
                             <div class="row py-1">
-                            <section class="game__section game__hand" aria-label="Hand von @player.name">
-                                <form id="@("bidForm" + indx)" action="@routes.HomeController.bid()" method="post">
-                                    @CSRF.formField
-                                <input type="hidden" name="returnTo" value="@request.uri">
+                                <section class="game__section game__hand" aria-label="Hand von @player.name">
+                                    <div class="d-flex gap-2 p-1">
+                                        <div class="player-name">@player.name</div>
+                                        <label for="@{"bid-" + indx}" class="form-label"></label>
+                                        <input type="number"
+                                        class="form-control bid-input"
+                                        id="@{"bid-" + indx}"
+                                        placeholder="Bid"
+                                        name="bid"
+                                        min="0"
+                                        required>
+                                        <button type="button"
+                                        class="btn btn-primary js-bid-submit"
+                                        data-index="@indx.toString">Submit</button>
+                                    </div>
 
-                                <div class="d-flex gap-2 p-1">
-                                    <div class="player-name">@player.name</div>
-                                    <label for="bid" class="form-label"></label>
-                                    <input type="number" class="form-control" id="bid" placeholder="Bid" name="bid" required>
-                                    <button type="submit" onclick="bid_player(idx)" class="btn btn-primary">Submit</button>
-                                </div>
-                                </form>
-                                <div class="d-flex gap-2 p-1">
-                                @for((card, idx) <- player.hand.cards.zipWithIndex) {
-                                    <card class="card md-3">
-                                        <form action="@("/demo_input/" + (idx + 1))" method="get" style="display:inline;">
-                                            <input type="hidden" name="returnTo" value="@request.uri">
-                                            <button type="submit" class="dropdown-item" data-val="@(idx + 1)" onclick="playCard(this)">
-                                                <img class="img-fluid" loading="lazy" src='@routes.Assets.versioned("images/cards/" + cardToFile(card))' alt='@card.toString' />
-                                            </button>
-                                        </form>
-                                    </card>
-
-                                }
-                                </div>
-                            </section>
+                                    <div class="hand-cards d-flex gap-2 p-1">
+                                    @for((card, idx) <- player.hand.cards.zipWithIndex) {
+                                        <div class="md-3">
+                                            <div class="card-slot">
+                                                <img class="img-fluid card-img"
+                                                data-card-id="@{idx + 1}"
+                                                alt="" title="@card.toString"
+                                                src='@routes.Assets.versioned("images/cards/" + cardToFile(card))'>
+                                            </div>
+                                        </div>
+                                    }
+                                    </div>
+                                </section>
                             </div>
                         }
                     </div>
 
                     </div>
-                    <script>
-                        function bid_player(idx) {
-                            var form = document.getElementById("bidForm" + idx);
-                            form.action = '/demoinput/' + encodeURIComponent(form.bid.value);
-                            form.submit();
-                        }
-                    </script>
                     <script>
 
                         function play_card(idx) {

@@ -24,79 +24,76 @@
                                 Choose
                             </button>
                             <ul class="dropdown-menu">
-                                <li>
-                                    <form action="/demo_input/1" method="get" style="display:inline;">
-                                        <input type="hidden" name="returnTo" value="@request.uri">
-                                        <button type="submit" class="dropdown-item">1</button>
-                                    </form>
-                                </li>
-                                <li>
-                                    <form action="/demo_input/2" method="get" style="display:inline;">
-                                        <input type="hidden" name="returnTo" value="@request.uri">
-                                        <button type="submit" class="dropdown-item">2</button>
-                                    </form>
-                                </li>
+                                <li><button type="button" class="dropdown-item" data-val="1" onclick="submitChoice(this)">
+                                    1</button></li>
+                                <li><button type="button" class="dropdown-item" data-val="2" onclick="submitChoice(this)">
+                                    2</button></li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
             } else if(logic.getChoice.get == 2) {
-                <h1>Programm beendet!</h1>
+            <h1>Programm beendet!</h1>
             } else {
-                @if(logic.getPlayerNumber.isEmpty) {
-                    <div class="row">
-                        <h1>Welcome to Wizard!</h1>
-                    </div>
-                    <div class="row px-3 py-3">Please enter the number of Players
-                    </div>
-                    <div class="row">
-                        <div class="col-4">
-                            <form id="choiceForm" method="get">
-                                <input type="hidden" name="returnTo" value="@request.uri">
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        Choose
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><button type="button" class="dropdown-item" data-val="3" onclick="submitChoice(this)">3</button></li>
-                                        <li><button type="button" class="dropdown-item" data-val="4" onclick="submitChoice(this)">4</button></li>
-                                        <li><button type="button" class="dropdown-item" data-val="5" onclick="submitChoice(this)">5</button></li>
-                                        <li><button type="button" class="dropdown-item" data-val="6" onclick="submitChoice(this)">6</button></li>
-                                    </ul>
-                                </div>
-                            </form>
+            @if(logic.getPlayerNumber.isEmpty) {
+                <div class="row">
+                    <h1>Welcome to Wizard!</h1>
+                </div>
+                <div class="row px-3 py-3">Please enter the number of Players
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Choose
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><button type="button" class="dropdown-item" data-val="3" onclick="submitChoice(this)">
+                                    3</button></li>
+                                <li><button type="button" class="dropdown-item" data-val="4" onclick="submitChoice(this)">
+                                    4</button></li>
+                                <li><button type="button" class="dropdown-item" data-val="5" onclick="submitChoice(this)">
+                                    5</button></li>
+                                <li><button type="button" class="dropdown-item" data-val="6" onclick="submitChoice(this)">
+                                    6</button></li>
+                            </ul>
                         </div>
                     </div>
+                </div>
 
-                } else {
-                    <form id="nameForm" method="post">
-                        @CSRF.formField
-                        <input type="hidden" name="returnTo" value="@request.uri">
+            } else {
+                <div id="nameForm" method="post">
+                    @CSRF.formField
+                    <input type="hidden" name="returnTo" value="@request.uri">
 
                     <div class="mb-3">
-                            <label for="name1" class="form-label">Spieler 1</label>
-                            <input type="text" class="form-control" id="name1" placeholder="Name" name="name1" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="name2" class="form-label">Spieler 2</label>
-                            <input type="text" class="form-control" id="name2" placeholder="Name" name="name2" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="name3" class="form-label">Spieler 3</label>
-                            <input type="text" class="form-control" id="name3" placeholder="Name" name="name3" required>
-                        </div>
-                        <button type="submit" onclick="submitNames()" class="btn btn-primary">Submit</button>
-                    </form>
-                }
+                        <label for="presetList" class="form-label">Voreinstellung</label>
+                        <select id="presetList" class="form-select">
+                            <option value="">– bitte wählen –</option>
+                            <option value="1">Standard</option>
+                            <option value="2">Janisette</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name1" class="form-label">Spieler 1</label>
+                        <input type="text" class="form-control" id="name1" placeholder="Name" name="name1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name2" class="form-label">Spieler 2</label>
+                        <input type="text" class="form-control" id="name2" placeholder="Name" name="name2" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name3" class="form-label">Spieler 3</label>
+                        <input type="text" class="form-control" id="name3" placeholder="Name" name="name3" required>
+                    </div>
+
+                    <div id="namesError" class="text-danger" style="display: none"></div>
+
+                </div>
+            }
             }
         </div>
     </div>
-@*    <script>*@
-@*            function submitNames() {*@
-@*                var form = document.getElementById('nameForm');*@
-@*                form.action = '/createPlayers'*@
-@*                form.submit();*@
-@*            }*@
-@*    </script>*@
 }

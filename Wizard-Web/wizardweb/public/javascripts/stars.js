@@ -1,14 +1,14 @@
 (function () {
-  const canvas = document.getElementById("starfield");
+  let canvas = document.getElementById("starfield");
   if (!canvas) {
     return;
   }
 
-  const ctx = canvas.getContext("2d");
+  let ctx = canvas.getContext("2d");
 
-  const DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+  let DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
 
-  const SETTINGS = {
+  let SETTINGS = {
     starDensity: 0.00075,
     minSize: 0.6,
     maxSize: 1.8,
@@ -23,6 +23,68 @@
     specialTwinkleBoost: 0.02
   };
 
+  // jQuery AJAX -> native Promise wrapper
+  function ajaxJson(routeOrUrl, options = {}) {
+    return new Promise((resolve, reject) => {
+      let $ = window.jQuery;
+      if ($ && $.ajax) {
+        $.ajax({
+          url: typeof routeOrUrl === 'string' ? routeOrUrl : (routeOrUrl && routeOrUrl.url),
+          method: typeof routeOrUrl === 'string' ? (options.method || 'GET') : (routeOrUrl && routeOrUrl.type) || 'GET',
+          dataType: 'json',
+          data: options.data,
+          timeout: options.timeout || 12000,
+          success: (data) => resolve(data),
+          error: (jqXHR, status, error) => {
+            let err = new Error(error || status || 'AJAX error');
+            err.status = jqXHR && jqXHR.status;
+            err.responseJSON = jqXHR && jqXHR.responseJSON;
+            err.responseText = jqXHR && jqXHR.responseText;
+            reject(err);
+          }
+        });
+      } else {
+        // Fallback: resolve immediately without changing settings
+        resolve(null);
+      }
+    });
+  }
+
+  // Merge server-provided settings into local SETTINGS (whitelist keys)
+  function mergeSettings(from) {
+    if (!from || typeof from !== 'object') return;
+    let allowed = [
+      'starDensity','minSize','maxSize','minSpeed','maxSpeed',
+      'twinkleChance','parallax','specialDensity','specialMinSize',
+      'specialMaxSize','specialTwinkleBoost'
+    ];
+    allowed.forEach((k) => {
+      if (Object.prototype.hasOwnProperty.call(from, k)) {
+        SETTINGS[k] = from[k];
+      }
+    });
+  }
+
+  // Try to load optional star settings via jsRoutes or static JSON
+  async function loadStarSettings() {
+    try {
+      if (window.jsRoutes && jsRoutes.controllers && jsRoutes.controllers.HomeController && jsRoutes.controllers.HomeController.starSettings) {
+        let route = jsRoutes.controllers.HomeController.starSettings();
+        let data = await ajaxJson(route);
+        mergeSettings(data);
+        return;
+      }
+    } catch (e) { /* ignore and try static */ }
+
+    try {
+      // Try a static asset if available
+      let data = await ajaxJson('/assets/config/stars.json');
+      mergeSettings(data);
+    } catch (e2) {
+      // No settings available; keep defaults
+    }
+  }
+
   let width = 0;
   let height = 0;
   let stars = [];
@@ -34,7 +96,7 @@
   }
 
   function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
+    let rect = canvas.getBoundingClientRect();
     width = Math.max(1, Math.floor(rect.width));
     height = Math.max(1, Math.floor(rect.height));
 
@@ -47,8 +109,8 @@
   }
 
   function createStars() {
-    const count = Math.floor(width * height * SETTINGS.starDensity);
-    const specialCount = Math.max(1, Math.floor(width * height * SETTINGS.specialDensity));
+    let count = Math.floor(width * height * SETTINGS.starDensity);
+    let specialCount = Math.max(1, Math.floor(width * height * SETTINGS.specialDensity));
     stars = [];
 
     // kleine sterne
@@ -78,7 +140,7 @@
   }
 
   function drawBackgroundGradient() {
-    const g = ctx.createLinearGradient(0, 0, 0, height);
+    let g = ctx.createLinearGradient(0, 0, 0, height);
     g.addColorStop(0, "#0b0d12");
     g.addColorStop(1, "#020308");
     ctx.fillStyle = g;
@@ -86,17 +148,17 @@
   }
 
   function updateAndDrawStars() {
-    const offsetX = 0;
-    const offsetY = 0;
+    let offsetX = 0;
+    let offsetY = 0;
 
     // Sterne nacheinander updaten und zeichnen
     for (let i = 0; i < stars.length; i++) {
-      const s = stars[i];
+      let s = stars[i];
 
       if (Math.random() < SETTINGS.twinkleChance) {
         if (Math.random() < 0.5) s.twinkleDir *= -1;
       }
-      const twinkleStep = s.isSpecial ? (0.012 + SETTINGS.specialTwinkleBoost) : 0.012;
+      let twinkleStep = s.isSpecial ? (0.012 + SETTINGS.specialTwinkleBoost) : 0.012;
       s.alpha += s.twinkleDir * twinkleStep;
       if (s.alpha > 0.95) { s.alpha = 0.95; s.twinkleDir = -1; }
       if (s.alpha < 0.06) {
@@ -116,10 +178,10 @@
       ctx.shadowColor = "rgba(255,255,255,0.6)";
 
       if (s.isSpecial) {
-        const glowRadius = s.size * 3;
-        const cx = s.x + offsetX;
-        const cy = s.y + offsetY;
-        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
+        let glowRadius = s.size * 3;
+        let cx = s.x + offsetX;
+        let cy = s.y + offsetY;
+        let gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
         gradient.addColorStop(0, `rgba(255,255,255,${(0.85 * s.alpha).toFixed(3)})`);
         gradient.addColorStop(1, `rgba(255,255,255,0)`);
         ctx.shadowBlur = s.size * 3;
@@ -128,10 +190,10 @@
         ctx.arc(cx, cy, s.size, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        const cx = s.x + offsetX;
-        const cy = s.y + offsetY;
-        const glowRadius = s.size * 2;
-        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
+        let cx = s.x + offsetX;
+        let cy = s.y + offsetY;
+        let glowRadius = s.size * 2;
+        let gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
         gradient.addColorStop(0, `rgba(255,255,255,${(0.85 * s.alpha).toFixed(3)})`);
         gradient.addColorStop(1, `rgba(255,255,255,0)`);
         ctx.shadowBlur = s.size * 1.8;
@@ -152,8 +214,12 @@
   }
   window.addEventListener("resize", resizeCanvas);
 
-  requestAnimationFrame(() => {
-    resizeCanvas();
-    frame();
-  });
+  // Bootstrap: load optional remote settings before starting animation
+  (async () => {
+    try { await loadStarSettings(); } catch(e) { /* keep defaults */ }
+    requestAnimationFrame(() => {
+      resizeCanvas();
+      frame();
+    });
+  })();
 })();

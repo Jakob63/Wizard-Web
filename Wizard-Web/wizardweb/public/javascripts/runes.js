@@ -150,6 +150,35 @@
   ];
   var candidates = [].concat.apply([], nameSets);
 
+  // jQuery AJAX (native Promise) helper to probe asset existence via HEAD
+  function headExists(url, timeoutMs) {
+    return new Promise(function(resolve) {
+      var $ = window.jQuery;
+      if ($ && $.ajax) {
+        $.ajax({
+          url: url,
+          method: 'HEAD',
+          cache: false,
+          timeout: timeoutMs || 8000,
+          success: function(){ resolve(true); },
+          error: function(){ resolve(false); }
+        });
+      } else if (typeof fetch === 'function') {
+        fetch(url, { method: 'HEAD', cache: 'no-cache' })
+          .then(function(res){ resolve(!!(res && (res.ok || res.status === 200))); })
+          .catch(function(){ resolve(false); });
+      } else {
+        // Last resort: try to GET image element (async)
+        try {
+          var img = new Image();
+          img.onload = function(){ resolve(true); };
+          img.onerror = function(){ resolve(false); };
+          img.src = url + (url.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now();
+        } catch(e) { resolve(false); }
+      }
+    });
+  }
+
   function probeAssets(maxToFind) {
     var found = [];
     var idx = 0;
@@ -158,9 +187,9 @@
         if (idx >= candidates.length) return resolve(found);
         if (found.length >= maxToFind) return resolve(found);
         var url = base + candidates[idx++];
-        fetch(url, { method: 'GET', cache: 'no-cache' }).then(function(res){
-          if (res && res.ok) found.push(url);
-        }).catch(function(){/* ignore */}).finally(function(){
+        headExists(url, 7000).then(function(ok){
+          if (ok) found.push(url);
+        }).finally(function(){
           // Slightly batch the probing to keep UI responsive
           if (idx % 5 === 0) setTimeout(next, 0); else next();
         });
