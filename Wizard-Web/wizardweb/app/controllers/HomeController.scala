@@ -4,7 +4,7 @@ import components.WebConfiguration
 
 import javax.inject.*
 import play.api.*
-import play.api.libs.json.{Json, JsValue, Reads, JsPath, JsError}
+import play.api.libs.json.{Json, JsValue, Reads, JsPath, JsError, JsArray}
 import play.api.mvc.*
 import wizard.controller.{GameState, aGameLogic}
 import wizard.model.player.Player
@@ -13,23 +13,11 @@ import wizard.model.rounds.Game
 import _root_.util.UserInput
 import play.api.routing.JavaScriptReverseRouter
 
-/**
- * This controller creates an `Action` to handle HTTP requests to the
- * application's home page.
- */
 @Singleton
 class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
   extends AbstractController(cc) {
 
   private var init = false
-
-  /**
-   * Create an Action to render an HTML page.
-   *
-   * The configuration in the `routes` file means that this method
-   * will be called when the application receives a `GET` request with
-   * a path of `/`.
-   */
 
   def demoOfferJson: Action[JsValue] = Action(parse.json) { req =>
     val choiceOpt = (req.body \ "choice").validate[String].asOpt
@@ -96,6 +84,26 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
   }
 }
 
+  def playFor(name: String): Action[AnyContent] = Action { implicit request =>
+    if (!init) {
+      init = true
+      WebTui.userInput = input
+      val thread = new Thread(() => wizard.Wizard.entry(WebConfiguration(), input))
+      thread.start()
+    }
+
+    WebTui.gameLogic match {
+      case None => Ok(views.html.loading(routes.HomeController.playFor(name).url))
+      case Some(gl) =>
+        gl.getState match {
+          case Some(GameState.Menu)      => Ok(views.html.menu(gl))
+          case Some(GameState.Ingame)    => Ok(views.html.ingame(gl))
+          case Some(GameState.Endscreen) => Ok(views.html.endscreen(gl))
+          case _                         => Ok(views.html.rules())
+        }
+    }
+  }
+
   def gameMenu(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.tui.apply(WebTui.latestPrint))
   }
@@ -110,7 +118,6 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
       "message" -> routes.HomeController.ingame().url
     )
     Ok(jsonObj)
-    //Redirect(returnTo.getOrElse(routes.HomeController.home().url))
   }
 
   def createPlayers(names: String) = Action { implicit request: Request[AnyContent] =>
@@ -153,13 +160,20 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
         .orElse((req.body \ "bid").asOpt[BigDecimal].map(_.toBigInt.toString))
         .orElse((req.body \ "bid").asOpt[BigDecimal].map(_.toLong.toString))
 
-    bidOpt match {
-      case Some(bidStr) =>
-        input.offer(bidStr)
-        Thread.sleep(200)
-        Ok(Json.obj("ok" -> true))
-      case None =>
-        BadRequest(Json.obj("ok" -> false, "error" -> "Missing bid"))
+    val whoOpt = (req.body \ "player").asOpt[String].map(_.trim).filter(_.nonEmpty)
+
+    (bidOpt, whoOpt) match {
+      case (Some(bidStr), Some(who)) =>
+        val allowed = WebTui.currentPromptPlayer.forall(_ == who)
+        if (!allowed) {
+          Forbidden(Json.obj("ok" -> false, "error" -> s"$who ist nicht am Zug."))
+        } else {
+          input.offer(bidStr)
+          Thread.sleep(200)
+          Ok(Json.obj("ok" -> true))
+        }
+      case (None, _) => BadRequest(Json.obj("ok" -> false, "error" -> "Missing bid"))
+      case (_, None) => BadRequest(Json.obj("ok" -> false, "error" -> "Missing player"))
     }
   }
 
@@ -172,7 +186,8 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
           BadRequest(Json.obj("error" -> "need exactly 3 non-empty names"))
         } else {
           players.foreach(n => input.offer(n))
-          Ok(Json.obj("message" -> routes.HomeController.ingame().url))
+          val tabs = players.map(n => routes.HomeController.playFor(n).url)
+          Ok(Json.obj("tabs" -> Json.toJson(tabs), "first" -> tabs.headOption.getOrElse(routes.HomeController.home().url)))
         }
       }
     )
@@ -198,7 +213,7 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
     )
   }
 
-  def gameState: Action[AnyContent] = Action {
+  def gameState: Action[AnyContent] = Action { implicit req =>
     val stateJson = WebTui.gameLogic.flatMap { gl =>
       gl.getPlayer.map { players =>
         val playersJson = Json.arr(players.map { p =>
@@ -216,49 +231,112 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
             case v                                    => s"${card.color.toString}_${v.cardType()}.png"
           })).url
 
-        val handsJson = Json.arr(players.map { p =>
-          Json.arr(p.hand.cards.zipWithIndex.map { case (card, idx) =>
-            Json.obj(
-              "id" -> (idx + 1),
-              "label" -> card.toString,
-              "imageUrl" -> cardToUrl(card)
-            )
-          }*)
-        }*)
+        val playerNameOpt = req.getQueryString("player").map(_.trim).filter(_.nonEmpty)
+        val idxFromName: Option[Int] = playerNameOpt.flatMap { n =>
+          val i = players.indexWhere(_.name == n)
+          if (i >= 0) Some(i) else None
+        }
+        val meIdxOpt: Option[Int] = idxFromName.orElse(req.getQueryString("pIdx").flatMap(s => scala.util.Try(s.toInt).toOption))
 
-        val firstHandJson = players.headOption.toList.flatMap(_.hand.cards.zipWithIndex.map {
-          case (card, idx) => Json.obj(
-            "id" -> (idx + 1),
+        val (handsJson, handCardsJson) = meIdxOpt match {
+          case Some(i) if i >= 0 && i < players.length =>
+            val me = players(i)
+            val handCards = me.hand.cards.zipWithIndex.map { case (card, idx) =>
+              Json.obj(
+                "id" -> (idx + 1),
+                "label" -> card.toString,
+                "imageUrl" -> cardToUrl(card)
+              )
+            }
+            (Json.arr(), JsArray(handCards))
+          case _ =>
+            val hands = players.map { p =>
+              Json.arr(p.hand.cards.zipWithIndex.map { case (card, idx) =>
+                Json.obj(
+                  "id" -> (idx + 1),
+                  "label" -> card.toString,
+                  "imageUrl" -> cardToUrl(card)
+                )
+              }*)
+            }
+            (JsArray(hands), JsArray())
+        }
+
+        val trickCardsJson = gl.getTrickCards.getOrElse(Nil).map { card =>
+          Json.obj(
             "label" -> card.toString,
             "imageUrl" -> cardToUrl(card)
           )
-        })
+        }
 
         Json.obj(
           "players" -> playersJson,
           "hands" -> handsJson,
-          "handCards" -> firstHandJson
+          "handCards" -> handCardsJson,
+          "trickCards" -> trickCardsJson
         )
       }
     }
 
-    Ok(stateJson.getOrElse(Json.obj("players" -> Json.arr(), "hands" -> Json.arr(), "handCards" -> Json.arr())))
+    Ok(stateJson.getOrElse(Json.obj(
+      "players" -> Json.arr(),
+      "hands" -> Json.arr(),
+      "handCards" -> Json.arr(),
+      "trickCards" -> Json.arr()
+    )))
   }
 
   def playCardJson: Action[JsValue] = Action(parse.json) { req =>
     val idOpt = (req.body \ "cardId").asOpt[String]
       .orElse((req.body \ "cardId").asOpt[BigDecimal].map(_.toBigInt.toString))
 
-    idOpt match {
-      case Some(cardIdStr) =>
+    val whoOpt = (req.body \ "player").asOpt[String].map(_.trim).filter(_.nonEmpty)
+
+    (idOpt, whoOpt) match {
+      case (Some(cardIdStr), Some(who)) =>
+        val allowed = WebTui.currentPromptPlayer.forall(_ == who)
+        if (!allowed) {
+          Forbidden(Json.obj("ok" -> false, "error" -> s"$who ist nicht am Zug."))
+        } else {
         input.offer(cardIdStr)
         Thread.sleep(200)
-        val state = Json.obj(
-          "handCards" -> Json.arr()
-        )
+        val state = WebTui.gameLogic.flatMap { gl =>
+          gl.getPlayer.map { players =>
+            def cardToUrl(card: wizard.model.cards.Card): String =
+              routes.Assets.versioned("images/cards/" + (card.value match {
+                case wizard.model.cards.Value.WizardKarte => "Wizard.png"
+                case wizard.model.cards.Value.Chester     => "Jester.png"
+                case v                                    => s"${card.color.toString}_${v.cardType()}.png"
+              })).url
+
+            val handsJson = Json.arr(players.map { p =>
+              Json.arr(p.hand.cards.zipWithIndex.map { case (card, idx) =>
+                Json.obj(
+                  "id" -> (idx + 1),
+                  "label" -> card.toString,
+                  "imageUrl" -> cardToUrl(card)
+                )
+              }*)
+            }*)
+
+            val trickCardsJson = gl.getTrickCards.getOrElse(Nil).map { card =>
+              Json.obj(
+                "label" -> card.toString,
+                "imageUrl" -> cardToUrl(card)
+              )
+            }
+
+            Json.obj(
+              "hands" -> handsJson,
+              "trickCards" -> trickCardsJson
+            )
+          }
+        }.getOrElse(Json.obj("hands" -> Json.arr(), "trickCards" -> Json.arr()))
+
         Ok(Json.obj("ok" -> true, "state" -> state))
-      case None =>
-        BadRequest(Json.obj("ok" -> false, "error" -> "Missing cardId"))
+        }
+      case (None, _) => BadRequest(Json.obj("ok" -> false, "error" -> "Missing cardId"))
+      case (_, None) => BadRequest(Json.obj("ok" -> false, "error" -> "Missing player"))
     }
   }
 

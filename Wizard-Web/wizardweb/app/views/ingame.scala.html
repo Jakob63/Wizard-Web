@@ -1,5 +1,6 @@
 @(logic: wizard.controller.aGameLogic)(implicit request: play.api.mvc.RequestHeader)
 @import helper._
+@import scala.util.Try
 
 @main("Ingame") {
 
@@ -20,9 +21,10 @@
                 val dark = routes.Assets.versioned("images/backgrounds/Wizard_game_background2_GUI.png").url
                 if(theme == "light") light else dark
             }) { bgUrl =>
+            @defining(s"background-image: url('$bgUrl')") { bgStyle =>
 
                 <main>
-                    <div class="game__main bg-ingame" style="background-image: url('@bgUrl')">
+                    <div class="game__main bg-ingame" style="@bgStyle">
                         <div class="container">
                             <div class="row">
                                 <div class="col-4 col-md-3">
@@ -96,41 +98,94 @@
                             </div>
                         }
 
-                        @for((player, indx) <- logic.getPlayer.getOrElse(Nil).zipWithIndex) {
-                            <div class="row py-1">
-                                <section class="game__section game__hand" aria-label="Hand von @player.name">
-                                    <div class="d-flex gap-2 p-1">
-                                        <div class="player-name">@player.name</div>
-                                        <label for="@{"bid-" + indx}" class="form-label"></label>
-                                        <input type="number"
-                                        class="form-control bid-input"
-                                        id="@{"bid-" + indx}"
-                                        placeholder="Bid"
-                                        name="bid"
-                                        min="0"
-                                        required>
-                                        <button type="button"
-                                        class="btn btn-primary js-bid-submit"
-                                        data-index="@indx.toString">Submit</button>
-                                    </div>
-
-                                    <div class="hand-cards d-flex gap-2 p-1">
-                                    @for((card, idx) <- player.hand.cards.zipWithIndex) {
-                                        <div class="md-3">
-                                            <div class="card-slot">
-                                                <img class="img-fluid card-img"
-                                                data-card-id="@{idx + 1}"
-                                                alt="" title="@card.toString"
-                                                src='@routes.Assets.versioned("images/cards/" + cardToFile(card))'>
+                        @defining(request.path != null && request.path.startsWith("/ingame")) { isIngame =>
+                        @if(isIngame) {
+                            @logic.getPlayer.foreach { players =>
+                                @for((p, pIdx) <- players.zipWithIndex) {
+                                    <div class="row py-1">
+                                        <section class="game__section game__hand" aria-label="Hand von @p.name">
+                                            <div class="d-flex gap-2 p-1">
+                                                <div class="player-name">@p.name</div>
+                                                <label for="@{"bid-" + pIdx}" class="form-label"></label>
+                                                <input type="number"
+                                                       class="form-control bid-input"
+                                                       id="@{"bid-" + pIdx}"
+                                                       placeholder="Bid"
+                                                       name="bid"
+                                                       min="0"
+                                                       required>
+                                                <button type="button"
+                                                        class="btn btn-primary js-bid-submit"
+                                                        data-index="@pIdx.toString">Submit</button>
                                             </div>
-                                        </div>
-                                    }
+
+                                            <div class="hand-cards d-flex gap-2 p-1">
+                                                @for((card, idx) <- p.hand.cards.zipWithIndex) {
+                                                    <div class="md-3">
+                                                        <div class="card-slot">
+                                                            <img class="img-fluid card-img"
+                                                                 data-card-id="@{idx + 1}"
+                                                                 alt="" title="@card.toString"
+                                                                 src='@routes.Assets.versioned("images/cards/" + cardToFile(card))'>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </section>
                                     </div>
-                                </section>
-                            </div>
+                                }
+                            }
+                        } else {
+                            @defining({
+                                val path = request.path
+                                val maybeName = if (path != null && path.startsWith("/play/")) Some(path.stripPrefix("/play/").trim) else None
+                                val players = logic.getPlayer.getOrElse(Nil)
+                                val idxByName = maybeName.flatMap(n => players.indexWhere(_.name == n) match { case -1 => None; case i => Some(i) })
+                                idxByName.orElse(request.getQueryString("pIdx").flatMap(s => Try(s.toInt).toOption)).getOrElse(0)
+                            }) { meIdx =>
+                            @logic.getPlayer.flatMap(ps => ps.lift(meIdx)).map { me =>
+                                <div class="row py-1">
+                                    <section class="game__section game__hand" aria-label="Hand von @me.name">
+                                        <div class="d-flex gap-2 p-1">
+                                            <div class="player-name">@me.name</div>
+                                            <label for="@{"bid-" + meIdx}" class="form-label"></label>
+                                            <input type="number"
+                                                   class="form-control bid-input"
+                                                   id="@{"bid-" + meIdx}"
+                                                   placeholder="Bid"
+                                                   name="bid"
+                                                   min="0"
+                                                   required>
+                                            <button type="button"
+                                                    class="btn btn-primary js-bid-submit"
+                                                    data-index="@meIdx.toString">Submit</button>
+                                        </div>
+
+                                        <div class="hand-cards d-flex gap-2 p-1">
+                                            @for((card, idx) <- me.hand.cards.zipWithIndex) {
+                                                <div class="md-3">
+                                                    <div class="card-slot">
+                                                        <img class="img-fluid card-img"
+                                                             data-card-id="@{idx + 1}"
+                                                             alt="" title="@card.toString"
+                                                             src='@routes.Assets.versioned("images/cards/" + cardToFile(card))'>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </section>
+                                </div>
+                            }.getOrElse {
+                                <div class="row py-1">
+                                    <section class="game__section">
+                                        <div class="text-danger">Unbekannter Spieler. Bitte über das Menü neu starten.</div>
+                                    </section>
+                                </div>
+                            }
+                            }
+                        }
                         }
                     </div>
-
                     </div>
                     <script>
 
@@ -140,6 +195,7 @@
                     </script>
                     </main>
 
+            }
             }
         }
     }

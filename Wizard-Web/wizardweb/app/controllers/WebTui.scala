@@ -12,17 +12,24 @@ import scala.compiletime.uninitialized
 object WebTui extends Observer with View{
   var gameLogic: Option[aGameLogic] = None
   var userInput: UserInput = uninitialized // wird beim Bootstrap gesetzt
+  @volatile var currentPromptPlayer: Option[String] = None
 
-    override def init(gameLogic: aGameLogic): Unit = {
-        this.gameLogic = Some(gameLogic)
-    }
+  override def init(gameLogic: aGameLogic): Unit = {
+    this.gameLogic = Some(gameLogic)
+  }
 
   override def update(updateMSG: String, obj: Any*): Unit = {
     updateMSG match {
-      case "which card" => println(s"${obj.head.asInstanceOf[Player].name}, which card do you want to play?")
+      case "which card" =>
+        val name = obj.head.asInstanceOf[Player].name
+        currentPromptPlayer = Some(name)
+        println(s"$name, which card do you want to play?")
       case "invalid card" => println("Invalid card. Please enter a valid index.")
       case "follow lead" => println(s"You must follow the lead suit ${obj.head.asInstanceOf[Color].toString}.")
-      case "which bid" => println(s"${obj.head.asInstanceOf[Player].name}, how many tricks do you bid?")
+      case "which bid" =>
+        val name = obj.head.asInstanceOf[Player].name
+        currentPromptPlayer = Some(name)
+        println(s"$name, how many tricks do you bid?")
       case "invalid input, bid again" => println("Invalid input. Please enter a valid number.")
       case "print trump card" => println(s"Trump card: \n${showcard(obj.head.asInstanceOf[Card])}")
       case "cards dealt" => println("Cards have been dealt to all players.")
@@ -33,7 +40,10 @@ object WebTui extends Observer with View{
       case "game started" => println("Game officially started.")
       case "player names" => playerNames(obj.head.asInstanceOf[Int], obj(1).asInstanceOf[Int], obj(2).asInstanceOf[List[Player]])
       case "handle choice" => handleChoice(obj.head.asInstanceOf[Int])
-      case "show hand of Player x" => showHand(obj.head.asInstanceOf[Player])
+      case "show hand of Player x" =>
+        val p = obj.head.asInstanceOf[Player]
+        currentPromptPlayer = Some(p.name)
+        showHand(p)
       case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
       case "main menu wrong input" => println("Invalid input. Please enter 1 or 2.")
       case other => println(s"[WARN] Unhandled update: $other")

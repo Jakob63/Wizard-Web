@@ -81,10 +81,62 @@ function submitNames(){
     if (!(window.jsRoutes && jsRoutes.controllers?.HomeController?.createPlayersJson)) return;
     const players = readNames();
     if (players.some(n => !n || !n.trim())) { showInlineError('#namesError', 'Bitte geben Sie alle Namen ein.'); return; }
+    let urls = [];
+    try {
+        urls = players.map(n => '/play/' + encodeURIComponent(n));
+        const wins = urls.map((u) => {
+            try {
+                const w = window.open(u, '_blank');
+                if (!w) console.warn('Popup blockiert', u);
+                return w;
+            } catch(e) { console.warn('Popup blockiert (direct)', e); return null; }
+        });
+        window.__playersTabsOpened = true;
+        window.__playersTabsUrls = urls;
+        window.__playersWindows = wins;
+        const first = urls[0];
+        if (first) setTimeout(() => { try { window.location.assign(first); } catch(_) {} }, 100);
+    } catch(e) {
+        console.warn('Synchrones Öffnen der Tabs fehlgeschlagen', e);
+    }
     const route = jsRoutes.controllers.HomeController.createPlayersJson();
     return postJson(route, { players })
         .then(data => {
-            if (data?.message) {
+            if (Array.isArray(data?.tabs) && data.tabs.length) {
+                const targetUrls = data.tabs;
+                const first = data.first || targetUrls[0];
+                if (window.__playersTabsOpened && Array.isArray(window.__playersWindows)) {
+                    targetUrls.forEach((u, i) => {
+                        const w = window.__playersWindows[i];
+                        try {
+                            if (w && !w.closed) {
+                                if (w.location && w.location.href !== u) {
+                                    w.location.replace(u);
+                                }
+                            } else {
+                                const nw = window.open(u, '_blank');
+                                if (!nw) console.warn('Popup-Blocker verhinderte Fallback-Tab', u);
+                            }
+                        } catch(e) {
+                            console.warn('Navigation in vorgeöffnetem Tab fehlgeschlagen', e);
+                            const nw = window.open(u, '_blank');
+                            if (!nw) console.warn('Popup-Blocker verhinderte Fallback-Tab', u);
+                        }
+                    });
+                    setTimeout(() => { try { window.location.assign(first); } catch(_) {} }, 100);
+                } else {
+                    try {
+                        targetUrls.forEach(u => {
+                            const w = window.open(u, '_blank');
+                            if (!w) console.warn('Popup-Blocker verhindert Tab', u);
+                        });
+                        setTimeout(() => { window.location.assign(first); }, 150);
+                    } catch(e) {
+                        console.error('Konnte Tabs nicht öffnen', e);
+                        window.location.assign(first);
+                    }
+                }
+            } else if (data?.message && !window.__playersTabsOpened) {
                 setTimeout(() => { window.location.href = data.message; }, 350);
             } else {
                 showInlineError('#namesError', 'Fehler beim Erstellen der Spieler.');
@@ -93,11 +145,13 @@ function submitNames(){
         .catch(err => { console.error('submitNames fehlgeschlagen', err); showInlineError('#namesError', 'Fehler beim Erstellen der Spieler. Bitte versuchen Sie es erneut.'); });
 }
 
+// jquery event
 $(function() {
     const $form = $('#nameForm');
     if ($form.length) {
         $form.on('submit', function (e) {
             e.preventDefault();
+            try { submitNames(); } catch(e){ console.error('submitNames error', e); }
         });
         $('#presetList').on('change', function () {
             fillNamesFromPreset(this.value);

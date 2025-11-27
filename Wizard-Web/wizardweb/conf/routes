@@ -44,3 +44,8 @@ GET     /api/playerPresets/:id      controllers.HomeController.playerPreset(id: 
 POST    /api/players/save           controllers.HomeController.savePlayersJson()
 
 GET     /jsroutes                   controllers.HomeController.jsRoutes()
+
+# Web Socket
+GET     /game/socket                wizard.controller.GameSocketController.socket
+
+GET     /play/:name                 controllers.HomeController.playFor(name: String)

@@ -106,9 +106,16 @@
         const route = jsRoutes.controllers.HomeController.gameState();
 
         try {
-            const state = await ajaxJson(route);
+            const player = (typeof currentPlayerFromPath === 'function') ? currentPlayerFromPath() : (function(){
+                try {
+                    const path = window.location && window.location.pathname || '';
+                    if (path.startsWith('/play/')) return decodeURIComponent(path.substring('/play/'.length));
+                } catch(_) {}
+                return undefined;
+            })();
+            const state = await ajaxJson(route, { data: player ? { player } : undefined });
             const $hands = $('.game__hand');
-            if (Array.isArray(state?.hands)) {
+            if (Array.isArray(state?.hands) && state.hands.length > 0) {
                 $hands.each(function(i){
                     renderHandCards($(this), state.hands[i] || []);
                 });
@@ -118,17 +125,55 @@
             }
             applyHiddenState($hands);
             playStaggeredReveal($hands);
+            updateScoreboard(state);
+            if (Array.isArray(state?.trickCards)) {
+                renderTrickCards(state.trickCards);
+            }
         } catch (err) {
             console.error('Error fetching game state:', err);
             $hands.find('.card-slot, .card-img').removeClass('animate-hidden').addClass('animate-visible');
         }
     }
 
+    function renderTrickCards(trickCards){
+        const $section = $(".game__section[aria-label='Aktueller Stich']");
+        if ($section.length === 0) return;
+        let $row = $section.find('.trick-cards');
+        if ($row.length === 0) {
+            $row = $section.find("div[style*='display: flex']").first();
+            if ($row.length) {
+                $row.addClass('trick-cards');
+            } else {
+                $row = $('<div class="trick-cards d-flex gap-2 p-1" />').appendTo($section);
+            }
+        }
+        $row.empty();
+        (trickCards || []).forEach(tc => {
+            const $img = $('<img>', {
+                class: 'img-fluid card-img',
+                alt: '',
+                title: tc.label || '' ,
+                src: tc.imageUrl || ''
+            });
+            const $slot = $('<div>', { class: 'card-slot' }).append($img);
+            $row.append($slot);
+        });
+    }
+
+    function currentPlayerFromPath(){
+        try {
+            const path = window.location && window.location.pathname || '';
+            if (path.startsWith('/play/')) return decodeURIComponent(path.substring('/play/'.length));
+        } catch(_) {}
+        return undefined;
+    }
+
     async function refreshGameState() {
         if (!(window.jsRoutes && jsRoutes.controllers?.HomeController?.gameState)) return;
         const route = jsRoutes.controllers.HomeController.gameState();
         try {
-            const state = await ajaxJson(route);
+            const player = currentPlayerFromPath();
+            const state = await ajaxJson(route, { data: player ? { player } : undefined });
             const $hands = $('.game__hand');
             if (Array.isArray(state?.hands) && state.hands.length) {
                 $hands.each(function(i){
@@ -143,6 +188,9 @@
                 .addClass('animate-visible')
                 .css('transition', '');
             updateScoreboard(state);
+            if (Array.isArray(state?.trickCards)) {
+                renderTrickCards(state.trickCards);
+            }
         } catch (e) {
             console.error('refreshGameState failed', e);
         }
@@ -158,16 +206,19 @@
             const $img = $(this);
             const cardId = $img.data('card-id');
             if (!cardId) return;
-            if ($img.data('busy')) return; // Spam verhindern
+            if ($img.data('busy')) return;
             $img.data('busy', true).css('opacity', 0.6);
             try {
                 const route = jsRoutes.controllers.HomeController.playCardJson();
-                const res = await postJson(route, { cardId });
+                const player = currentPlayerFromPath();
+                const res = await postJson(route, { cardId, player });
                 if (res && res.ok) {
-                    updateCurrentTricks($img);
                     await refreshGameState();
                 } else {
                     console.warn('playCardJson not ok', res);
+                    if (res && res.error) {
+                        try { window.toastr && toastr.warning(res.error); } catch(_) {}
+                    }
                 }
             } catch (err) {
                 console.error('playCard failed', err);
@@ -192,7 +243,8 @@
             $btn.data('busy', true).prop('disabled', true).text('...');
             try {
                 const route = jsRoutes.controllers.HomeController.bidJson();
-                const res = await postJson(route, { bid: value });
+                const player = currentPlayerFromPath();
+                const res = await postJson(route, { bid: value, player });
                 if (res && res.ok) {
                     $input.val('');
                     setTimeout(() => { refreshGameState(); }, 250);
@@ -237,33 +289,30 @@
         });
     }
 
-    // Ajax update
-    async function updateCurrentTricks($img) {
-        if (!$img || $img.length === 0) return;
-        const $section = $(".game__section[aria-label='Aktueller Stich']");
-        if ($section.length === 0) return;
+    $(initAnimatedHands);
 
-        let $row = $section.find('.trick-cards');
-        if ($row.length === 0) {
-            $row = $section.find("div[style*='display: flex']").first();
-            if ($row.length) {
-                $row.addClass('trick-cards');
-            } else {
-                $row = $('<div class="trick-cards d-flex gap-2 p-1" />').appendTo($section);
-            }
+    (function setupLiveRefresh(){
+        if (window.__wizardLiveRefreshSetup) return;
+        window.__wizardLiveRefreshSetup = true;
+
+        function visible(){
+            return document.visibilityState === 'visible' || document.visibilityState === 'prerender';
         }
 
-        let $block = $img.closest('.md-3');
-        if ($block.length === 0) $block = $img.closest('.card-slot');
-        if ($block.length === 0) $block = $img;
+        function scheduleInterval(){
+            if (window.__wizardLiveRefreshInterval) return;
+            window.__wizardLiveRefreshInterval = setInterval(() => {
+                try {
+                    if (!visible()) return;
+                    refreshGameState();
+                } catch (e) { /* ignore */ }
+            }, 1500);
+        }
 
-        $block.find('.card-img').addBack('.card-img')
-            .removeClass('animate-hidden animate-visible')
-            .css({transition: '', opacity: ''});
+        window.addEventListener('focus', () => { if (visible()) refreshGameState(); }, { passive: true });
+        document.addEventListener('visibilitychange', () => { if (visible()) refreshGameState(); }, { passive: true });
+        window.addEventListener('pageshow', () => { if (visible()) refreshGameState(); }, { passive: true });
 
-        $block.detach();
-        $row.append($block);
-    }
-
-    $(initAnimatedHands);
+        scheduleInterval();
+    })();
 })(jQuery);

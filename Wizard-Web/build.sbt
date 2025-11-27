@@ -2,13 +2,16 @@ import com.typesafe.sbt.less.Import.LessKeys
 import com.typesafe.sbt.web.Import.Assets
 
 ThisBuild / scalaVersion := "3.5.1"
-
 lazy val commonSettings = Seq(
   libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % "test",
   libraryDependencies += guice,
   Test / testOptions += Tests.Filter(_.equals("wizard.aTestSequence.TestSequence")),
   libraryDependencies += "org.scalafx" %% "scalafx" % "22.0.0-R33",
-  Compile / libraryDependencies ++= {
+  libraryDependencies += "org.apache.pekko" %% "pekko-actor-typed" % "1.0.2",
+  libraryDependencies += "org.apache.pekko" %% "pekko-stream" % "1.0.2",
+  libraryDependencies += "org.apache.pekko" %% "pekko-http" % "1.0.1",
+  libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.6",
+Compile / libraryDependencies ++= {
     val os = System.getProperty("os.name").toLowerCase
     val platform =
       if (os.contains("win")) "win"
