@@ -9,11 +9,17 @@
   }
 
   function setText(text){
+    if (window.gameUI && typeof window.gameUI.setText === 'function') {
+      try { window.gameUI.setText(String(text)); return; } catch(e) { console.error(e); }
+    }
     var area = getArea();
     if (area) area.textContent = text;
   }
 
   function append(html){
+    if (window.gameUI && typeof window.gameUI.append === 'function') {
+      try { window.gameUI.append(String(html)); return; } catch(e) { console.error(e); }
+    }
     var area = getArea();
     if (area) area.innerHTML = html;
   }
@@ -22,12 +28,12 @@
     try {
       socket = new WebSocket(wsUrl);
     } catch (e) {
-      console.error('WebSocket Verbindungsfehler', e);
+      console.error('WebSocket connection error', e);
       return;
     }
 
     socket.onopen = function(){
-      console.log('WebSocket verbunden');
+      console.log('WebSocket connected');
     };
 
     socket.onmessage = function(event){
@@ -36,47 +42,53 @@
         var ev = msg.event;
         var data = msg.data || {};
 
+        if (window.gameUI && typeof window.gameUI.onEvent === 'function') {
+          try { window.gameUI.onEvent(msg); } catch(e) { console.error(e); }
+        }
+
         switch (ev) {
           case 'info':
             setText((data && data.message) ? ('Info: ' + data.message) : 'Info');
             break;
           case 'error.unknown.command':
-            setText('Fehler: Unbekanntes Kommando' + ((data && data.name) ? (' (' + data.name + ')') : ''));
+            setText('Error: Unknown command' + ((data && data.name) ? (' (' + data.name + ')') : ''));
             break;
           case 'error.invalid.payload':
-            setText('Fehler: Ungültiger Payload');
+            setText('Error: Invalid payload');
             break;
           case 'game.started':
-            setText('Spiel gestartet');
+            setText('Game started');
             break;
           case 'round.started':
-            setText('Runde gestartet: ' + (data.round ?? '?'));
+            setText('Round started: ' + (data.round ?? '?'));
             break;
           case 'trump.card':
-            setText('Trumpfkarte: ' + (data.color ?? '?') + ' ' + (data.value ?? '?'));
+            setText('Trump card: ' + (data.color ?? '?') + ' ' + (data.value ?? '?'));
             break;
           case 'players.hands.updated':
-            setText('Spielerhände aktualisiert');
+            setText("Players' hands updated");
             break;
           case 'trick.card.played':
-            setText('Karte in Stich: ' + (data.value ?? '?'));
+            setText('Card in trick: ' + (data.value ?? '?'));
+            try { if (typeof window.refreshGameState === 'function') { window.refreshGameState(); } } catch (__) {}
             break;
           case 'round.finished':
-            setText('Runde beendet: ' + (data.round ?? '?'));
+            setText('Round finished: ' + (data.round ?? '?'));
             break;
           case 'player.event':
-            setText(data.message ?? 'Spieler-Event');
+            setText(data.message ?? 'Player event');
             break;
           case 'player.names.prompt':
-            setText('Bitte Namen eingeben (' + (data.current ?? 0) + '/' + (data.total ?? 0) + ')');
+            setText('Please enter names (' + (data.current ?? 0) + '/' + (data.total ?? 0) + ')');
             break;
           case 'player.hand': {
             var cards = (data.cards || []).map(function(c){ return c.color + ' ' + c.value; }).join(', ');
-            setText('Hand von ' + (data.player ?? '?') + ': ' + cards);
+            setText('Hand of ' + (data.player ?? '?') + ': ' + cards);
             break;
           }
           case 'player.play.card':
-            setText((data.player ?? 'Spieler') + ' spielt ' + (data.color ?? '?') + ' ' + (data.value ?? '?'));
+            setText((data.player ?? 'Player') + ' plays ' + (data.color ?? '?') + ' ' + (data.value ?? '?'));
+            try { if (typeof window.refreshGameState === 'function') { window.refreshGameState(); } } catch (__) {}
             break;
           default:
             if (typeof ev === 'string' && ev.endsWith('.accepted')) {
@@ -88,17 +100,17 @@
             }
         }
       } catch(e) {
-        console.error('Konnte Nachricht nicht als JSON parsen.', e);
+        console.error('Could not parse message as JSON.', e);
         setText(event.data);
       }
     };
 
     socket.onerror = function(err){
-      console.log('WebSocket-Fehler: ', err);
+      console.log('WebSocket error: ', err);
     };
 
     socket.onclose = function(){
-      console.log('WebSocket geschlossen');
+      console.log('WebSocket closed');
     };
 
     var btn = document.getElementById('sendButton');

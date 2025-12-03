@@ -24,13 +24,15 @@
             @defining(s"background-image: url('$bgUrl')") { bgStyle =>
 
                 <main>
+                    <!-- Vue Mount -->
+                    <div id="app"></div>
                     <div class="game__main bg-ingame" style="@bgStyle">
                         <div class="container">
                             <div class="row">
                                 <div class="col-4 col-md-3">
                                     @logic.getTrumpCard.map { trump =>
-                                    <section class="game__section game__section--trump" aria-label="Trumpf">
-                                        <div class="title">Trumpf:
+                                    <section class="game__section game__section--trump" aria-label="Trump">
+                                        <div class="title">Trump:
                                             @{
                                                 trump.value match {
                                                     case wizard.model.cards.Value.WizardKarte => "Wizard"
@@ -44,15 +46,15 @@
                                         </div>
                                     </section>
                                     }.getOrElse {
-                                        <section class="game__section game__section--trump" aria-label="Trumpf">
-                                            <div class="title">Trumpf: —</div>
+                                        <section class="game__section game__section--trump" aria-label="Trump">
+                                            <div class="title">Trump: —</div>
                                         </section>
                                     }
                                 </div>
                                 <div class="col-8 col-md-6">
                                 @logic.getTrickCards.filter(_.nonEmpty).map { cards =>
-                                <section class="game__section" aria-label="Aktueller Stich">
-                                    <div class="title">Aktueller Stich:</div>
+                                <section class="game__section" aria-label="Current Trick">
+                                    <div class="title">Current Trick:</div>
                                     <div style="display: flex">
                                         @for(card <- cards) {
                                             <div class="card">
@@ -62,8 +64,8 @@
                                     </div>
                                 </section>
                                 }.getOrElse {
-                                    <section class="game__section" aria-label="Aktueller Stich">
-                                        <div class="title">Aktueller Stich:</div>
+                                    <section class="game__section" aria-label="Current Trick">
+                                        <div class="title">Current Trick:</div>
                                     </section>
                                 }
                                 </div>
@@ -71,11 +73,11 @@
                                 @logic.getPlayer.map { players =>
                                     <section class="game__section game__section--scoreboard" aria-label="Scoreboard">
                                         <div class="game__scoreboard">
-                                            <div class="title">Runde</div>
+                                            <div class="title">Round</div>
                                             <div class="score-grid">
-                                                <div class="hdr">Spieler</div>
+                                                <div class="hdr">Player</div>
                                                 <div class="hdr">Bid</div>
-                                                <div class="hdr">Punkte</div>
+                                                <div class="hdr">Points</div>
                                                 @for(p <- players) {
                                                     <div>@p.name</div>
                                                     <div class="val">@p.roundBids</div>
@@ -91,8 +93,8 @@
                     <div class="container">
                         @logic.getPlayer.foreach { players =>
                             <div class="row py-1">
-                                <section class="game__section" aria-label="Spielerübersicht">
-                                    <div class="title">Spieler:</div>
+                                <section class="game__section" aria-label="Players overview">
+                                    <div class="title">Players:</div>
                                     <div>@players.map(_.name).mkString(", ")</div>
                                 </section>
                             </div>
@@ -103,7 +105,7 @@
                             @logic.getPlayer.foreach { players =>
                                 @for((p, pIdx) <- players.zipWithIndex) {
                                     <div class="row py-1">
-                                        <section class="game__section game__hand" aria-label="Hand von @p.name">
+                                        <section class="game__section game__hand" aria-label="Hand of @p.name">
                                             <div class="d-flex gap-2 p-1">
                                                 <div class="player-name">@p.name</div>
                                                 <label for="@{"bid-" + pIdx}" class="form-label"></label>
@@ -145,7 +147,7 @@
                             }) { meIdx =>
                             @logic.getPlayer.flatMap(ps => ps.lift(meIdx)).map { me =>
                                 <div class="row py-1">
-                                    <section class="game__section game__hand" aria-label="Hand von @me.name">
+                                    <section class="game__section game__hand" aria-label="Hand of @me.name">
                                         <div class="d-flex gap-2 p-1">
                                             <div class="player-name">@me.name</div>
                                             <label for="@{"bid-" + meIdx}" class="form-label"></label>
@@ -178,7 +180,7 @@
                             }.getOrElse {
                                 <div class="row py-1">
                                     <section class="game__section">
-                                        <div class="text-danger">Unbekannter Spieler. Bitte über das Menü neu starten.</div>
+                                        <div class="text-danger">Unknown player. Please restart via the menu.</div>
                                     </section>
                                 </div>
                             }
@@ -193,6 +195,8 @@
                             window.location.reload();
                         }
                     </script>
+                    <script src="https://unpkg.com/vue@@3"></script>
+                    <script src='@routes.Assets.versioned("javascripts/vueApp.js")'></script>
                     <script src='@routes.Assets.versioned("javascripts/socketClient.js")'></script>
                     </main>
 

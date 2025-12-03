@@ -136,7 +136,10 @@
     }
 
     function renderTrickCards(trickCards){
-        const $section = $(".game__section[aria-label='Aktueller Stich']");
+        let $section = $(".game__section[aria-label='Current Trick']");
+        if ($section.length === 0) {
+            $section = $(".game__section[aria-label='Aktueller Stich']");
+        }
         if ($section.length === 0) return;
         let $row = $section.find('.trick-cards');
         if ($row.length === 0) {
@@ -194,6 +197,10 @@
         } catch (e) {
             console.error('refreshGameState failed', e);
         }
+    }
+
+    if (typeof window.refreshGameState !== 'function') {
+        window.refreshGameState = function(){ try { return refreshGameState(); } catch(_){} };
     }
 
     // Ajax UI aktualisiern (Karten)

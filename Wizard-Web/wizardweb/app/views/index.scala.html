@@ -5,12 +5,17 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>WebSocket Spiel</title>
+        <title>WebSocket Game</title>
+        <script src="https://unpkg.com/vue@@3"></script>
     </head>
     <body>
-        <h2>WebSocket Chat / Spiel</h2>
-        <div id="gameArea"></div>
-        <button id="sendButton">Nachricht senden</button>
+        <h2>WebSocket Chat / Game</h2>
+        <div id="app"></div>
+
+        <div id="gameArea" style="margin-top:1rem;"></div>
+        <button id="sendButton">Send message</button>
+
+        <script src='@routes.Assets.versioned("javascripts/vueApp.js")'></script>
         <script src='@routes.Assets.versioned("javascripts/socketClient.js")'></script>
     </body>
 </html>
