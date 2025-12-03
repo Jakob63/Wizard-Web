@@ -168,9 +168,29 @@ class HomeController @Inject() (cc: ControllerComponents, input: UserInput)
         if (!allowed) {
           Forbidden(Json.obj("ok" -> false, "error" -> s"$who ist nicht am Zug."))
         } else {
-          input.offer(bidStr)
-          Thread.sleep(200)
-          Ok(Json.obj("ok" -> true))
+          val bidOptInt = scala.util.Try(bidStr.trim.toInt).toOption
+
+          val handSizeOpt: Option[Int] = WebTui.gameLogic.flatMap { gl =>
+            gl.getPlayer.flatMap { players =>
+              players.find(_.name == who).map(_.hand.cards.length)
+            }
+          }
+
+          (bidOptInt, handSizeOpt) match {
+            case (Some(bidInt), Some(handSize)) if bidInt >= 0 && bidInt <= handSize =>
+              input.offer(bidStr)
+              Thread.sleep(200)
+              Ok(Json.obj("ok" -> true))
+            case (Some(bidInt), Some(handSize)) if bidInt > handSize =>
+              BadRequest(Json.obj(
+                "ok" -> false,
+                "error" -> s"Du kannst höchstens $handSize Stiche ansagen."
+              ))
+            case (Some(_), Some(_)) =>
+              BadRequest(Json.obj("ok" -> false, "error" -> "Ungültige Ansage."))
+            case _ =>
+              BadRequest(Json.obj("ok" -> false, "error" -> "Fehlende Spielerdaten."))
+          }
         }
       case (None, _) => BadRequest(Json.obj("ok" -> false, "error" -> "Missing bid"))
       case (_, None) => BadRequest(Json.obj("ok" -> false, "error" -> "Missing player"))

@@ -229,6 +229,12 @@
                 }
             } catch (err) {
                 console.error('playCard failed', err);
+                try {
+                    const msg = (err && err.responseJSON && err.responseJSON.error) ? err.responseJSON.error
+                              : (err && err.responseText) ? String(err.responseText)
+                              : 'Aktion fehlgeschlagen.';
+                    if (window.toastr && msg) toastr.warning(msg);
+                } catch(_) {}
             } finally {
                 $img.data('busy', false).css('opacity', '');
             }
@@ -245,7 +251,24 @@
             const idx = $btn.data('index');
             const $input = $('#bid-' + idx);
             const value = ($input.val() ?? '').toString().trim();
-            if (!value) return;
+            if (!value) {
+                try { window.toastr && toastr.warning('Bitte eine Zahl eingeben.'); } catch(_) {}
+                return;
+            }
+            const valueNum = Number(value);
+            if (!Number.isInteger(valueNum) || valueNum < 0) {
+                try { window.toastr && toastr.warning('Bitte eine nicht-negative ganze Zahl eingeben.'); } catch(_) {}
+                return;
+            }
+            try {
+                const $hand = $btn.closest('.game__hand');
+                const playerName = $hand.find('.player-name').text().trim();
+                const handCount = $hand.find('.card-img').length;
+                if (handCount > 0 && valueNum > handCount) {
+                    try { window.toastr && toastr.warning('Du kannst höchstens ' + handCount + ' Stiche ansagen.'); } catch(_) {}
+                    return;
+                }
+            } catch(_) {}
             if ($btn.data('busy')) return;
             $btn.data('busy', true).prop('disabled', true).text('...');
             try {
@@ -257,9 +280,18 @@
                     setTimeout(() => { refreshGameState(); }, 250);
                 } else {
                     console.warn('bidJson not ok', res);
+                    if (res && res.error) {
+                        try { window.toastr && toastr.warning(res.error); } catch(_) {}
+                    }
                 }
             } catch (err) {
                 console.error('bidJson failed', err);
+                try {
+                    const msg = (err && err.responseJSON && err.responseJSON.error) ? err.responseJSON.error
+                              : (err && err.responseText) ? String(err.responseText)
+                              : 'Gebot fehlgeschlagen.';
+                    if (window.toastr && msg) toastr.warning(msg);
+                } catch(_) {}
             } finally {
                 $btn.data('busy', false).prop('disabled', false).text('Submit');
             }
@@ -273,6 +305,46 @@
                 if (idx !== undefined) {
                     $(this).closest('.game__section').find('.js-bid-submit[data-index="' + idx + '"]').trigger('click');
                 }
+            }
+        });
+
+        // Sofortige visuelle Warnungen bei ungültiger Eingabe (manuell oder per Pfeile)
+        function maybeWarnOnce($el, key, message){
+            const now = Date.now();
+            const last = Number($el.data(key) || 0);
+            if (!last || (now - last) > 900) {
+                try { window.toastr && toastr.warning(message); } catch(_) {}
+                $el.data(key, now);
+            }
+        }
+
+        $(document).on('input change', '.bid-input', function(){
+            const $input = $(this);
+            const raw = ($input.val() ?? '').toString().trim();
+            if (!raw) return; // Keine Warnung bei leerem Feld
+            const n = Number(raw);
+            const maxAttr = $input.attr('max');
+            const minAttr = $input.attr('min');
+            const max = maxAttr ? Number(maxAttr) : undefined;
+            const min = (minAttr !== undefined && minAttr !== null) ? Number(minAttr) : 0;
+
+            if (!Number.isFinite(n)) {
+                maybeWarnOnce($input, 'warn-nan', 'Bitte eine Zahl eingeben.');
+                return;
+            }
+            if (!Number.isInteger(n)) {
+                maybeWarnOnce($input, 'warn-int', 'Bitte eine ganze Zahl eingeben.');
+                return;
+            }
+            if (n < (Number.isFinite(min) ? min : 0)) {
+                maybeWarnOnce($input, 'warn-min', 'Der Wert darf nicht negativ sein.');
+                $input.val(Math.max(0, min || 0));
+                return;
+            }
+            if (Number.isFinite(max) && n > max) {
+                maybeWarnOnce($input, 'warn-max', 'Du kannst höchstens ' + max + ' Stiche ansagen.');
+                $input.val(max);
+                return;
             }
         });
     });

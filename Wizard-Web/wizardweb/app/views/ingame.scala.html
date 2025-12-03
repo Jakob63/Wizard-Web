@@ -115,6 +115,7 @@
                                                        placeholder="Bid"
                                                        name="bid"
                                                        min="0"
+                                                       max="@p.hand.cards.length"
                                                        required>
                                                 <button type="button"
                                                         class="btn btn-primary js-bid-submit"
@@ -157,6 +158,7 @@
                                                    placeholder="Bid"
                                                    name="bid"
                                                    min="0"
+                                                   max="@me.hand.cards.length"
                                                    required>
                                             <button type="button"
                                                     class="btn btn-primary js-bid-submit"
@@ -194,6 +196,25 @@
                         function play_card(idx) {
                             window.location.reload();
                         }
+                    </script>
+                    <!-- Toastr (Popup-Warnungen) einbinden -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-7VQF1A4QDIoA6C1JfQ6m9D0Qpaa2Dq8TaeT+4jK8F0X4j3k1qQGmS7Jw0zvT3P3n3kq0r6mA3p8jv4s6Z5x9Vg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-sGf5Q9tJQh+zqEw0m6l5k9a+qC8sR9pWgF8Bqz2QkqQ0y3DqH8L2mR8hD1xZ2Ezr9pHqg8uK1g4pYt0m3z9v8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <script>
+                        // Fallback, falls Toastr nicht geladen werden konnte
+                        (function(){
+                            if (!window.toastr) {
+                                window.toastr = {
+                                    warning: function(msg){ try { alert(String(msg||'')); } catch(_) {} },
+                                    info: function(msg){ try { alert(String(msg||'')); } catch(_) {} },
+                                    error: function(msg){ try { alert(String(msg||'')); } catch(_) {} },
+                                    success: function(msg){ try { alert(String(msg||'')); } catch(_) {} }
+                                };
+                            }
+                            try {
+                                toastr.options = Object.assign({},{ positionClass: 'toast-top-center', timeOut: 2500, closeButton: true, progressBar: true, preventDuplicates: true });
+                            } catch(_) {}
+                        })();
                     </script>
                     <script src="https://unpkg.com/vue@@3"></script>
                     <script src='@routes.Assets.versioned("javascripts/vueApp.js")'></script>
