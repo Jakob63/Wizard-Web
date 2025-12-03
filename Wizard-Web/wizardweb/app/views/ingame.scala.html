@@ -90,7 +90,7 @@
                                 </div>
                         </div>
                     </div>
-                    <div class="container">
+                    <div id="ingame-vue-root" class="container" v-cloak>
                         @logic.getPlayer.foreach { players =>
                             <div class="row py-1">
                                 <section class="game__section" aria-label="Players overview">
@@ -116,7 +116,9 @@
                                                        name="bid"
                                                        min="0"
                                                        max="@p.hand.cards.length"
-                                                       required>
+                                                       required
+                                                       v-model="bids[@pIdx]"
+                                                       v-on:keydown.enter.prevent.stop="submitBid(@pIdx)">
                                                 <button type="button"
                                                         class="btn btn-primary js-bid-submit"
                                                         data-index="@pIdx.toString">Submit</button>
@@ -159,7 +161,9 @@
                                                    name="bid"
                                                    min="0"
                                                    max="@me.hand.cards.length"
-                                                   required>
+                                                   required
+                                                   v-model="bids[@meIdx]"
+                                                   v-on:keydown.enter.prevent.stop="submitBid(@meIdx)">
                                             <button type="button"
                                                     class="btn btn-primary js-bid-submit"
                                                     data-index="@meIdx.toString">Submit</button>
@@ -197,11 +201,10 @@
                             window.location.reload();
                         }
                     </script>
-                    <!-- Toastr (Popup-Warnungen) einbinden -->
+                    <!-- Toastr -->
                     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-7VQF1A4QDIoA6C1JfQ6m9D0Qpaa2Dq8TaeT+4jK8F0X4j3k1qQGmS7Jw0zvT3P3n3kq0r6mA3p8jv4s6Z5x9Vg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-sGf5Q9tJQh+zqEw0m6l5k9a+qC8sR9pWgF8Bqz2QkqQ0y3DqH8L2mR8hD1xZ2Ezr9pHqg8uK1g4pYt0m3z9v8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
                     <script>
-                        // Fallback, falls Toastr nicht geladen werden konnte
                         (function(){
                             if (!window.toastr) {
                                 window.toastr = {
@@ -220,7 +223,6 @@
                     <script src='@routes.Assets.versioned("javascripts/vueApp.js")'></script>
                     <script src='@routes.Assets.versioned("javascripts/socketClient.js")'></script>
                     </main>
-
             }
             }
         }

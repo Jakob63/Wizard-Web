@@ -289,7 +289,7 @@
                 try {
                     const msg = (err && err.responseJSON && err.responseJSON.error) ? err.responseJSON.error
                               : (err && err.responseText) ? String(err.responseText)
-                              : 'Gebot fehlgeschlagen.';
+                              : 'Bid failed.';
                     if (window.toastr && msg) toastr.warning(msg);
                 } catch(_) {}
             } finally {

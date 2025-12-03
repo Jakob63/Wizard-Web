@@ -3,22 +3,15 @@
     console.warn('Vue not found. The page will fall back to legacy DOM updates.');
     return;
   }
-
-  const MessageLog = {
-    name: 'MessageLog',
-    props: {
-      items: { type: Array, default: () => [] }
-    },
-    template: `<div style="display:none"></div>`
-  };
-
   const App = {
     name: 'RootApp',
-    components: { MessageLog },
     data(){
       return {
         lastText: 'Ready…',
         log: [],
+        bids: {},
+        filter: '',
+        helpOpen: false,
         game: {
           started: false,
           round: null,
@@ -28,6 +21,26 @@
           myHand: []
         }
       };
+    },
+    computed: {
+      roundLabel(){
+        return (this.game && this.game.round != null) ? ('Runde ' + this.game.round) : 'Runde: —';
+      },
+      trickCount(){
+        return Array.isArray(this.game && this.game.trick) ? this.game.trick.length : 0;
+      },
+      playersCount(){
+        return Array.isArray(this.game && this.game.players) ? this.game.players.length : 0;
+      },
+      filteredLog(){
+        const q = (this.filter || '').toString().trim().toLowerCase();
+        if (!q) return this.log;
+        try {
+          return this.log.filter(function (l){ return String(l||'').toLowerCase().includes(q); });
+        } catch(_) {
+          return this.log;
+        }
+      }
     },
     methods: {
       burstRefresh(labelForSection, playerName){
@@ -194,6 +207,13 @@
         }
       }
     },
+    watch: {
+      'game.round': function(newVal, oldVal){
+        if (newVal !== oldVal) {
+          try { this.log.unshift('Neue Runde: ' + newVal); } catch(_) {}
+        }
+      }
+    },
     template: `<div style="display:none"></div>`,
     mounted(){
       window.gameUI = {
@@ -201,8 +221,48 @@
         append: (h) => this.append(h),
         onEvent: (m) => this.onEvent(m)
       };
+
+      try {
+        const enhanceRoot = document.getElementById('ingame-vue-root');
+        if (enhanceRoot && window.Vue && typeof Vue.createApp === 'function') {
+          const Enhance = {
+            name: 'EnhanceExistingUI',
+            data: () => ({
+              bids: {}
+            }),
+            methods: {
+              submitBid(idx){
+                try {
+                  const btn = document.querySelector('.js-bid-submit[data-index="' + idx + '"]');
+                  if (btn) {
+                    const input = document.getElementById('bid-' + idx);
+                    if (input && Object.prototype.hasOwnProperty.call(this.bids, idx)) {
+                      input.value = this.bids[idx];
+                    }
+                    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                  }
+                } catch(e) { console.warn('submitBid failed', e); }
+              }
+            },
+            mounted(){
+              try {
+                const inputs = enhanceRoot.querySelectorAll('input.bid-input[id^="bid-"]');
+                inputs.forEach((inp) => {
+                  const id = inp.id && inp.id.startsWith('bid-') ? inp.id.substring(4) : null;
+                  if (id != null) this.$data.bids[id] = inp.value || '';
+                });
+              } catch(_) {}
+            }
+          };
+          try {
+            Vue.createApp(Enhance).mount('#ingame-vue-root');
+          } catch(e) {
+            console.warn('Mount enhance app failed', e);
+          }
+        }
+      } catch(e) { console.warn('Enhancement setup failed', e); }
     }
   };
 
-  Vue.createApp(App).mount('#app');
+  try { Vue.createApp(App).mount('#app'); } catch(e) { console.warn('Mount root app failed', e); }
 })();
