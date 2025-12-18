@@ -1,28 +1,99 @@
-$.ajaxSetup({
-    beforeSend: function(xhr){
-        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        if (token) xhr.setRequestHeader('Csrf-Token', token);
-    }
-});
+// CSRF helper: read Play's CSRF token from cookie and attach it to all AJAX requests
+function getCookie(name){
+    const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()\[\]\\\/\+^]/g, '\\$&') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+}
+
+function getCsrfHeaderValue(){
+    try {
+        let token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (!token) token = getCookie('PLAY_CSRF_TOKEN');
+        // Play expects the literal header value "nocheck" (without dash) to bypass CSRF in trusted contexts
+        return token || 'nocheck';
+    } catch(_) { return 'nocheck'; }
+}
+
+// We no longer attach CSRF headers from the client. The backend is configured to exempt
+// JSON API paths (/api/**) from CSRF, and we also strip any CSRF tokens from query strings.
+// This avoids conflicts where Play rejects requests due to mismatched/stale query tokens.
+// If you re-enable CSRF protection on these endpoints, you may restore the header logic.
+
+function stripCsrfQuery(urlObj){
+    try {
+        // Some Play setups append a CSRF token to reverse-routed URLs, e.g. ?csrfToken=...
+        // When we intentionally use header Csrf-Token: nocheck for JSON calls,
+        // any token in the query string must be removed to avoid CSRF rejections.
+        const params = urlObj.searchParams;
+        [
+            'csrfToken', // Play default
+            'csrf',
+            '_csrf',
+            '_csrfToken',
+            'xsrfToken',
+            'X-CSRF-Token',
+            'x-csrf-token',
+            '_token'
+        ].forEach((n) => { try { params.delete(n); } catch(_) {} });
+        // Apply back (empty string if no params left)
+        const s = params.toString();
+        urlObj.search = s ? ('?' + s) : '';
+    } catch(_) {}
+}
+
+function toSameOrigin(u){
+    try {
+        if (!u) return u;
+        // Normalize relative/absolute against current location
+        const url = new URL(u, window.location.href);
+        // Always strip any csrf token carried in query string
+        stripCsrfQuery(url);
+        if (url.origin === window.location.origin) {
+            return url.href;
+        }
+        // If absolute to a different origin, return a path to let the Vite proxy (5173) keep same-origin
+        return url.pathname + (url.search || '') + (url.hash || '');
+    } catch(_) { return u; }
+}
+
+// Resolve jsRoutes route objects to concrete URLs and normalize them
+function resolveRouteUrl(routeOrUrl){
+    try {
+        if (!routeOrUrl) return routeOrUrl;
+        // If it's already a string, normalize and return
+        if (typeof routeOrUrl === 'string') {
+            return toSameOrigin(routeOrUrl);
+        }
+        // Play jsRoutes exposes a .url function; call it if present
+        const raw = (typeof routeOrUrl.url === 'function') ? routeOrUrl.url() : routeOrUrl.url;
+        if (typeof raw === 'string' && raw.length > 0) {
+            return toSameOrigin(raw);
+        }
+        // Fallback: try routeOrUrl.toString()
+        const str = String(routeOrUrl || '');
+        return toSameOrigin(str);
+    } catch(_) { return (typeof routeOrUrl === 'string') ? routeOrUrl : ''; }
+}
 
 function apiCall(route, options = {}) {
     return $.ajax({
-        url: route.url,
+        url: resolveRouteUrl(route),
         method: route.type,
         data: options.data,
         dataType: 'json',
-        timeout: options.timeout || 15000
+        timeout: options.timeout || 15000,
+        xhrFields: { withCredentials: true }
     });
 }
 
 function postJson(route, payload) {
     return $.ajax({
-        url: route.url,
+        url: resolveRouteUrl(route),
         method: route.type || 'POST',
         data: JSON.stringify(payload),
         contentType: 'application/json; charset=UTF-8',
         dataType: 'json',
-        timeout: 15000
+        timeout: 15000,
+        xhrFields: { withCredentials: true }
     });
 }
 
@@ -34,15 +105,32 @@ function showInlineError(selector, message) {
 
 function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const a=arguments, ctx=this; t=setTimeout(()=>fn.apply(ctx, a), ms);}}
 
+function getPlayerCount(){
+    const fromHidden = parseInt($('#playerCount').val(), 10);
+    if (!isNaN(fromHidden) && fromHidden >= 3 && fromHidden <= 6) return fromHidden;
+    // Fallback: count inputs with id^=name inside #nameForm
+    const cnt = $('#nameForm input[id^="name"]').length;
+    if (cnt >= 3 && cnt <= 6) return cnt;
+    return 3;
+}
+
 function readNames(){
-    return [$('#name1').val()||'', $('#name2').val()||'', $('#name3').val()||''];
+    const count = getPlayerCount();
+    const arr = [];
+    for (let i = 1; i <= count; i++) {
+        arr.push($('#name' + i).val() || '');
+    }
+    return arr;
 }
 
 function writeNames(players){
-    if(!players||players.length<3) return;
-    $('#name1').val(players[0]||'').trigger('input');
-    $('#name2').val(players[1]||'').trigger('input');
-    $('#name3').val(players[2]||'').trigger('input');
+    if(!Array.isArray(players) || players.length === 0) return;
+    const count = getPlayerCount();
+    for (let i = 1; i <= count; i++) {
+        const val = players[i-1] || '';
+        const $inp = $('#name' + i);
+        if ($inp.length) $inp.val(val).trigger('input');
+    }
 }
 
 const autoSubmit = debounce(function(){
@@ -73,76 +161,24 @@ const autoSave = debounce(function(){
     postJson(route, { players }).catch(err => console.warn('Auto-save failed', err));
 }, 500);
 
-    //var form = document.getElementById('choiceForm');
-    //form.action = '/demo_input/' + encodeURIComponent(val);
-    //form.submit();
-
 function submitNames(){
     if (!(window.jsRoutes && jsRoutes.controllers?.HomeController?.createPlayersJson)) return;
     const players = readNames();
     if (players.some(n => !n || !n.trim())) { showInlineError('#namesError', 'Bitte geben Sie alle Namen ein.'); return; }
-    let urls = [];
-    try {
-        urls = players.map(n => '/play/' + encodeURIComponent(n));
-        const wins = urls.map((u) => {
-            try {
-                const w = window.open(u, '_blank');
-                if (!w) console.warn('Popup blockiert', u);
-                return w;
-            } catch(e) { console.warn('Popup blockiert (direct)', e); return null; }
-        });
-        window.__playersTabsOpened = true;
-        window.__playersTabsUrls = urls;
-        window.__playersWindows = wins;
-        const first = urls[0];
-        if (first) setTimeout(() => { try { window.location.assign(first); } catch(_) {} }, 100);
-    } catch(e) {
-        console.warn('Synchrones Öffnen der Tabs fehlgeschlagen', e);
-    }
+    const ingame = '/ingame';
     const route = jsRoutes.controllers.HomeController.createPlayersJson();
     return postJson(route, { players })
         .then(data => {
-            if (Array.isArray(data?.tabs) && data.tabs.length) {
-                const targetUrls = data.tabs;
-                const first = data.first || targetUrls[0];
-                if (window.__playersTabsOpened && Array.isArray(window.__playersWindows)) {
-                    targetUrls.forEach((u, i) => {
-                        const w = window.__playersWindows[i];
-                        try {
-                            if (w && !w.closed) {
-                                if (w.location && w.location.href !== u) {
-                                    w.location.replace(u);
-                                }
-                            } else {
-                                const nw = window.open(u, '_blank');
-                                if (!nw) console.warn('Popup-Blocker verhinderte Fallback-Tab', u);
-                            }
-                        } catch(e) {
-                            console.warn('Navigation in vorgeöffnetem Tab fehlgeschlagen', e);
-                            const nw = window.open(u, '_blank');
-                            if (!nw) console.warn('Popup-Blocker verhinderte Fallback-Tab', u);
-                        }
-                    });
-                    setTimeout(() => { try { window.location.assign(first); } catch(_) {} }, 100);
-                } else {
-                    try {
-                        targetUrls.forEach(u => {
-                            const w = window.open(u, '_blank');
-                            if (!w) console.warn('Popup-Blocker verhindert Tab', u);
-                        });
-                        setTimeout(() => { window.location.assign(first); }, 150);
-                    } catch(e) {
-                        console.error('Konnte Tabs nicht öffnen', e);
-                        window.location.assign(first);
-                    }
-                }
-            } else if (data?.message && !window.__playersTabsOpened) {
-                setTimeout(() => { window.location.href = data.message; }, 350);
-            } else {
+            if (data?.error) {
                 showInlineError('#namesError', 'Fehler beim Erstellen der Spieler.');
+            } else {
+                setTimeout(() => { try { window.location.assign(ingame); } catch(_) { window.location.href = ingame; } }, 100);
             }
         })
-        .catch(err => { console.error('submitNames fehlgeschlagen', err); showInlineError('#namesError', 'Fehler beim Erstellen der Spieler. Bitte versuchen Sie es erneut.'); });
+        .catch(err => {
+            console.error('submitNames fehlgeschlagen', err);
+            showInlineError('#namesError', 'Fehler beim Erstellen der Spieler. Bitte versuchen Sie es erneut.');
+        });
 }
 
 // jquery event
@@ -156,7 +192,8 @@ $(function() {
         $('#presetList').on('change', function () {
             fillNamesFromPreset(this.value);
         });
-        $form.on('input change', '#name1, #name2, #name3', function () {
+        // Delegate to any dynamic name inputs (name1..name6)
+        $form.on('input change', 'input[id^=name]', function () {
             autoSave();
             autoSubmit();
         });

@@ -20,8 +20,6 @@ class javascriptControllerRoutes @Inject() (cc: ControllerComponents, input: Use
       JavaScriptReverseRouter("jsRoutes")(
         routes.javascript.HomeController.index,
         routes.javascript.HomeController.home,
-        routes.javascript.HomeController.rules,
-        routes.javascript.HomeController.modify,
         routes.javascript.HomeController.ingame,
         routes.javascript.HomeController.demoOffer,
         routes.javascript.HomeController.createPlayers,
