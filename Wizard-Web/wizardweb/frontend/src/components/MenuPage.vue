@@ -60,16 +60,6 @@ export default {
     }
   },
   mounted(){
-    // Legacy menu.js als klassisches Script laden (funktioniert in Dev & Prod)
-    try {
-      if (!document.querySelector('script[data-legacy-menu]')) {
-        const s = document.createElement('script');
-        s.src = '/assets/javascripts/menu.js'; // Play-Assets (Dev via Vite-Proxy, Prod direkt)
-        s.defer = true;
-        s.setAttribute('data-legacy-menu', '1');
-        document.head.appendChild(s);
-        }
-      } catch(_) {}
   }
 }
 </script>

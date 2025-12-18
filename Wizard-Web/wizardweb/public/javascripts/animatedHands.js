@@ -1,4 +1,9 @@
 (function($) {
+    // Fix 2: Prevent duplicate initialization/bindings when this script is loaded multiple times
+    if (window.__animatedHandsLoaded) {
+        return;
+    }
+    window.__animatedHandsLoaded = true;
     const perCardDelay = 300;
     const betweenPlayersDelay = 420;
     const animationDuration = 320;
@@ -16,7 +21,23 @@
 .animate-visible {
   transform: translateY(0) scale(1);
   opacity: 1;
-}`;
+}
+/* When our trick renderer is active on a section, hide any legacy trick markup
+   outside of our dedicated render root to avoid duplicate visual rows. */
+.game__section.trick-render-active .card-slot:not(#trick-render-root *),
+.game__section.trick-render-active img.card-img:not(#trick-render-root img),
+.game__section.trick-render-active img.img-fluid[data-card-id]:not(#trick-render-root img) {
+  display: none !important;
+}
+/* Hide any direct children in the active container except our root */
+.game__section.trick-render-active > :not(#trick-render-root),
+#current_trick.trick-render-active > :not(#trick-render-root) {
+  display: none !important;
+}
+/* Completely hide other duplicate trick sections we mark as hidden */
+.game__section.trick-render-hidden,
+#current_trick.trick-render-hidden { display: none !important; }
+`;
         const styleEl = document.createElement('style');
         styleEl.id = 'animated-hands-style';
         styleEl.textContent = css;
@@ -80,7 +101,8 @@
     }
 
     function applyHiddenState($allHands) {
-        $allHands.find('.card-slot, .card-img').each(function () {
+        // Support both variants: img.img-fluid.card-img and img.img-fluid without .card-img but with data-card-id
+        $allHands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]').each(function () {
             $(this)
                 .addClass('animate-hidden')
                 .removeClass('animate-visible')
@@ -91,7 +113,7 @@
     function playStaggeredReveal($allHands) {
         let totalDelay = initialDelay;
         $allHands.each(function () {
-            const $cards = $(this).find('.card-slot, .card-img');
+            const $cards = $(this).find('.card-slot, img.card-img, img.img-fluid[data-card-id]');
             $cards.each(function (idx) {
                 const $c = $(this);
                 const showAt = totalDelay + idx * perCardDelay;
@@ -108,7 +130,7 @@
         if ($hands.length === 0) return;
 
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            $hands.find('.card-slot, .card-img').removeClass('animate-hidden').addClass('animate-visible');
+            $hands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]').removeClass('animate-hidden').addClass('animate-visible');
             return;
         }
 
@@ -147,26 +169,58 @@
             }
         } catch (err) {
             console.error('Error fetching game state:', err);
-            $hands.find('.card-slot, .card-img').removeClass('animate-hidden').addClass('animate-visible');
+            $hands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]').removeClass('animate-hidden').addClass('animate-visible');
         }
     }
 
     function renderTrickCards(trickCards){
-        let $section = $(".game__section[aria-label='Current Trick']");
-        if ($section.length === 0) {
-            $section = $(".game__section[aria-label='Aktueller Stich']");
+        // Idempotency: if the same trick content is already rendered, skip re-render to avoid duplicates
+        try {
+            const norm = (tc) => {
+                try {
+                    if (!tc) return '';
+                    if (tc.id !== undefined && tc.id !== null) return 'id:' + String(tc.id);
+                    if (tc.code) return 'code:' + String(tc.code);
+                    if (tc.imageUrl) {
+                        const u = new URL(tc.imageUrl, window.location.origin);
+                        return 'img:' + u.pathname; // ignore query/hash cache-busters
+                    }
+                    if (tc.label) return 'lbl:' + String(tc.label);
+                } catch(_) {}
+                try { return JSON.stringify(tc); } catch(_) { return String(tc); }
+            };
+            const sig = Array.isArray(trickCards)
+                ? trickCards.map(norm).sort().join('|')
+                : 'nil';
+            if (window.__lastTrickSig === sig) return;
+            window.__lastTrickSig = sig;
+        } catch(_) {}
+
+        // Prefer explicit container if present; consider both EN and DE sections
+        const $allSections = $('#current_trick, .game__section[aria-label="Current Trick"], .game__section[aria-label="Aktueller Stich"]');
+        if ($allSections.length === 0) return;
+
+        // Global cleanup: remove any previous trick rows in ALL candidate sections to avoid duplicates
+        try { $allSections.find('#trick-render-root .trick-cards, .trick-cards').remove(); } catch(_) {}
+
+        // Choose one target to render into: prefer a visible one, fallback to the first
+        let $section = $allSections.filter(':visible').first();
+        if ($section.length === 0) $section = $allSections.first();
+
+        // Mark section as active for our renderer (CSS will hide any legacy markup outside our root)
+        try { $section.addClass('trick-render-active'); } catch(_) {}
+        // Hide all non-chosen candidate sections entirely to avoid any duplicates from other renderers
+        try { $allSections.not($section).removeClass('trick-render-active').addClass('trick-render-hidden'); } catch(_) {}
+
+        // Create/get a dedicated render root inside the section to avoid touching Vue-managed DOM
+        let $root = $section.find('#trick-render-root');
+        if ($root.length === 0) {
+            $root = $('<div id="trick-render-root" />').appendTo($section);
         }
-        if ($section.length === 0) return;
-        let $row = $section.find('.trick-cards');
-        if ($row.length === 0) {
-            $row = $section.find("div[style*='display: flex']").first();
-            if ($row.length) {
-                $row.addClass('trick-cards');
-            } else {
-                $row = $('<div class="trick-cards d-flex gap-2 p-1" />').appendTo($section);
-            }
-        }
-        $row.empty();
+        // Remove only our own previous content (local guard)
+        try { $root.find('.trick-cards').remove(); } catch(_) {}
+
+        const $row = $('<div class="trick-cards d-flex gap-2 p-1" />').appendTo($root);
         (trickCards || []).forEach(tc => {
             const $img = $('<img>', {
                 class: 'img-fluid card-img',
@@ -202,7 +256,7 @@
                 const $mainHand = $hands.first();
                 renderHandCards($mainHand, state?.handCards || []);
             }
-            $hands.find('.card-slot, .card-img')
+            $hands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]')
                 .removeClass('animate-hidden')
                 .addClass('animate-visible')
                 .css('transition', '');
@@ -223,7 +277,10 @@
     $(function(){
         if (typeof jsRoutes === 'undefined' || !jsRoutes.controllers?.HomeController?.playCardJson) return;
 
-        $(document).on('click', '.game__hand .card-img', async function(e){
+        // Ensure no duplicate handlers
+        // Support both variants: images with class .card-img or plain .img-fluid carrying data-card-id
+        $(document).off('click', '.game__hand img.card-img, .game__hand img.img-fluid[data-card-id]')
+                   .on('click', '.game__hand img.card-img, .game__hand img.img-fluid[data-card-id]', async function(e){
             e.preventDefault();
             e.stopPropagation();
             const $img = $(this);
@@ -261,7 +318,9 @@
     $(function(){
         if (!(window.jsRoutes && jsRoutes.controllers?.HomeController?.bidJson)) return;
 
-        $(document).on('click', '.js-bid-submit', async function(e){
+        // Ensure no duplicate handlers
+        $(document).off('click', '.js-bid-submit')
+                   .on('click', '.js-bid-submit', async function(e){
             e.preventDefault(); e.stopPropagation();
             const $btn = $(this);
             const idx = $btn.data('index');
@@ -279,7 +338,8 @@
             try {
                 const $hand = $btn.closest('.game__hand');
                 const playerName = $hand.find('.player-name').text().trim();
-                const handCount = $hand.find('.card-img').length;
+                // Count both variants of card images
+                const handCount = $hand.find('img.card-img, img.img-fluid[data-card-id]').length;
                 if (handCount > 0 && valueNum > handCount) {
                     try { window.toastr && toastr.warning('Du kannst höchstens ' + handCount + ' Stiche ansagen.'); } catch(_) {}
                     return;
@@ -328,7 +388,8 @@
             }
         });
 
-        $(document).on('keydown', '.bid-input', function(e){
+        $(document).off('keydown', '.bid-input')
+                   .on('keydown', '.bid-input', function(e){
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const id = $(this).attr('id');
@@ -348,7 +409,8 @@
             }
         }
 
-        $(document).on('input change', '.bid-input', function(){
+        $(document).off('input change', '.bid-input')
+                   .on('input change', '.bid-input', function(){
             const $input = $(this);
             const raw = ($input.val() ?? '').toString().trim();
             if (!raw) return;

@@ -18,7 +18,6 @@
                 <a class="nav-link" :class="{active: path === '/rules'}" href="/rules" @click.prevent="navigate('/rules')">Rules</a>
               </li>
               <li class="nav-item">
-                <!-- Link to Menu first so players can be configured before entering the game -->
                 <a class="nav-link" :class="{active: path === '/menu'}" href="/menu" @click.prevent="navigate('/menu')">Game</a>
               </li>
               <li class="nav-item ms-2 d-flex align-items-center">
@@ -32,7 +31,6 @@
       <slot />
     </div>
   </div>
-  
 </template>
 
 <script>
@@ -72,7 +70,7 @@ export default {
     // Ensure body has theme and page classes so legacy LESS rules apply (e.g., body padding)
     try { this.updateBodyClasses(); } catch(_) {}
 
-    // Provide a minimal toastr shim used by some legacy scripts (animatedHands.js)
+    // Minimal toastr shim (für Legacy-Skripte)
     try {
       if (!window.toastr) {
         const show = (variant, msg, dur) => {
@@ -93,66 +91,81 @@ export default {
       }
     } catch(_) {}
 
-    // Load required vendor scripts (jQuery + Bootstrap bundle) exactly once
+    // Hilfsfunktionen fürs Laden klassischer Skripte in Reihenfolge
+    const injectScript = (src, attrs = {}, onload) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.defer = true;
+      Object.entries(attrs).forEach(([k,v]) => s.setAttribute(k, v));
+      if (onload) s.onload = onload;
+      document.head.appendChild(s);
+      return s;
+    };
+
+    // Vendor: jQuery + Bootstrap (falls nicht schon vorhanden)
     try {
       if (!window.jQuery && !document.querySelector('script[data-vendor-jquery]')){
-        const jq = document.createElement('script');
-        jq.src = 'https://code.jquery.com/jquery-3.7.1.min.js';
-        jq.integrity = 'sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=';
-        jq.crossOrigin = 'anonymous';
-        jq.setAttribute('data-vendor-jquery','1');
-        document.head.appendChild(jq);
+        injectScript('https://code.jquery.com/jquery-3.7.1.min.js', {
+          'data-vendor-jquery': '1',
+          crossorigin: 'anonymous',
+          integrity: 'sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo='
+        });
       }
       if (!document.querySelector('script[data-vendor-bs]')){
-        const bs = document.createElement('script');
-        bs.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
-        bs.integrity = 'sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz';
-        bs.crossOrigin = 'anonymous';
-        bs.setAttribute('data-vendor-bs','1');
-        document.head.appendChild(bs);
+        injectScript('https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', {
+          'data-vendor-bs': '1',
+          crossorigin: 'anonymous',
+          integrity: 'sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz'
+        });
       }
     } catch(_) {}
 
-    // Load legacy scripts after the canvas exists (and after vendor libs are injected)
+    // Legacy laden: zuerst menu.js (global: postJson, apiCall, ...), danach stars/runes/animatedHands
+    const loadLegacyAfterMenu = () => {
+      try {
+        const stars = new URL('../../../public/javascripts/stars.js', import.meta.url).href;
+        import(/* @vite-ignore */ stars);
+        const runes = new URL('../../../public/javascripts/runes.js', import.meta.url).href;
+        import(/* @vite-ignore */ runes);
+        const hands = new URL('../../../public/javascripts/animatedHands.js', import.meta.url).href;
+        import(/* @vite-ignore */ hands);
+      } catch(_) {}
+    };
+
+    const loadMenuThenOthers = () => {
+      // Nur einmal injizieren
+      if (!document.querySelector('script[data-legacy-menu]')) {
+        injectScript('/assets/javascripts/menu.js', { 'data-legacy-menu': '1' }, loadLegacyAfterMenu);
+      } else {
+        // Falls bereits vorhanden (z. B. Navigationswechsel), sofort weiterladen
+        loadLegacyAfterMenu();
+      }
+    };
+
     try {
       const ensureCanvas = () => document.getElementById('starfield');
       if (ensureCanvas()) {
-        const stars = new URL('../../../public/javascripts/stars.js', import.meta.url).href;
-        import(/* @vite-ignore */ stars).catch(() => {});
-        // Runes background decorations (safe if CSS expects it)
-        const runes = new URL('../../../public/javascripts/runes.js', import.meta.url).href;
-        import(/* @vite-ignore */ runes).catch(() => {});
-        // Animated hands/toastr helpers used by ingame views
-        const hands = new URL('../../../public/javascripts/animatedHands.js', import.meta.url).href;
-        import(/* @vite-ignore */ hands).catch(() => {});
-        // Menu helpers (no-op on pages that don't use it). Delay until jQuery likely available
-        const loadMenu = () => {
-          try {
-            const menu = new URL('../../../public/javascripts/menu.js', import.meta.url).href;
-            import(/* @vite-ignore */ menu).catch(() => {});
-          } catch(_) {}
-        };
-        if (window.jQuery) { loadMenu(); }
-        else { setTimeout(loadMenu, 100); }
+        if (window.jQuery) loadMenuThenOthers();
+        else {
+          // jQuery wird oben injiziert; lade menu.js deterministisch danach, sobald verfügbar
+          const iv = setInterval(() => {
+            if (window.jQuery) {
+              clearInterval(iv);
+              loadMenuThenOthers();
+            }
+          }, 50);
+        }
       } else {
-        // In rare cases wait a tick until DOM paints, then try again
         setTimeout(() => {
-          try {
-            const stars = new URL('../../../public/javascripts/stars.js', import.meta.url).href;
-            import(/* @vite-ignore */ stars).catch(() => {});
-            const runes = new URL('../../../public/javascripts/runes.js', import.meta.url).href;
-            import(/* @vite-ignore */ runes).catch(() => {});
-            const hands = new URL('../../../public/javascripts/animatedHands.js', import.meta.url).href;
-            import(/* @vite-ignore */ hands).catch(() => {});
-            const loadMenu = () => {
-              try {
-                const menu = new URL('../../../public/javascripts/menu.js', import.meta.url).href;
-                import(/* @vite-ignore */ menu).catch(() => {});
-              } catch(_) {}
-            };
-            if (window.jQuery) { loadMenu(); }
-            else { setTimeout(loadMenu, 100); }
-          } catch(_) {}
+          if (window.jQuery) loadMenuThenOthers();
+          else {
+            const iv = setInterval(() => {
+              if (window.jQuery) {
+                clearInterval(iv);
+                loadMenuThenOthers();
+              }
+            }, 50);
+          }
         }, 0);
       }
     } catch(_) {}
@@ -163,13 +176,10 @@ export default {
         if (window.location.pathname !== to) {
           history.pushState({}, '', to);
         }
-        // notify listeners (App.vue updates its path on popstate)
         try { window.dispatchEvent(new PopStateEvent('popstate')); } catch(_) {}
-        // update own path for local active classes/body classes
         this.path = window.location.pathname;
         try { this.updateBodyClasses(); } catch(_) {}
       } catch(_) {
-        // Fallback: hard navigation
         window.location.href = to;
       }
     },

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="/W_icon.png"/>
+    <meta name="theme-color" content="#4A4A4A"/>
+    <!-- 1) jsRoutes vom Backend: DEV via Vite-Proxy, PROD/PWA direkt aus Play -->
+    <script src="/jsroutes"></script>
+    <!-- 2) jQuery früh laden (Legacy-Skripte wie menu.js erwarten $) -->
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Vite PWA lädt Manifest/Service Worker automatisch (vite-plugin-pwa) -->
+    <title>Wizard PWA</title>
+</head>
+<body>
+<div id="app"></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+
+<title>WizardWeb Frontend Dev</title>
+<!-- Bootstrap CSS for proper styling of buttons/nav etc. -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Google Font used in legacy styles -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap" rel="stylesheet">
+<body>
+<div id="app"></div>
+<script type="module" src="/src/main.js"></script>
+<!-- jQuery (needed by some legacy scripts); safe to include in dev -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
+<!-- Bootstrap bundle JS for navbar toggler, etc. -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+<!-- CSRF header setup for jQuery (no-op if meta missing) -->
+<script>
+    (function () {
+        function getCsrf() {
+            try {
+                var m = document.querySelector('meta[name="csrf-token"]');
+                return m && m.getAttribute('content');
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function setup() {
+            try {
+                if (window.jQuery && window.jQuery.ajaxSetup) {
+                    window.jQuery.ajaxSetup({
+                        beforeSend: function (xhr) {
+                            var t = getCsrf();
+                            if (t) xhr.setRequestHeader('Csrf-Token', t);
+                        }
+                    });
+                }
+            } catch (_) {
+            }
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup); else setup();
+    })();
+</script>
+</body>
+</html>
