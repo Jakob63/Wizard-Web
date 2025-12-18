@@ -11,9 +11,9 @@ import scala.compiletime.uninitialized
 
 object WebTui extends Observer with View{
   var gameLogic: Option[aGameLogic] = None
-  var userInput: UserInput = uninitialized // wird beim Bootstrap gesetzt
+  var userInput: UserInput = uninitialized
   @volatile var currentPromptPlayer: Option[String] = None
-  @volatile var currentPromptKind: Option[String] = None // "bid" | "card"
+  @volatile var currentPromptKind: Option[String] = None
 
   override def init(gameLogic: aGameLogic): Unit = {
     this.gameLogic = Some(gameLogic)

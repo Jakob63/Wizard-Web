@@ -51,13 +51,10 @@ class HomeController @Inject() (
   }
 
   private def spaOk(implicit request: RequestHeader) = {
-    // Konfigurierte Dev‑URL erlauben, sonst Fallback
     val viteUrl = config.getOptional[String]("frontend.devUrl").getOrElse("http://localhost:5173")
     env.mode match {
       case Mode.Dev => TemporaryRedirect(viteUrl + request.uri).withHeaders("Cache-Control" -> "no-store")
       case _ =>
-        // Produktion: die gebaute SPA ausliefern (z. B. aus /public/dist/index.html)
-        // Falls du deinen Vite-Build nach /public/dist kopierst:
         Redirect("/assets/dist/index.html").withHeaders("Cache-Control" -> "no-store")
     }
   }
@@ -67,13 +64,10 @@ class HomeController @Inject() (
   }
 
   def home(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    // Home Twirl view is being phased out in favor of Vue components.
-    // Keep the route but redirect to index to avoid using home.scala.html.
     Redirect(routes.HomeController.index())
   }
 
   def rules(): Action[AnyContent] = Action { implicit request =>
-    // Serve SPA host; frontend renders RulesPage.vue at /rules
     spaOk
   }
 
@@ -88,7 +82,6 @@ class HomeController @Inject() (
 
     WebTui.gameLogic match {
       case None =>
-        // Use the universal Vue host (index). The frontend can show a LoadingPage.vue when needed.
         spaOk
 
       case Some(gl) =>
@@ -114,7 +107,6 @@ class HomeController @Inject() (
       case Some(gl) =>
         gl.getState match {
           case Some(GameState.Menu)      => Redirect("/menu")
-          // Route to the same universal Vue host page
           case Some(GameState.Ingame)    => spaOk
           case Some(GameState.Endscreen) => Redirect("/endscreen")
           case _                         => Redirect("/rules")
@@ -123,8 +115,6 @@ class HomeController @Inject() (
   }
 
   def gameMenu(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    // Serve SPA host and let the frontend TuiPage.vue render the TUI output.
-    // We pass the content via query parameter `tui` to avoid Twirl templates.
     val existing = request.getQueryString("tui")
     existing match {
       case Some(_) =>
@@ -158,19 +148,6 @@ class HomeController @Inject() (
       "message" -> routes.HomeController.ingame().url
     )
     Ok(jsonObj)
-    //    val form = request.body.asFormUrlEncoded.getOrElse(Map.empty)
-    //    val name1 = form.get("name1").flatMap(_.headOption).getOrElse("")
-    //    val name2 = form.get("name2").flatMap(_.headOption).getOrElse("")
-    //    val name3 = form.get("name3").flatMap(_.headOption).getOrElse("")
-    //
-    //    input.offer(name1)
-    //    input.offer(name2)
-    //    input.offer(name3)
-    //    Ok(s"Created players: $name1, $name2, $name3")
-    //
-    //    Thread.sleep(1000)
-    //    val returnTo = request.getQueryString("returnTo").orElse(form.get("returnTo").flatMap(_.headOption))
-    //    Redirect(returnTo.getOrElse(routes.HomeController.index().url))
   }
 
   def bid() = Action { implicit request: Request[AnyContent] =>
@@ -235,21 +212,17 @@ class HomeController @Inject() (
         if (cnt < 3 || cnt > 6 || cleaned.exists(_.isEmpty)) {
           BadRequest(Json.obj("error" -> "need between 3 and 6 non-empty names"))
         } else {
-          // Ensure the TUI/game thread is running so it can consume the queued inputs
           if (!init) {
             init = true
             WebTui.userInput = input
             val thread = new Thread(() => wizard.Wizard.entry(WebConfiguration(), input))
             thread.start()
-            // give the thread a moment to bootstrap
             try Thread.sleep(150) catch case _: Throwable => ()
           }
 
-          // Bootstrap expected TUI flow: choose "Start Game" (1), then number of players, then names
-          // Queue the inputs so the background TUI thread can consume them when active.
-          input.offer("1")               // start game
+          input.offer("1")
           try Thread.sleep(120) catch case _: Throwable => ()
-          input.offer(cnt.toString)      // number of players
+          input.offer(cnt.toString)
           try Thread.sleep(120) catch case _: Throwable => ()
           cleaned.foreach { n =>
             input.offer(n)
