@@ -45,3 +45,4 @@ build/
 
 ### Scala ###
 .bsp/
+/wizardweb/frontend/node_modules/

@@ -2,10 +2,10 @@
   min-height: 50vh;
   display: flex;
   flex-direction: column;
-  align-items: center;        /* Kinder horizontal zentriert */
-  justify-content: flex-start;/* oben ausrichten */
+  align-items: center;
+  justify-content: flex-start;
   padding-top: clamp(1rem, 4vh, 3rem);
-  text-align: center;         /* Titel/Buttons textlich mittig */
+  text-align: center;
 }
 
 .home-hero__title {
@@ -19,20 +19,19 @@
 
   // schimmer
   background: linear-gradient(
-    135deg,
-    #7d3cff 0%,
-    #22d3ee 40%,
-    #fdd835 60%,
-    #ff3cac 85%,
-    #7d3cff 100%
+          135deg,
+          #7d3cff 0%,
+          #22d3ee 40%,
+          #fdd835 60%,
+          #ff3cac 85%,
+          #7d3cff 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent; // gradient sichtbar machen
+  color: transparent;
 
   background-size: 200% 200%;
   animation: wizard-sheen 12s ease-in-out infinite;
-  // position: relative; um den glow am rand der buchstaben
   position: relative;
 }
 
@@ -100,25 +99,22 @@
   min-width: clamp(10rem, 24vw, 12rem);
 }
 
-/* Extra Abstand unter der festen Navbar auf der Startseite */
 .page-home .home-hero {
   padding-top: clamp(15rem, 12vh, 7rem);
 }
 
-/* CSS-only starry sky twinkling (no JavaScript) */
 .home-hero {
   position: relative;
   overflow: hidden;
 }
 
 .starry-sky {
-  position: fixed; /* cover entire viewport/body, not just inside main */
+  position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
 }
 
-/* Single star */
 .star {
   position: absolute;
   --star-size: 2px;
@@ -126,24 +122,24 @@
   height: var(--star-size);
   border-radius: 50%;
   background: radial-gradient(circle,
-    rgba(255,255,255,0.98) 0%,
-    rgba(255,255,255,0.75) 45%,
-    rgba(255,255,255,0.25) 70%,
-    rgba(255,255,255,0.0) 72%
+  rgba(255,255,255,0.98) 0%,
+  rgba(255,255,255,0.75) 45%,
+  rgba(255,255,255,0.25) 70%,
+  rgba(255,255,255,0.0) 72%
   );
   opacity: 0;
   box-shadow:
-    0 0 6px rgba(255,255,255,0.55),
-    0 0 10px rgba(125,60,255,0.20);
+          0 0 6px rgba(255,255,255,0.55),
+          0 0 10px rgba(125,60,255,0.20);
   animation: star-twinkle var(--twinkle-duration, 3.2s) ease-in-out infinite;
 }
 
 .star--big {
   --star-size: 4px;
   box-shadow:
-    0 0 8px rgba(255,255,255,0.75),
-    0 0 14px rgba(125,60,255,0.35),
-    0 0 20px rgba(34,211,238,0.18);
+          0 0 8px rgba(255,255,255,0.75),
+          0 0 14px rgba(125,60,255,0.35),
+          0 0 20px rgba(34,211,238,0.18);
 }
 
 @keyframes star-twinkle {
@@ -152,12 +148,9 @@
   60% { opacity: 0.55; transform: scale(0.9); }
 }
 
-/* Ensure content sits above the sky */
 .home-hero__title,
 .home-cta { position: relative; z-index: 1; }
 
-/* Distribute positions, sizes and timing for 40 stars using nth-child */
-/* The numbers are chosen to look organic and non-repeating */
 .starry-sky .star:nth-child(1)  { left: 6%;   top: 8%;   --twinkle-duration: 2.8s; animation-delay: .1s; }
 .starry-sky .star:nth-child(2)  { left: 18%;  top: 22%;  --twinkle-duration: 3.9s; animation-delay: .6s; }
 .starry-sky .star:nth-child(3)  { left: 28%;  top: 12%;  --twinkle-duration: 2.4s; animation-delay: 1.2s; }
@@ -199,7 +192,6 @@
 .starry-sky .star:nth-child(39) { left: 78%;  top: 86%;  --twinkle-duration: 3.5s; animation-delay: 1.6s; }
 .starry-sky .star:nth-child(40) { left: 90%;  top: 90%;  --twinkle-duration: 2.3s; animation-delay: .4s; }
 
-/* Some size variation via nth-child patterning */
 .starry-sky .star:nth-child(odd)   { --star-size: 1.6px; }
 .starry-sky .star:nth-child(3n)    { --star-size: 2.2px; }
 .starry-sky .star:nth-child(5n)    { --star-size: 2.6px; }

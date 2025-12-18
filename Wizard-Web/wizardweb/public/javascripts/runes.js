@@ -11,15 +11,15 @@
 
   // nur light mode
   var isHome = (document.body && document.body.classList && document.body.classList.contains('page-home')) ||
-               window.location.pathname === '/' ||
-               (typeof window.location.pathname === 'string' && window.location.pathname.indexOf('/home') === 0);
+      window.location.pathname === '/' ||
+      (typeof window.location.pathname === 'string' && window.location.pathname.indexOf('/home') === 0);
   var isLightMode = function () {
     var el = document.documentElement || document.body;
     var attr = el.getAttribute('data-bs-theme') || 'auto';
     var prefersLight = false;
     try { prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches; } catch (e) { prefersLight = false; }
     var hasLightClass = (document.documentElement.classList && document.documentElement.classList.contains('theme-light')) ||
-                        (document.body && document.body.classList && document.body.classList.contains('theme-light'));
+        (document.body && document.body.classList && document.body.classList.contains('theme-light'));
     return attr === 'light' || (attr === 'auto' && prefersLight) || hasLightClass;
   };
 
@@ -42,96 +42,94 @@
   container.style.position = 'fixed';
   container.style.inset = '0';
   container.style.pointerEvents = 'none';
-  // vor titel
-  container.style.zIndex = '-1';
+  container.style.zIndex = '0';
   document.body.appendChild(container);
 
-    // jQuery init
-    var $ = window.jQuery;
-    if (!$) {
-        try { console.warn('[runes] jQuery nicht gefunden – jQuery-Teil wird übersprungen'); } catch(e) {}
-    } else {
-        $(function(){
-            var $body = $('body');
-            var $runes = $('#runes-layer');
+  // jQuery init
+  var $ = window.jQuery;
+  if (!$) {
+    try { console.warn('[runes] jQuery nicht gefunden – jQuery-Teil wird übersprungen'); } catch(e) {}
+  } else {
+    $(function(){
+      var $body = $('body');
+      var $runes = $('#runes-layer');
 
-            // localStorage
-            var LS_KEY = 'runes:visible';
-            var visiblePref = localStorage.getItem(LS_KEY);
-            var isVisible = (visiblePref == null) ? true : (visiblePref === '1');
+      var LS_KEY = 'runes:visible';
+      var visiblePref = localStorage.getItem(LS_KEY);
+      var isVisible = (visiblePref == null) ? true : (visiblePref === '1');
 
-            // basic opacity
-            var DEFAULT_OPACITY = 1.0;
-            var DIMMED_OPACITY  = 0.85;
-            var HOVER_DIM_OPACITY = 0.35;
+      // basic opacity
+      var DEFAULT_OPACITY = 1.0;
+      var DIMMED_OPACITY  = 0.85;
+      var HOVER_DIM_OPACITY = 0.35;
 
-            function applyVisibility(animate){
-                if (isVisible) {
-                    if (animate) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY); else $runes.css('opacity', DEFAULT_OPACITY);
-                } else {
-                    if (animate) $runes.stop(true).fadeOut(200); else $runes.hide();
-                }
-            }
+      function applyVisibility(animate){
+        if (isVisible) {
+          if (animate) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY); else $runes.css('opacity', DEFAULT_OPACITY);
+        } else {
+          if (animate) $runes.stop(true).fadeOut(200); else $runes.hide();
+        }
+      }
 
-            // bei start no toggle
-            applyVisibility(false);
-            $body.addClass('runes-active');
+      // bei start no toggle
+      applyVisibility(false);
+      $body.addClass('runes-active');
 
-            // toggle
-            if (!document.getElementById('runesToggleBtn')) {
-                var $btn = $('<button/>', {
-                    id: 'runesToggleBtn',
-                    type: 'button',
-                    text: 'Runes',
-                    title: 'Hintergrund-Runen ein-/ausblenden (Alt+R)',
-                    css: {
-                        position: 'fixed', right: '12px', bottom: '12px', zIndex: 10,
-                        padding: '6px 10px', borderRadius: '8px', border: '1px solid #999',
-                        background: 'rgba(255,255,255,0.75)', color: '#333',
-                        backdropFilter: 'blur(4px)', cursor: 'pointer'
-                    }
-                }).appendTo('body');
+      // toggle
+      if (!document.getElementById('runesToggleBtn')) {
+        var $btn = $('<button/>', {
+          id: 'runesToggleBtn',
+          type: 'button',
+          text: 'Runes',
+          title: 'Hintergrund-Runen ein-/ausblenden (Alt+R)',
+          css: {
+            position: 'fixed', right: '12px', bottom: '12px', zIndex: 10,
+            padding: '6px 10px', borderRadius: '8px', border: '1px solid #999',
+            background: 'rgba(255,255,255,0.75)', color: '#333',
+            backdropFilter: 'blur(4px)', cursor: 'pointer'
+          }
+        }).appendTo('body');
 
-                function updateBtn() { $btn.toggleClass('is-off', !isVisible); $btn.css('opacity', isVisible ? 1 : 0.7); }
-                updateBtn();
+        function updateBtn() { $btn.toggleClass('is-off', !isVisible); $btn.css('opacity', isVisible ? 1 : 0.7); }
+        updateBtn();
 
-                $btn.on('click', function(){
-                    isVisible = !isVisible;
-                    localStorage.setItem(LS_KEY, isVisible ? '1' : '0');
-                    applyVisibility(true);
-                    updateBtn();
-                });
-            }
-
-            // 4) alt+r
-            $(document).on('keydown', function(ev){
-                if (ev.altKey && (ev.key === 'r' || ev.key === 'R')) {
-                    ev.preventDefault();
-                    isVisible = !isVisible;
-                    localStorage.setItem(LS_KEY, isVisible ? '1' : '0');
-                    applyVisibility(true);
-                }
-            });
-
-            //  navbar = runes abdunkeln
-            var $nav = $('#mainNav');
-            if ($nav.length) {
-                $nav.on('show.bs.collapse', function(){ if (isVisible) $runes.stop(true).fadeTo(150, DIMMED_OPACITY); });
-                $nav.on('hide.bs.collapse', function(){ if (isVisible) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY); });
-            }
-
-            // hover-Effekt
-            var $brand = $('.brand-w');
-            if ($brand.length) {
-                $brand.on('mouseenter', function(){
-                    if (isVisible) $runes.stop(true).fadeTo(140, HOVER_DIM_OPACITY);
-                });
-                $brand.on('mouseleave', function(){
-                    if (isVisible) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY);
-                });
-            }
+        $btn.on('click', function(){
+          isVisible = !isVisible;
+          localStorage.setItem(LS_KEY, isVisible ? '1' : '0');
+          applyVisibility(true);
+          updateBtn();
         });
-    }
+      }
+
+      // alt+r
+      $(document).on('keydown', function(ev){
+        if (ev.altKey && (ev.key === 'r' || ev.key === 'R')) {
+          ev.preventDefault();
+          isVisible = !isVisible;
+          localStorage.setItem(LS_KEY, isVisible ? '1' : '0');
+          applyVisibility(true);
+        }
+      });
+
+      //  navbar = runes abdunkeln
+      var $nav = $('#mainNav');
+      if ($nav.length) {
+        $nav.on('show.bs.collapse', function(){ if (isVisible) $runes.stop(true).fadeTo(150, DIMMED_OPACITY); });
+        $nav.on('hide.bs.collapse', function(){ if (isVisible) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY); });
+      }
+
+      // hover-Effekt
+      var $brand = $('.brand-w');
+      if ($brand.length) {
+        $brand.on('mouseenter', function(){
+          if (isVisible) $runes.stop(true).fadeTo(140, HOVER_DIM_OPACITY);
+        });
+        $brand.on('mouseleave', function(){
+          if (isVisible) $runes.stop(true).fadeTo(200, DEFAULT_OPACITY);
+        });
+      }
+    });
+  }
 
   (function ensureStyles(){
     if (document.getElementById('runes-keyframes')) return;
@@ -150,7 +148,7 @@
   ];
   var candidates = [].concat.apply([], nameSets);
 
-  // jQuery AJAX (native Promise) helper to probe asset existence via HEAD
+  // jQuery AJAX Promise
   function headExists(url, timeoutMs) {
     return new Promise(function(resolve) {
       var $ = window.jQuery;
@@ -165,10 +163,9 @@
         });
       } else if (typeof fetch === 'function') {
         fetch(url, { method: 'HEAD', cache: 'no-cache' })
-          .then(function(res){ resolve(!!(res && (res.ok || res.status === 200))); })
-          .catch(function(){ resolve(false); });
+            .then(function(res){ resolve(!!(res && (res.ok || res.status === 200))); })
+            .catch(function(){ resolve(false); });
       } else {
-        // Last resort: try to GET image element (async)
         try {
           var img = new Image();
           img.onload = function(){ resolve(true); };
@@ -190,7 +187,6 @@
         headExists(url, 7000).then(function(ok){
           if (ok) found.push(url);
         }).finally(function(){
-          // Slightly batch the probing to keep UI responsive
           if (idx % 5 === 0) setTimeout(next, 0); else next();
         });
       }
@@ -206,17 +202,17 @@
     var COUNT = Math.min(64, Math.max(24, Math.floor(area / 55000)));
 
     // no überlappen
-    var PAD_PCT = 0.06; // keep away from very edge (6%)
-    var MIN_SIZE = 16;  // px – all runes small
-    var MAX_SIZE = 42;  // px – tight small band
-    var PADDING_FACTOR = 0.14; // slightly tighter packing; glow margin still applied
-    var DIAGONAL_FACTOR = 0.70710678; // sqrt(2)/2 to approximate rotated square radius
-    var GLOW_MARGIN = 12; // extra pixels to account for drop-shadow/glow
+    var PAD_PCT = 0.06;
+    var MIN_SIZE = 16;
+    var MAX_SIZE = 42;
+    var PADDING_FACTOR = 0.14;
+    var DIAGONAL_FACTOR = 0.70710678;
+    var GLOW_MARGIN = 12;
 
     var sizes = [];
-    var LARGE_MIN = 70, LARGE_MAX = 140; // px – increase size band for large runes
-    var maxLargeCap = 14; // higher cap to allow more large runes when space permits
-    var desiredLarge = Math.floor(COUNT * 0.35) + 2; // ~35% large + slight boost for 1–2 more big runes
+    var LARGE_MIN = 70, LARGE_MAX = 140;
+    var maxLargeCap = 14;
+    var desiredLarge = Math.floor(COUNT * 0.35) + 2;
     var largeCount = Math.max(2, Math.min(maxLargeCap, COUNT, desiredLarge));
     var smallCount = Math.max(0, COUNT - largeCount);
 
@@ -232,7 +228,7 @@
     }
     sizes.sort(function(a,b){ return b - a; });
 
-    var cols = 3, rows = 3; // 3x3 grid
+    var cols = 3, rows = 3;
     var cellW = w / cols, cellH = h / rows;
     var placed = [];
 
@@ -411,17 +407,17 @@
     var area = w * h;
     var COUNT = Math.min(56, Math.max(24, Math.floor(area / 60000)));
 
-    var PAD_PCT = 0.06; // 6% edge padding
-    var MIN_SIZE = 14;  // px – smaller overall
-    var MAX_SIZE = 36;  // px – tight small band
-    var PADDING_FACTOR = 0.14; // slightly tighter packing
-    var DIAGONAL_FACTOR = 0.70710678; // sqrt(2)/2 for rotated square radius
-    var GLOW_MARGIN = 12; // extra pixels to account for glow
+    var PAD_PCT = 0.06;
+    var MIN_SIZE = 14;
+    var MAX_SIZE = 36;
+    var PADDING_FACTOR = 0.14;
+    var DIAGONAL_FACTOR = 0.70710678;
+    var GLOW_MARGIN = 12;
 
     var sizes = [];
-    var LARGE_MIN = 60, LARGE_MAX = 110; // px for canvas glyphs – increase band
-    var maxLargeCap = 10; // allow more large glyphs on fallback
-    var desiredLarge = Math.floor(COUNT * 0.35) + 2; // ~35% large + slight boost for 1–2 more big runes
+    var LARGE_MIN = 60, LARGE_MAX = 110;
+    var maxLargeCap = 10;
+    var desiredLarge = Math.floor(COUNT * 0.35) + 2;
     var largeCount = Math.max(2, Math.min(maxLargeCap, COUNT, desiredLarge));
     var smallCount = Math.max(0, COUNT - largeCount);
 
@@ -555,9 +551,9 @@
   }
 
   function startParticles() {
-    var SPEED_MAX = 0.55;       // max drift speed in px per frame unit (used with dt*60)
-    var ACCEL_NOISE = 0.02;     // random steering per frame (smaller = smoother)
-    var BASE_V_RANGE = 0.30;    // initial velocity range (+/-)
+    var SPEED_MAX = 0.55;
+    var ACCEL_NOISE = 0.02;
+    var BASE_V_RANGE = 0.30;
 
     var canvas = document.createElement('canvas');
     canvas.id = 'runeParticles';
@@ -596,14 +592,13 @@
       var COUNT = Math.min(80, Math.max(20, Math.floor(area / 45000)));
       particles = [];
       for (var i = 0; i < COUNT; i++) {
-        var sz = Math.random() * 2.2 + 0.6; // 0.6–2.8px
+        var sz = Math.random() * 2.2 + 0.6;
         particles.push({
           x: Math.random() * w,
           y: Math.random() * h,
           r: sz,
           alpha: Math.random() * 0.14 + 0.06,
           aSpeed: (Math.random() * 0.3 + 0.1) * (Math.random() < 0.5 ? -1 : 1),
-          // initial base drift so particles visibly "fly"
           vx: (Math.random() * 2 * BASE_V_RANGE - BASE_V_RANGE),
           vy: (Math.random() * 2 * BASE_V_RANGE - BASE_V_RANGE)
         });

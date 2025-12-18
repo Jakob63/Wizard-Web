@@ -23,6 +23,22 @@
         document.head.appendChild(styleEl);
     })();
 
+    function setWizardScores(scores){
+        try {
+            const el = document.getElementById('ingame-score');
+            if (!el) return;
+            const assign = () => { try { el.scores = scores; } catch(_) {} };
+            if (window.customElements && typeof customElements.whenDefined === 'function') {
+                if (customElements.get('wizard-score')) assign();
+                else {
+                    try { customElements.whenDefined('wizard-score').then(assign).catch(assign); } catch(_) { assign(); }
+                }
+            } else {
+                assign();
+            }
+        } catch(_) {}
+    }
+
     function ajaxJson(route, options = {}) {
         return new Promise((resolve, reject) => {
             $.ajax({
@@ -231,8 +247,8 @@
                 console.error('playCard failed', err);
                 try {
                     const msg = (err && err.responseJSON && err.responseJSON.error) ? err.responseJSON.error
-                              : (err && err.responseText) ? String(err.responseText)
-                              : 'Aktion fehlgeschlagen.';
+                        : (err && err.responseText) ? String(err.responseText)
+                            : 'Aktion fehlgeschlagen.';
                     if (window.toastr && msg) toastr.warning(msg);
                 } catch(_) {}
             } finally {
@@ -277,6 +293,21 @@
                 const res = await postJson(route, { bid: value, player });
                 if (res && res.ok) {
                     $input.val('');
+                    try {
+                        const wc = document.getElementById('ingame-score');
+                        if (wc) {
+                            const current = Array.isArray(wc.scores) ? wc.scores.slice() : null;
+                            if (current) {
+                                const $hand = $btn.closest('.game__hand');
+                                const playerName = $hand.find('.player-name').text().trim();
+                                const i = current.findIndex(s => String(s.name) === playerName);
+                                if (i >= 0) {
+                                    current[i] = Object.assign({}, current[i], { bid: valueNum });
+                                    setWizardScores(current);
+                                }
+                            }
+                        }
+                    } catch(_) {}
                     setTimeout(() => { refreshGameState(); }, 250);
                 } else {
                     console.warn('bidJson not ok', res);
@@ -288,8 +319,8 @@
                 console.error('bidJson failed', err);
                 try {
                     const msg = (err && err.responseJSON && err.responseJSON.error) ? err.responseJSON.error
-                              : (err && err.responseText) ? String(err.responseText)
-                              : 'Bid failed.';
+                        : (err && err.responseText) ? String(err.responseText)
+                            : 'Bid failed.';
                     if (window.toastr && msg) toastr.warning(msg);
                 } catch(_) {}
             } finally {
@@ -308,7 +339,6 @@
             }
         });
 
-        // Sofortige visuelle Warnungen bei ungültiger Eingabe (manuell oder per Pfeile)
         function maybeWarnOnce($el, key, message){
             const now = Date.now();
             const last = Number($el.data(key) || 0);
@@ -321,7 +351,7 @@
         $(document).on('input change', '.bid-input', function(){
             const $input = $(this);
             const raw = ($input.val() ?? '').toString().trim();
-            if (!raw) return; // Keine Warnung bei leerem Feld
+            if (!raw) return;
             const n = Number(raw);
             const maxAttr = $input.attr('max');
             const minAttr = $input.attr('min');
@@ -352,20 +382,30 @@
     // Ajax Update
     function updateScoreboard(state){
         if (!state || !Array.isArray(state.players)) return;
+
+        try {
+            const scores = state.players.map(p => ({
+                name: String(p?.name || ''),
+                bid: Number((p && (p.roundBids ?? p.bid)) ?? 0),
+                points: Number(p?.points ?? 0)
+            }));
+            setWizardScores(scores);
+        } catch(_) {}
+
         const $grid = $('.game__section--scoreboard .score-grid');
-        if ($grid.length === 0) return;
+        if ($grid.length > 0) {
+            const $hdrs = $grid.find('.hdr');
+            $grid.children().not($hdrs).remove();
 
-        const $hdrs = $grid.find('.hdr');
-        $grid.children().not($hdrs).remove();
-
-        state.players.forEach(p => {
-            const name = p.name ?? '';
-            const bid = (p.roundBids ?? '').toString();
-            const points = (p.points ?? '').toString();
-            $grid.append($('<div>').text(name));
-            $grid.append($('<div>', { class: 'val' }).text(bid));
-            $grid.append($('<div>', { class: 'val' }).text(points));
-        });
+            state.players.forEach(p => {
+                const name = p.name ?? '';
+                const bid = (p.roundBids ?? p.bid ?? '').toString();
+                const points = (p.points ?? '').toString();
+                $grid.append($('<div>').text(name));
+                $grid.append($('<div>', { class: 'val' }).text(bid));
+                $grid.append($('<div>', { class: 'val' }).text(points));
+            });
+        }
     }
 
     $(initAnimatedHands);

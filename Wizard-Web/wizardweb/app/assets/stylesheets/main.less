@@ -54,6 +54,21 @@ body:not(.page-ingame) {
   animation: wizard-sheen 12s ease-in-out infinite;
 }
 
+// Ingame: compact bid input field (was too wide due to .form-control default width:100%)
+.game__hand {
+  .bid-input {
+    // Keep it to a natural, small size suitable for numbers (0–13)
+    width: 6ch;            // approx. space for 3 digits
+    max-width: 5.5rem;     // safety upper bound
+    min-width: 3.25rem;    // readable minimum
+    flex: 0 0 auto;        // don't grow in flex row
+    display: inline-block; // avoid full-width behavior
+    text-align: center;    // center digits
+    padding-left: .4rem;   // retain comfortable padding
+    padding-right: .4rem;
+  }
+}
+
 .rules {
   padding: clamp(1rem, 3vw, 2rem);
   max-width: clamp(42rem, 86vw, 70rem);
@@ -275,6 +290,14 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-wrap: wrap;
   gap: clamp(0.4rem, 1.2vw, 0.8rem);
+}
+
+/* Ingame: scoreboard float responsive override for small screens */
+@media (max-width: 800px) {
+  .infloat-score {
+    position: static !important;
+    width: auto !important;
+  }
 }
 
 .game__hand .game__cards {
@@ -500,7 +523,6 @@ h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
 }
 
 @import "home.less";
-@import "modify.less";
 
 // schauen ob sinnvol
 .container-ingame {
