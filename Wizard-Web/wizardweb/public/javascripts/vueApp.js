@@ -253,7 +253,6 @@
                 });
               } catch(_) {}
 
-              // Mount Vuetify mini widgets for bid input + submit
               try {
                 const mounts = enhanceRoot.querySelectorAll('.vuetify-bid[data-index]');
                 mounts.forEach((mountEl) => {
@@ -261,21 +260,18 @@
                   if (idxAttr == null) return;
                   const idx = idxAttr;
                   const hiddenInput = document.getElementById('bid-' + idx);
-                  // If Vuetify is not available, reveal legacy controls
                   if (!(window.Vuetify && typeof window.Vuetify.createVuetify === 'function')) {
                     const legacy = mountEl.parentElement && mountEl.parentElement.querySelector('.legacy-bid');
                     if (legacy) { try { legacy.style.display = ''; } catch(_) {} }
                     return;
                   }
 
-                  // Build a small Vue app with Vuetify
                   const initValue = (this.$data.bids && Object.prototype.hasOwnProperty.call(this.$data.bids, idx)) ? this.$data.bids[idx] : '';
                   const max = hiddenInput && hiddenInput.getAttribute('max') ? Number(hiddenInput.getAttribute('max')) : undefined;
 
                   const BidWidget = {
                     name: 'BidWidget',
                     data(){
-                      // ensure integer value and default to 0
                       const asInt = (v) => {
                         const n = Number(v);
                         return Number.isFinite(n) ? Math.floor(n) : 0;
@@ -325,7 +321,6 @@
                       }
                     },
                     mounted(){
-                      // mirror into hidden input initially
                       try { if (hiddenInput) hiddenInput.value = String(this.value); } catch(_) {}
                     },
                     template: `
@@ -387,9 +382,6 @@
     }
   };
 
-  // Mount the root app only when the target element exists. This avoids race
-  // conditions with pages that inject their DOM asynchronously (e.g. via
-  // vue3-sfc-loader before #app is present in the document).
   (function mountWhenReady(){
     try {
       var host = document.getElementById('app');
@@ -404,7 +396,7 @@
         if (el) {
           clearInterval(iv);
           try { Vue.createApp(App).mount('#app'); } catch(e) { console.warn('Mount root app failed (late)', e); }
-        } else if (tries > 80) { // ~4s max
+        } else if (tries > 80) {
           clearInterval(iv);
           console.warn('Mount root app aborted: #app not found');
         }

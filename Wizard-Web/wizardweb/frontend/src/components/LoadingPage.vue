@@ -22,7 +22,6 @@ export default {
       } catch(_) {}
       try {
         const url = new URL(window.location.href);
-        // support multiple query keys
         return url.searchParams.get('to')
             || url.searchParams.get('url')
             || window.INGAME_URL

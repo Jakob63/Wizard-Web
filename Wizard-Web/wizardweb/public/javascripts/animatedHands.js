@@ -1,5 +1,4 @@
 (function($) {
-    // Fix 2: Prevent duplicate initialization/bindings when this script is loaded multiple times
     if (window.__animatedHandsLoaded) {
         return;
     }
@@ -22,19 +21,15 @@
   transform: translateY(0) scale(1);
   opacity: 1;
 }
-/* When our trick renderer is active on a section, hide any legacy trick markup
-   outside of our dedicated render root to avoid duplicate visual rows. */
 .game__section.trick-render-active .card-slot:not(#trick-render-root *),
 .game__section.trick-render-active img.card-img:not(#trick-render-root img),
 .game__section.trick-render-active img.img-fluid[data-card-id]:not(#trick-render-root img) {
   display: none !important;
 }
-/* Hide any direct children in the active container except our root */
 .game__section.trick-render-active > :not(#trick-render-root),
 #current_trick.trick-render-active > :not(#trick-render-root) {
   display: none !important;
 }
-/* Completely hide other duplicate trick sections we mark as hidden */
 .game__section.trick-render-hidden,
 #current_trick.trick-render-hidden { display: none !important; }
 `;
@@ -46,6 +41,10 @@
 
     function setWizardScores(scores){
         try {
+            if (typeof window.__updateWizardScores === 'function') {
+                window.__updateWizardScores(scores);
+                return;
+            }
             const el = document.getElementById('ingame-score');
             if (!el) return;
             const assign = () => { try { el.scores = scores; } catch(_) {} };
@@ -101,7 +100,6 @@
     }
 
     function applyHiddenState($allHands) {
-        // Support both variants: img.img-fluid.card-img and img.img-fluid without .card-img but with data-card-id
         $allHands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]').each(function () {
             $(this)
                 .addClass('animate-hidden')
@@ -174,7 +172,6 @@
     }
 
     function renderTrickCards(trickCards){
-        // Idempotency: if the same trick content is already rendered, skip re-render to avoid duplicates
         try {
             const norm = (tc) => {
                 try {
@@ -196,28 +193,21 @@
             window.__lastTrickSig = sig;
         } catch(_) {}
 
-        // Prefer explicit container if present; consider both EN and DE sections
         const $allSections = $('#current_trick, .game__section[aria-label="Current Trick"], .game__section[aria-label="Aktueller Stich"]');
         if ($allSections.length === 0) return;
 
-        // Global cleanup: remove any previous trick rows in ALL candidate sections to avoid duplicates
         try { $allSections.find('#trick-render-root .trick-cards, .trick-cards').remove(); } catch(_) {}
 
-        // Choose one target to render into: prefer a visible one, fallback to the first
         let $section = $allSections.filter(':visible').first();
         if ($section.length === 0) $section = $allSections.first();
 
-        // Mark section as active for our renderer (CSS will hide any legacy markup outside our root)
         try { $section.addClass('trick-render-active'); } catch(_) {}
-        // Hide all non-chosen candidate sections entirely to avoid any duplicates from other renderers
         try { $allSections.not($section).removeClass('trick-render-active').addClass('trick-render-hidden'); } catch(_) {}
 
-        // Create/get a dedicated render root inside the section to avoid touching Vue-managed DOM
         let $root = $section.find('#trick-render-root');
         if ($root.length === 0) {
             $root = $('<div id="trick-render-root" />').appendTo($section);
         }
-        // Remove only our own previous content (local guard)
         try { $root.find('.trick-cards').remove(); } catch(_) {}
 
         const $row = $('<div class="trick-cards d-flex gap-2 p-1" />').appendTo($root);
@@ -277,8 +267,6 @@
     $(function(){
         if (typeof jsRoutes === 'undefined' || !jsRoutes.controllers?.HomeController?.playCardJson) return;
 
-        // Ensure no duplicate handlers
-        // Support both variants: images with class .card-img or plain .img-fluid carrying data-card-id
         $(document).off('click', '.game__hand img.card-img, .game__hand img.img-fluid[data-card-id]')
                    .on('click', '.game__hand img.card-img, .game__hand img.img-fluid[data-card-id]', async function(e){
             e.preventDefault();
@@ -318,7 +306,6 @@
     $(function(){
         if (!(window.jsRoutes && jsRoutes.controllers?.HomeController?.bidJson)) return;
 
-        // Ensure no duplicate handlers
         $(document).off('click', '.js-bid-submit')
                    .on('click', '.js-bid-submit', async function(e){
             e.preventDefault(); e.stopPropagation();
@@ -338,7 +325,6 @@
             try {
                 const $hand = $btn.closest('.game__hand');
                 const playerName = $hand.find('.player-name').text().trim();
-                // Count both variants of card images
                 const handCount = $hand.find('img.card-img, img.img-fluid[data-card-id]').length;
                 if (handCount > 0 && valueNum > handCount) {
                     try { window.toastr && toastr.warning('Du kannst höchstens ' + handCount + ' Stiche ansagen.'); } catch(_) {}

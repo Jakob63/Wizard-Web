@@ -3,7 +3,6 @@
     <div class="game__main bg-ingame" :style="{ backgroundImage: bgStyle }">
       <div class="ingrid">
         <div class="ingrid-row">
-          <!-- Left: Trump -->
           <div class="ingrid-col ingrid-col--left">
             <section class="game__section game__section--trump" aria-label="Trump">
               <div class="title">Trump: {{ trumpLabel }}</div>
@@ -13,7 +12,6 @@
             </section>
           </div>
 
-          <!-- Center: Current trick -->
           <div class="ingrid-col ingrid-col--center">
             <section class="game__section" aria-label="Current Trick">
               <div class="title">Current Trick:</div>
@@ -25,18 +23,16 @@
             </section>
           </div>
 
-          <!-- Right: Scoreboard web component -->
           <div class="ingrid-col ingrid-col--right">
             <section class="game__section game__section--scoreboard" aria-label="Scoreboard">
               <div class="title">Scoreboard</div>
-              <wizard-score id="ingame-score" no-title></wizard-score>
+              <WizardScore :scores="scoreRows" :no-title="true" />
             </section>
           </div>
         </div>
       </div>
 
       <div id="ingame-vue-root" class="ingrid">
-        <!-- Players overview -->
         <div class="ingrid-row pad-1" v-if="players && players.length">
           <section class="game__section" aria-label="Players overview">
             <div class="title">Players:</div>
@@ -44,13 +40,11 @@
           </section>
         </div>
 
-        <!-- Hands: either all players (on /ingame) or a single player (on /play/:name) -->
         <template v-if="isIngamePath">
           <div class="ingrid-row pad-1" v-for="(p, pIdx) in cPlayers" :key="'hand-'+pIdx">
             <section class="game__section game__hand" :aria-label="'Hand of ' + p.name">
               <div class="inline-center pad-1">
                 <div class="player-name">{{ p.name }}</div>
-                <!-- Bid input visible only when this player is prompted to bid -->
                 <div v-if="isBidTurnFor(p.name)" class="bid-box">
                   <label class="visually-hidden" :for="'bid-' + pIdx">Ansage für {{ p.name }}</label>
                   <input type="number"
@@ -88,7 +82,6 @@
             <section class="game__section game__hand" :aria-label="'Hand of ' + me.name">
               <div class="inline-center pad-1">
                 <div class="player-name">{{ me.name }}</div>
-                <!-- Single-hand view: show bid for me when it's my turn to bid -->
                 <div v-if="isBidTurnFor(me?.name)" class="bid-box">
                   <label class="visually-hidden" :for="'bid-' + meIdx">Ansage für {{ me?.name }}</label>
                   <input type="number"
@@ -132,8 +125,11 @@
 </template>
 
 <script>
+import { BACKEND } from '../api/client';
+import WizardScore from './WizardScore.vue';
 export default {
   name: 'IngamePage',
+  components: { WizardScore },
   props: {
     players: { type: Array, default: () => (window.INGAME_DATA?.players || []) },
     trumpCard: { type: Object, default: () => (window.INGAME_DATA?.trumpCard || null) },
@@ -143,7 +139,6 @@ export default {
     const path = typeof window !== 'undefined' ? window.location.pathname : '/ingame';
     return {
       path,
-      // Local reactive state fed by /api/gameState
       localPlayers: [],
       localTrumpCard: null,
       localTrickCards: [],
@@ -151,16 +146,15 @@ export default {
       localHandCards: [],
       round: 0,
       pollId: null,
-      // bidding ui
       localCurrentPromptPlayer: '',
       localCurrentPromptKind: '',
       bidValue: 0,
-      bidError: ''
+      bidError: '',
+      scoreRows: []
     };
   },
   computed: {
     isIngamePath(){ return this.path === '/ingame'; },
-    // Computed sources preferring live API state over props/defaults
     cPlayers(){ return (this.localPlayers && this.localPlayers.length) ? this.localPlayers : (this.players || []); },
     cTrick(){ return (this.localTrickCards && this.localTrickCards.length) ? this.localTrickCards : (this.trickCards || []); },
     cTrump(){ return this.localTrumpCard || this.trumpCard || null; },
@@ -183,7 +177,6 @@ export default {
       return (this.cPlayers && this.cPlayers[i]) || null;
     },
     meCards(){
-      // For /play/:name we receive a flat array of cards in handCards
       return Array.isArray(this.localHandCards) && this.localHandCards.length ? this.localHandCards : [];
     },
     trumpLabel(){
@@ -244,7 +237,16 @@ export default {
     },
     cardImg(card){
       try {
-        if (card && card.imageUrl) return card.imageUrl;
+        let u = null;
+        if (card && typeof card === 'object' && card.imageUrl) u = String(card.imageUrl);
+        else if (typeof card === 'string') u = card;
+
+        if (u) {
+          if (/^https?:\/\//i.test(u)) return u;
+          if (u.startsWith('/')) return `${BACKEND}${u}`;
+          return u;
+        }
+
         return new URL(`../../../public/images/cards/${this.cardToFile(card)}`, import.meta.url).href;
       } catch(_) { return ''; }
     },
@@ -257,9 +259,8 @@ export default {
     },
     async fetchGameState(){
       try {
-        let url = '/api/gameState';
+        let url = '/pwa/api/gameState';
         try {
-          // If we are on /play/:name, tell the API for whom we want the flat handCards
           if (this.path && this.path.startsWith('/play/')) {
             const rawName = this.path.substring('/play/'.length);
             const name = encodeURIComponent(decodeURIComponent(rawName));
@@ -272,7 +273,8 @@ export default {
         } catch(_) {
           url += (window.location.search || '');
         }
-        const res = await fetch(url, { cache: 'no-store' });
+        const { BACKEND } = await import('../api/client');
+        const res = await fetch(`${BACKEND}${url}`, { cache: 'no-store', credentials: 'include', headers: { 'Accept': 'application/json' } });
         if (!res.ok) return;
         const data = await res.json();
         if (data) {
@@ -284,21 +286,14 @@ export default {
           this.round = Number(data.round || 0);
           this.localCurrentPromptPlayer = data.currentPromptPlayer || '';
           this.localCurrentPromptKind = data.currentPromptKind || '';
-          // reset bid error when prompt changes
           this.bidError = '';
-          // Update scoreboard component
           try {
-            const el = document.getElementById('ingame-score');
-            const scores = (this.cPlayers || []).map(p => {
+            this.scoreRows = (this.cPlayers || []).map(p => {
               const rb = p?.roundBids;
               const bid = Array.isArray(rb) ? Number(rb[rb.length - 1] || 0) : Number(rb || 0);
               return { name: p?.name || '', bid, points: Number(p?.points || 0) };
             });
-            const apply = () => { try { if (el) el.scores = scores; } catch(_){} };
-            if (window.customElements?.whenDefined) {
-              if (customElements.get('wizard-score')) apply(); else customElements.whenDefined('wizard-score').then(apply).catch(apply);
-            } else apply();
-          } catch(_) {}
+          } catch(_) { this.scoreRows = []; }
         }
       } catch(_) { /* ignore */ }
     },
@@ -315,14 +310,14 @@ export default {
           return;
         }
         const body = JSON.stringify({ bid: n, player: playerName });
-        const res = await fetch('/api/bid', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+        const { BACKEND } = await import('../api/client');
+        const res = await fetch(`${BACKEND}/pwa/api/bid`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body });
         if (!res.ok) {
           let msg = '';
           try { const j = await res.json(); msg = j?.error || ''; } catch(_) {}
           this.bidError = msg || 'Fehler beim Senden der Ansage.';
           return;
         }
-        // clear value and refresh
         this.bidValue = 0;
         await this.fetchGameState();
       } catch(e){
@@ -338,7 +333,8 @@ export default {
     async playCard(playerName, cardId){
       try {
         const body = JSON.stringify({ cardId, player: playerName });
-        const res = await fetch('/api/playCard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+        const { BACKEND } = await import('../api/client');
+        const res = await fetch(`${BACKEND}/pwa/api/playCard`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body });
         if (!res.ok) {
           let msg = '';
           try { const j = await res.json(); msg = j?.error || ''; } catch(_) {}
@@ -352,23 +348,16 @@ export default {
     }
   },
   mounted(){
-    // Initial fetch and polling for game state
     this.fetchGameState();
     try { this.pollId = window.setInterval(() => this.fetchGameState(), 1500); } catch(_) {}
 
-    // Load legacy scripts required by the page
-    try {
-      const webc = new URL('../../../public/javascripts/webcomponents.js', import.meta.url).href;
-      import(/* @vite-ignore */ webc).catch(() => {});
-    } catch(_) {}
+    try { window.__updateWizardScores = (scores) => { this.scoreRows = Array.isArray(scores) ? scores : []; }; } catch(_) {}
     try {
       const socket = new URL('../../../public/javascripts/socketClient.js', import.meta.url).href;
       import(/* @vite-ignore */ socket).catch(() => {});
     } catch(_) {}
 
-    // CDN modules that were previously included
     try {
-      // Shoelace CSS
       if (!document.querySelector('link[data-ingame-shoelace]')){
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -376,7 +365,6 @@ export default {
         link.setAttribute('data-ingame-shoelace','1');
         document.head.appendChild(link);
       }
-      // Shoelace JS
       if (!document.querySelector('script[data-ingame-shoelace]')){
         const s = document.createElement('script');
         s.type = 'module';
@@ -384,7 +372,6 @@ export default {
         s.setAttribute('data-ingame-shoelace','1');
         document.head.appendChild(s);
       }
-      // Clipboard copy web component
       if (!document.querySelector('script[data-ingame-clipboard]')){
         const s2 = document.createElement('script');
         s2.type = 'module';
@@ -392,7 +379,6 @@ export default {
         s2.setAttribute('data-ingame-clipboard','1');
         document.head.appendChild(s2);
       }
-      // Ionicons
       if (!document.querySelector('script[data-ingame-ionicons-esm]')){
         const s3 = document.createElement('script');
         s3.type = 'module';
@@ -426,26 +412,21 @@ export default {
 .hand-cards { display:flex; gap:.5rem; padding:.5rem; }
 .img-fluid { max-width: 100%; height: auto; }
 
-/* Bid input/button styling */
 .bid-box { display: inline-flex; align-items: center; gap: .5rem; }
 .bid-input { width: 5.5rem; padding: .35rem .5rem; border-radius: .375rem; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.15); color: inherit; }
 .bid-submit { padding: .4rem .75rem; border-radius: .375rem; border: 1px solid transparent; background: rgba(255,255,255,.2); color: #fff; cursor: pointer; transition: background .15s ease-in-out, filter .15s; }
 .bid-submit:hover { filter: brightness(1.05); }
 .bid-submit:active { filter: brightness(0.95); }
 
-/* Clickable cards when it's the player's turn to play a card */
 .card-img.clickable { cursor: pointer; box-shadow: 0 0 0 2px rgba(255,255,255,.0); transition: transform .12s ease, box-shadow .12s ease; }
 .card-img.clickable:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 18px rgba(0,0,0,.35); }
 </style>
 
-<!-- Non-scoped styles to adapt to the global dark theme class on MainPage -->
 <style>
-/* Dark mode: make the OK button clearly darker, as requested */
 .theme-dark .bid-submit { background: rgba(0,0,0,.55) !important; color: #f0f0f0 !important; border-color: rgba(255,255,255,.12) !important; }
 .theme-dark .bid-submit:hover { background: rgba(0,0,0,.65) !important; }
 .theme-dark .bid-submit:active { background: rgba(0,0,0,.75) !important; }
 
-/* Light theme keeps a lighter button */
 .theme-light .bid-submit { background: rgba(0,0,0,.08); color: #111; border-color: rgba(0,0,0,.12); }
 .theme-light .bid-submit:hover { background: rgba(0,0,0,.12); }
 .theme-light .bid-submit:active { background: rgba(0,0,0,.16); }

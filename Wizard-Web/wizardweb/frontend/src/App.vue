@@ -23,18 +23,14 @@ export default {
     const normalize = (p) => {
       try {
         if (!p) return '/';
-        // Collapse multiple slashes to a single slash
         let n = p.replace(/\/+?/g, '/');
-        // Ensure it starts with exactly one leading slash
         if (!n.startsWith('/')) n = '/' + n;
-        // Remove trailing slash except for root
         if (n.length > 1 && n.endsWith('/')) n = n.substring(0, n.length - 1);
         return n;
       } catch(_) { return '/'; }
     };
     const raw = typeof window !== 'undefined' ? window.location.pathname : '/';
     const path = normalize(raw);
-    // If normalization changed the URL, update it without reloading
     try {
       if (typeof window !== 'undefined' && path !== raw && window.history && window.history.replaceState) {
         window.history.replaceState({}, '', path + window.location.search + window.location.hash);
@@ -44,7 +40,6 @@ export default {
   },
   computed: {
     viewComponent(){
-      // Map simple paths to pages; treat /play/:name like ingame (single-hand view)
       if (this.path && this.path.startsWith('/play/')) return 'IngamePage';
       switch (this.path) {
         case '/loading': return 'LoadingPage';

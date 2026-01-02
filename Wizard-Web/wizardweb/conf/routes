@@ -47,3 +47,12 @@ GET     /jsroutes                   controllers.HomeController.jsRoutes()
 GET     /game/socket                wizard.controller.GameSocketController.socket
 
 GET     /play/:name                 controllers.HomeController.playFor(name: String)
+
+GET     /pwa/api/gameState          controllers.HomeController.gameState()
+GET     /pwa/api/starSettings       controllers.HomeController.starSettings()
+GET     /pwa/api/playerPresets/:id  controllers.HomeController.playerPreset(id: Long)
+POST    /pwa/api/players            controllers.HomeController.createPlayersJson()
+POST    /pwa/api/playCard           controllers.HomeController.playCardJson()
+POST    /pwa/api/bid                controllers.HomeController.bidJson()
+POST    /pwa/api/players/save       controllers.HomeController.savePlayersJson()
+GET     /pwa/jsroutes               controllers.HomeController.jsRoutes()

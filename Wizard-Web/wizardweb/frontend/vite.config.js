@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
             vue({
                 template: {
                     compilerOptions: {
-                        isCustomElement: (tag) => ['wizard-score', 'lite-youtube'].includes(tag)
+                        isCustomElement: (tag) => ['lite-youtube'].includes(tag)
                     }
                 }
             }),
@@ -19,8 +19,10 @@ export default defineConfig(({ mode }) => {
                 injectRegister: 'auto',
                 workbox: {
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,vue}'],
-                    maximumFileSizeToCacheInBytes: 5600000
+                    maximumFileSizeToCacheInBytes: 5600000,
+                    navigateFallback: '/index.html'
                 },
+                includeAssets: ['W_icon.png', '512_W_icon.png'],
                 manifest: {
                     name: 'Wizard PWA',
                     short_name: 'Wiz PWA',

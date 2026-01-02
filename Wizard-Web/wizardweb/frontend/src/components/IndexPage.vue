@@ -15,7 +15,6 @@ export default {
     start(){
       try {
         if (typeof window.start_game === 'function') { window.start_game(); return; }
-        // Default to the setup menu first (collect player count and names)
         window.location.href = '/menu';
         return;
       } catch(_) {}

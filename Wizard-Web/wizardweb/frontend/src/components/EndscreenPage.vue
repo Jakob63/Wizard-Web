@@ -36,7 +36,6 @@ export default {
     }
   },
   mounted(){
-    // Optional background image similar to legacy Play template
     try {
       const el = this.$el && this.$el.querySelector('#endscreen');
       if (el) {

@@ -61,9 +61,8 @@
       </ul>
     </section>
 
-    <!-- Anleitungsvideo (am Seitenende) -->
+    <!-- video -->
     <section aria-label="Anleitungsvideo" style="display:flex; justify-content:center; margin: 24px 0;">
-      <!-- Der gewünschte Short: https://www.youtube.com/shorts/6jVsRzdVbUA -->
       <lite-youtube ref="yt" videoid="6jVsRzdVbUA" style="max-width:560px; display:block;"></lite-youtube>
     </section>
 
@@ -74,9 +73,7 @@
 export default {
   name: 'RulesPage',
   mounted(){
-    // Lade die Web-Komponente und ihr CSS einmalig, damit die Vorschau sichtbar ist
     try {
-      // Preconnects für bessere Ladezeit (optional)
       if (!document.querySelector('link[data-preconnect-yt]')) {
         const p1 = document.createElement('link'); p1.rel = 'preconnect'; p1.href = 'https://www.youtube.com'; p1.setAttribute('data-preconnect-yt','1'); document.head.appendChild(p1);
         const p2 = document.createElement('link'); p2.rel = 'preconnect'; p2.href = 'https://i.ytimg.com'; p2.setAttribute('data-preconnect-yt','1'); document.head.appendChild(p2);
@@ -95,13 +92,10 @@ export default {
         l.setAttribute('data-lite-yt-css','1');
         document.head.appendChild(l);
       }
-      // Fallback: falls die Web-Komponente nach kurzer Zeit nicht definiert ist,
-      // ersetzen wir das Element durch ein normales YouTube-iframe.
       const ensureVisibleFallback = () => {
         try {
           const el = this.$refs.yt || document.querySelector('lite-youtube[videoid]');
           if (!el) return;
-          // Wenn Custom Element nicht definiert ODER Element hat keine sichtbare Größe, ersetze durch iframe
           const tagDefined = !!(window.customElements && customElements.get('lite-youtube'));
           const rect = (typeof el.getBoundingClientRect === 'function') ? el.getBoundingClientRect() : { width: 0, height: 0 };
           const tooSmall = !rect || rect.width < 10 || rect.height < 10;
@@ -118,7 +112,6 @@ export default {
           el.replaceWith(iframe);
         } catch(_) {}
       };
-      // zwei Versuche zeitversetzt, um langsames Laden zu berücksichtigen
       setTimeout(ensureVisibleFallback, 1200);
       setTimeout(ensureVisibleFallback, 2500);
     } catch(_) {}
@@ -148,7 +141,6 @@ export default {
 </script>
 
 <style scoped>
-/* Provide comfortable spacing from the fixed navbar */
 main.rules { padding: 72px .75rem 1rem; }
 .title { font-weight: 600; }
 h2 { cursor: pointer; }

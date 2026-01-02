@@ -34,6 +34,7 @@
 </template>
 
 <script>
+import { BACKEND } from '../api/client';
 export default {
   name: 'MainPage',
   data(){
@@ -67,10 +68,8 @@ export default {
       window.addEventListener('popstate', () => { this.path = window.location.pathname; try { this.updateBodyClasses(); } catch(_) {} });
     } catch(_) {}
 
-    // Ensure body has theme and page classes so legacy LESS rules apply (e.g., body padding)
     try { this.updateBodyClasses(); } catch(_) {}
 
-    // Minimal toastr shim (für Legacy-Skripte)
     try {
       if (!window.toastr) {
         const show = (variant, msg, dur) => {
@@ -91,7 +90,6 @@ export default {
       }
     } catch(_) {}
 
-    // Hilfsfunktionen fürs Laden klassischer Skripte in Reihenfolge
     const injectScript = (src, attrs = {}, onload) => {
       const s = document.createElement('script');
       s.src = src;
@@ -102,7 +100,6 @@ export default {
       return s;
     };
 
-    // Vendor: jQuery + Bootstrap (falls nicht schon vorhanden)
     try {
       if (!window.jQuery && !document.querySelector('script[data-vendor-jquery]')){
         injectScript('https://code.jquery.com/jquery-3.7.1.min.js', {
@@ -120,54 +117,64 @@ export default {
       }
     } catch(_) {}
 
-    // Legacy laden: zuerst menu.js (global: postJson, apiCall, ...), danach stars/runes/animatedHands
-    const loadLegacyAfterMenu = () => {
+    const installAjaxCompat = () => {
       try {
-        const stars = new URL('../../../public/javascripts/stars.js', import.meta.url).href;
-        import(/* @vite-ignore */ stars);
-        const runes = new URL('../../../public/javascripts/runes.js', import.meta.url).href;
-        import(/* @vite-ignore */ runes);
-        const hands = new URL('../../../public/javascripts/animatedHands.js', import.meta.url).href;
-        import(/* @vite-ignore */ hands);
+        if (!window.jQuery) return;
+        const $ = window.jQuery;
+        $.ajaxPrefilter(function(options, originalOptions, jqXHR){
+          try {
+            if (typeof options.url === 'string' && (
+                options.url.startsWith('/api/') ||
+                options.url.startsWith('/pwa/api/') ||
+                options.url.startsWith('/assets/')
+              )) {
+              options.url = `${BACKEND}${options.url}`;
+              options.xhrFields = { ...(options.xhrFields||{}), withCredentials: true };
+            }
+          } catch(_) {}
+        });
+        if (!window.postJson) {
+          window.postJson = function(url, data){
+            return $.ajax({ url, method: 'POST', data: JSON.stringify(data||{}), contentType: 'application/json', dataType: 'json' });
+          };
+        }
+        if (!window.apiCall) {
+          window.apiCall = function(method, url, data){
+            return $.ajax({ url, method: method||'GET', data: data ? JSON.stringify(data) : undefined, contentType: data? 'application/json' : undefined, dataType: 'json' });
+          };
+        }
       } catch(_) {}
-    };
-
-    const loadMenuThenOthers = () => {
-      // Nur einmal injizieren
-      if (!document.querySelector('script[data-legacy-menu]')) {
-        injectScript('/assets/javascripts/menu.js', { 'data-legacy-menu': '1' }, loadLegacyAfterMenu);
-      } else {
-        // Falls bereits vorhanden (z. B. Navigationswechsel), sofort weiterladen
-        loadLegacyAfterMenu();
-      }
     };
 
     try {
       const ensureCanvas = () => document.getElementById('starfield');
-      if (ensureCanvas()) {
-        if (window.jQuery) loadMenuThenOthers();
-        else {
-          // jQuery wird oben injiziert; lade menu.js deterministisch danach, sobald verfügbar
+      const loadVisuals = () => {
+        try {
+          const stars = new URL('../../../public/javascripts/stars.js', import.meta.url).href;
+          import(/* @vite-ignore */ stars);
+          const runes = new URL('../../../public/javascripts/runes.js', import.meta.url).href;
+          import(/* @vite-ignore */ runes);
+          const hands = new URL('../../../public/javascripts/animatedHands.js', import.meta.url).href;
+          import(/* @vite-ignore */ hands);
+        } catch(_) {}
+      };
+
+      const startWhenJqReady = () => {
+        if (window.jQuery) {
+          installAjaxCompat();
+          loadVisuals();
+        } else {
           const iv = setInterval(() => {
             if (window.jQuery) {
               clearInterval(iv);
-              loadMenuThenOthers();
+              installAjaxCompat();
+              loadVisuals();
             }
           }, 50);
         }
-      } else {
-        setTimeout(() => {
-          if (window.jQuery) loadMenuThenOthers();
-          else {
-            const iv = setInterval(() => {
-              if (window.jQuery) {
-                clearInterval(iv);
-                loadMenuThenOthers();
-              }
-            }, 50);
-          }
-        }, 0);
-      }
+      };
+
+      if (ensureCanvas()) startWhenJqReady(); else setTimeout(startWhenJqReady, 0);
     } catch(_) {}
   },
   methods: {

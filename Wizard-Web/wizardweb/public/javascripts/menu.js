@@ -55,20 +55,16 @@ function toSameOrigin(u){
     } catch(_) { return u; }
 }
 
-// Resolve jsRoutes route objects to concrete URLs and normalize them
 function resolveRouteUrl(routeOrUrl){
     try {
         if (!routeOrUrl) return routeOrUrl;
-        // If it's already a string, normalize and return
         if (typeof routeOrUrl === 'string') {
             return toSameOrigin(routeOrUrl);
         }
-        // Play jsRoutes exposes a .url function; call it if present
         const raw = (typeof routeOrUrl.url === 'function') ? routeOrUrl.url() : routeOrUrl.url;
         if (typeof raw === 'string' && raw.length > 0) {
             return toSameOrigin(raw);
         }
-        // Fallback: try routeOrUrl.toString()
         const str = String(routeOrUrl || '');
         return toSameOrigin(str);
     } catch(_) { return (typeof routeOrUrl === 'string') ? routeOrUrl : ''; }
@@ -108,7 +104,6 @@ function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const a=ar
 function getPlayerCount(){
     const fromHidden = parseInt($('#playerCount').val(), 10);
     if (!isNaN(fromHidden) && fromHidden >= 3 && fromHidden <= 6) return fromHidden;
-    // Fallback: count inputs with id^=name inside #nameForm
     const cnt = $('#nameForm input[id^="name"]').length;
     if (cnt >= 3 && cnt <= 6) return cnt;
     return 3;
@@ -192,7 +187,6 @@ $(function() {
         $('#presetList').on('change', function () {
             fillNamesFromPreset(this.value);
         });
-        // Delegate to any dynamic name inputs (name1..name6)
         $form.on('input change', 'input[id^=name]', function () {
             autoSave();
             autoSubmit();

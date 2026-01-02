@@ -64,7 +64,6 @@ export default {
     start(){
       try {
         if (typeof window.start_game === 'function') { window.start_game(); return; }
-        // Go to Menu to choose player count and names before the game
         window.location.href = '/menu';
         return;
       } catch(_) {}
