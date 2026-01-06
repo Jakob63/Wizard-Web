@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import { BACKEND } from '../api/client';
+import { BACKEND } from '../api/client.js';
 export default {
   name: 'MainPage',
   data(){

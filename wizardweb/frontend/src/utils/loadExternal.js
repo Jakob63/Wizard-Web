@@ -2,7 +2,7 @@
 // For legacy assets from the Play backend (e.g., /assets/javascripts/menu.js),
 // we prefix with BACKEND to avoid 404s on the Vite dev server when no proxy is used.
 
-import { BACKEND } from '../api/client';
+import { BACKEND } from '../api/client.js';
 
 export function loadScript(src, { fromBackend = false, async = true, defer = true } = {}) {
   return new Promise((resolve, reject) => {

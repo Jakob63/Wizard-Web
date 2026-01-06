@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { apiGet, apiPost } from '../api/client';
+import { apiGet, apiPost } from '../api/client.js';
 import OfflineGame from './OfflineGame.vue';
 export default {
   name: 'MenuPage',

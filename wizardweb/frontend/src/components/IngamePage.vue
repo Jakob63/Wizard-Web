@@ -125,7 +125,7 @@
 </template>
 
 <script>
-import { BACKEND } from '../api/client';
+import { BACKEND } from '../api/client.js';
 import WizardScore from './WizardScore.vue';
 export default {
   name: 'IngamePage',
@@ -273,7 +273,7 @@ export default {
         } catch(_) {
           url += (window.location.search || '');
         }
-        const { BACKEND } = await import('../api/client');
+        const { BACKEND } = await import('../api/client.js');
         const res = await fetch(`${BACKEND}${url}`, { cache: 'no-store', credentials: 'include', headers: { 'Accept': 'application/json' } });
         if (!res.ok) return;
         const data = await res.json();
@@ -310,7 +310,7 @@ export default {
           return;
         }
         const body = JSON.stringify({ bid: n, player: playerName });
-        const { BACKEND } = await import('../api/client');
+        const { BACKEND } = await import('../api/client.js');
         const res = await fetch(`${BACKEND}/pwa/api/bid`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body });
         if (!res.ok) {
           let msg = '';
@@ -333,7 +333,7 @@ export default {
     async playCard(playerName, cardId){
       try {
         const body = JSON.stringify({ cardId, player: playerName });
-        const { BACKEND } = await import('../api/client');
+        const { BACKEND } = await import('../api/client.js');
         const res = await fetch(`${BACKEND}/pwa/api/playCard`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body });
         if (!res.ok) {
           let msg = '';
