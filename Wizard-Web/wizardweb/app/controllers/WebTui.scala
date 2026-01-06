@@ -13,6 +13,7 @@ object WebTui extends Observer with View{
   var gameLogic: Option[aGameLogic] = None
   var userInput: UserInput = uninitialized // wird beim Bootstrap gesetzt
   @volatile var currentPromptPlayer: Option[String] = None
+  @volatile var currentPromptKind: Option[String] = None // "bid" | "card"
 
   override def init(gameLogic: aGameLogic): Unit = {
     this.gameLogic = Some(gameLogic)
@@ -23,12 +24,14 @@ object WebTui extends Observer with View{
       case "which card" =>
         val name = obj.head.asInstanceOf[Player].name
         currentPromptPlayer = Some(name)
+        currentPromptKind = Some("card")
         println(s"$name, which card do you want to play?")
       case "invalid card" => println("Invalid card. Please enter a valid index.")
       case "follow lead" => println(s"You must follow the lead suit ${obj.head.asInstanceOf[Color].toString}.")
       case "which bid" =>
         val name = obj.head.asInstanceOf[Player].name
         currentPromptPlayer = Some(name)
+        currentPromptKind = Some("bid")
         println(s"$name, how many tricks do you bid?")
       case "invalid input, bid again" => println("Invalid input. Please enter a valid number.")
       case "print trump card" => println(s"Trump card: \n${showcard(obj.head.asInstanceOf[Card])}")

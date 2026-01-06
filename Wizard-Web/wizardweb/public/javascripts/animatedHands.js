@@ -1,4 +1,8 @@
 (function($) {
+    if (window.__animatedHandsLoaded) {
+        return;
+    }
+    window.__animatedHandsLoaded = true;
     const perCardDelay = 300;
     const betweenPlayersDelay = 420;
     const animationDuration = 320;
@@ -16,12 +20,44 @@
 .animate-visible {
   transform: translateY(0) scale(1);
   opacity: 1;
-}`;
+}
+.game__section.trick-render-active .card-slot:not(#trick-render-root *),
+.game__section.trick-render-active img.card-img:not(#trick-render-root img),
+.game__section.trick-render-active img.img-fluid[data-card-id]:not(#trick-render-root img) {
+  display: none !important;
+}
+.game__section.trick-render-active > :not(#trick-render-root),
+#current_trick.trick-render-active > :not(#trick-render-root) {
+  display: none !important;
+}
+.game__section.trick-render-hidden,
+#current_trick.trick-render-hidden { display: none !important; }
+`;
         const styleEl = document.createElement('style');
         styleEl.id = 'animated-hands-style';
         styleEl.textContent = css;
         document.head.appendChild(styleEl);
     })();
+
+    function setWizardScores(scores){
+        try {
+            if (typeof window.__updateWizardScores === 'function') {
+                window.__updateWizardScores(scores);
+                return;
+            }
+            const el = document.getElementById('ingame-score');
+            if (!el) return;
+            const assign = () => { try { el.scores = scores; } catch(_) {} };
+            if (window.customElements && typeof customElements.whenDefined === 'function') {
+                if (customElements.get('wizard-score')) assign();
+                else {
+                    try { customElements.whenDefined('wizard-score').then(assign).catch(assign); } catch(_) { assign(); }
+                }
+            } else {
+                assign();
+            }
+        } catch(_) {}
+    }
 
     function ajaxJson(route, options = {}) {
         return new Promise((resolve, reject) => {
@@ -64,7 +100,7 @@
     }
 
     function applyHiddenState($allHands) {
-        $allHands.find('.card-slot, .card-img').each(function () {
+        $allHands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]').each(function () {
             $(this)
                 .addClass('animate-hidden')
                 .removeClass('animate-visible')
@@ -75,7 +111,7 @@
     function playStaggeredReveal($allHands) {
         let totalDelay = initialDelay;
         $allHands.each(function () {
-            const $cards = $(this).find('.card-slot, .card-img');
+            const $cards = $(this).find('.card-slot, img.card-img, img.img-fluid[data-card-id]');
             $cards.each(function (idx) {
                 const $c = $(this);
                 const showAt = totalDelay + idx * perCardDelay;
@@ -92,7 +128,7 @@
         if ($hands.length === 0) return;
 
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            $hands.find('.card-slot, .card-img').removeClass('animate-hidden').addClass('animate-visible');
+            $hands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]').removeClass('animate-hidden').addClass('animate-visible');
             return;
         }
 
@@ -131,26 +167,50 @@
             }
         } catch (err) {
             console.error('Error fetching game state:', err);
-            $hands.find('.card-slot, .card-img').removeClass('animate-hidden').addClass('animate-visible');
+            $hands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]').removeClass('animate-hidden').addClass('animate-visible');
         }
     }
 
     function renderTrickCards(trickCards){
-        let $section = $(".game__section[aria-label='Current Trick']");
-        if ($section.length === 0) {
-            $section = $(".game__section[aria-label='Aktueller Stich']");
+        try {
+            const norm = (tc) => {
+                try {
+                    if (!tc) return '';
+                    if (tc.id !== undefined && tc.id !== null) return 'id:' + String(tc.id);
+                    if (tc.code) return 'code:' + String(tc.code);
+                    if (tc.imageUrl) {
+                        const u = new URL(tc.imageUrl, window.location.origin);
+                        return 'img:' + u.pathname; // ignore query/hash cache-busters
+                    }
+                    if (tc.label) return 'lbl:' + String(tc.label);
+                } catch(_) {}
+                try { return JSON.stringify(tc); } catch(_) { return String(tc); }
+            };
+            const sig = Array.isArray(trickCards)
+                ? trickCards.map(norm).sort().join('|')
+                : 'nil';
+            if (window.__lastTrickSig === sig) return;
+            window.__lastTrickSig = sig;
+        } catch(_) {}
+
+        const $allSections = $('#current_trick, .game__section[aria-label="Current Trick"], .game__section[aria-label="Aktueller Stich"]');
+        if ($allSections.length === 0) return;
+
+        try { $allSections.find('#trick-render-root .trick-cards, .trick-cards').remove(); } catch(_) {}
+
+        let $section = $allSections.filter(':visible').first();
+        if ($section.length === 0) $section = $allSections.first();
+
+        try { $section.addClass('trick-render-active'); } catch(_) {}
+        try { $allSections.not($section).removeClass('trick-render-active').addClass('trick-render-hidden'); } catch(_) {}
+
+        let $root = $section.find('#trick-render-root');
+        if ($root.length === 0) {
+            $root = $('<div id="trick-render-root" />').appendTo($section);
         }
-        if ($section.length === 0) return;
-        let $row = $section.find('.trick-cards');
-        if ($row.length === 0) {
-            $row = $section.find("div[style*='display: flex']").first();
-            if ($row.length) {
-                $row.addClass('trick-cards');
-            } else {
-                $row = $('<div class="trick-cards d-flex gap-2 p-1" />').appendTo($section);
-            }
-        }
-        $row.empty();
+        try { $root.find('.trick-cards').remove(); } catch(_) {}
+
+        const $row = $('<div class="trick-cards d-flex gap-2 p-1" />').appendTo($root);
         (trickCards || []).forEach(tc => {
             const $img = $('<img>', {
                 class: 'img-fluid card-img',
@@ -186,7 +246,7 @@
                 const $mainHand = $hands.first();
                 renderHandCards($mainHand, state?.handCards || []);
             }
-            $hands.find('.card-slot, .card-img')
+            $hands.find('.card-slot, img.card-img, img.img-fluid[data-card-id]')
                 .removeClass('animate-hidden')
                 .addClass('animate-visible')
                 .css('transition', '');
@@ -207,7 +267,8 @@
     $(function(){
         if (typeof jsRoutes === 'undefined' || !jsRoutes.controllers?.HomeController?.playCardJson) return;
 
-        $(document).on('click', '.game__hand .card-img', async function(e){
+        $(document).off('click', '.game__hand img.card-img, .game__hand img.img-fluid[data-card-id]')
+                   .on('click', '.game__hand img.card-img, .game__hand img.img-fluid[data-card-id]', async function(e){
             e.preventDefault();
             e.stopPropagation();
             const $img = $(this);
@@ -245,7 +306,8 @@
     $(function(){
         if (!(window.jsRoutes && jsRoutes.controllers?.HomeController?.bidJson)) return;
 
-        $(document).on('click', '.js-bid-submit', async function(e){
+        $(document).off('click', '.js-bid-submit')
+                   .on('click', '.js-bid-submit', async function(e){
             e.preventDefault(); e.stopPropagation();
             const $btn = $(this);
             const idx = $btn.data('index');
@@ -263,7 +325,7 @@
             try {
                 const $hand = $btn.closest('.game__hand');
                 const playerName = $hand.find('.player-name').text().trim();
-                const handCount = $hand.find('.card-img').length;
+                const handCount = $hand.find('img.card-img, img.img-fluid[data-card-id]').length;
                 if (handCount > 0 && valueNum > handCount) {
                     try { window.toastr && toastr.warning('Du kannst höchstens ' + handCount + ' Stiche ansagen.'); } catch(_) {}
                     return;
@@ -277,6 +339,21 @@
                 const res = await postJson(route, { bid: value, player });
                 if (res && res.ok) {
                     $input.val('');
+                    try {
+                        const wc = document.getElementById('ingame-score');
+                        if (wc) {
+                            const current = Array.isArray(wc.scores) ? wc.scores.slice() : null;
+                            if (current) {
+                                const $hand = $btn.closest('.game__hand');
+                                const playerName = $hand.find('.player-name').text().trim();
+                                const i = current.findIndex(s => String(s.name) === playerName);
+                                if (i >= 0) {
+                                    current[i] = Object.assign({}, current[i], { bid: valueNum });
+                                    setWizardScores(current);
+                                }
+                            }
+                        }
+                    } catch(_) {}
                     setTimeout(() => { refreshGameState(); }, 250);
                 } else {
                     console.warn('bidJson not ok', res);
@@ -297,7 +374,8 @@
             }
         });
 
-        $(document).on('keydown', '.bid-input', function(e){
+        $(document).off('keydown', '.bid-input')
+                   .on('keydown', '.bid-input', function(e){
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const id = $(this).attr('id');
@@ -308,7 +386,6 @@
             }
         });
 
-        // Sofortige visuelle Warnungen bei ungültiger Eingabe (manuell oder per Pfeile)
         function maybeWarnOnce($el, key, message){
             const now = Date.now();
             const last = Number($el.data(key) || 0);
@@ -318,10 +395,11 @@
             }
         }
 
-        $(document).on('input change', '.bid-input', function(){
+        $(document).off('input change', '.bid-input')
+                   .on('input change', '.bid-input', function(){
             const $input = $(this);
             const raw = ($input.val() ?? '').toString().trim();
-            if (!raw) return; // Keine Warnung bei leerem Feld
+            if (!raw) return;
             const n = Number(raw);
             const maxAttr = $input.attr('max');
             const minAttr = $input.attr('min');
@@ -352,20 +430,30 @@
     // Ajax Update
     function updateScoreboard(state){
         if (!state || !Array.isArray(state.players)) return;
+
+        try {
+            const scores = state.players.map(p => ({
+                name: String(p?.name || ''),
+                bid: Number((p && (p.roundBids ?? p.bid)) ?? 0),
+                points: Number(p?.points ?? 0)
+            }));
+            setWizardScores(scores);
+        } catch(_) {}
+
         const $grid = $('.game__section--scoreboard .score-grid');
-        if ($grid.length === 0) return;
+        if ($grid.length > 0) {
+            const $hdrs = $grid.find('.hdr');
+            $grid.children().not($hdrs).remove();
 
-        const $hdrs = $grid.find('.hdr');
-        $grid.children().not($hdrs).remove();
-
-        state.players.forEach(p => {
-            const name = p.name ?? '';
-            const bid = (p.roundBids ?? '').toString();
-            const points = (p.points ?? '').toString();
-            $grid.append($('<div>').text(name));
-            $grid.append($('<div>', { class: 'val' }).text(bid));
-            $grid.append($('<div>', { class: 'val' }).text(points));
-        });
+            state.players.forEach(p => {
+                const name = p.name ?? '';
+                const bid = (p.roundBids ?? p.bid ?? '').toString();
+                const points = (p.points ?? '').toString();
+                $grid.append($('<div>').text(name));
+                $grid.append($('<div>', { class: 'val' }).text(bid));
+                $grid.append($('<div>', { class: 'val' }).text(points));
+            });
+        }
     }
 
     $(initAnimatedHands);
