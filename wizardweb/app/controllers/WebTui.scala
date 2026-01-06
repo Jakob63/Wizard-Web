@@ -8,7 +8,7 @@ import wizard.model.player.Player
 import wizard.aView.View
 import util.UserInput
 import scala.compiletime.uninitialized
-// test
+
 
 object WebTui extends Observer with View{
   var gameLogic: Option[aGameLogic] = None
