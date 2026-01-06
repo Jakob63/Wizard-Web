@@ -1,0 +1,536 @@
+@space-xs: 4px;
+@space-sm: 8px;
+@space-md: 16px;
+@space-lg: 24px;
+@space-xl: 32px;
+
+@radius-sm: 6px;
+@radius-md: 10px;
+
+@shadow-1: 0 4px 14px rgba(0,0,0,.25);
+
+:root {
+  --color-bg: #0b0d12;
+  --color-text: #ffffff;
+  --color-subtle: rgba(255,255,255,0.7);
+  --color-panel: rgba(0,0,0,0.45);
+  --color-accent: #8bd3ff;
+  --navbar-h: 56px;
+}
+
+html {
+  font-size: clamp(14px, 1.6vw, 18px);
+}
+
+body {
+  line-height: 1.5;
+}
+
+.body-padding { padding: 2rem; }
+
+body:not(.page-ingame) {
+  padding-top: var(--navbar-h);
+}
+
+.navbar .brand-w {
+  display: inline-block;
+  font-weight: 900;
+  font-family: 'Cinzel Decorative', 'Times New Roman', Georgia, serif;
+  letter-spacing: -0.04em;
+  font-size: 1.4rem;
+  // Wizard Title mit regenbogen
+  background: linear-gradient(
+          135deg,
+          #7d3cff 0%,
+          #22d3ee 40%,
+          #fdd835 60%,
+          #ff3cac 85%,
+          #7d3cff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% 200%;
+  animation: wizard-sheen 12s ease-in-out infinite;
+}
+
+// Ingame: compact bid input field (was too wide due to .form-control default width:100%)
+.game__hand {
+  .bid-input {
+    // Keep it to a natural, small size suitable for numbers (0–13)
+    width: 6ch;            // approx. space for 3 digits
+    max-width: 5.5rem;     // safety upper bound
+    min-width: 3.25rem;    // readable minimum
+    flex: 0 0 auto;        // don't grow in flex row
+    display: inline-block; // avoid full-width behavior
+    text-align: center;    // center digits
+    padding-left: .4rem;   // retain comfortable padding
+    padding-right: .4rem;
+  }
+}
+
+.rules {
+  padding: clamp(1rem, 3vw, 2rem);
+  max-width: clamp(42rem, 86vw, 70rem);
+  margin: 0 auto;
+
+  h1 { font-size: clamp(1.8rem, 3.6vw, 2.6rem); margin: 0 0 clamp(0.75rem, 1.5vw, 1rem); }
+  h2 { font-size: clamp(1.2rem, 2.4vw, 1.6rem); margin: clamp(1rem, 2vw, 1.2rem) 0 clamp(0.5rem, 1vw, 0.8rem); }
+  p, li { font-size: clamp(1rem, 1.4vw, 1.125rem); color: var(--color-subtle); }
+  ul, ol { padding-left: clamp(1rem, 2vw, 1.5rem); }
+}
+
+// Automatisch syspräf als mode übernehmen
+.theme-auto {
+  @media (prefers-color-scheme: dark) {
+    --color-bg: #07090d;
+    --color-text: #e9eef6;
+    --color-subtle: rgba(233,238,246,0.75);
+    --color-panel: rgba(255,255,255,0.06);
+    --color-accent: #7ecbff;
+  }
+  @media (prefers-color-scheme: light) {
+    --color-bg: #ffffff;
+    --color-text: #0b0d12;
+    --color-subtle: rgba(11,13,18,0.7);
+    --color-panel: rgba(0,0,0,0.06);
+    --color-accent: #005ea6;
+  }
+}
+
+.theme-light {
+  --color-bg: #ffffff;
+  --color-text: #0b0d12;
+  --color-subtle: rgba(11,13,18,0.7);
+  --color-panel: rgba(0,0,0,0.06);
+  --color-accent: #005ea6;
+}
+
+// wenn mode = light dann keine sterne
+.theme-light #starfield {
+  display: none !important;
+  background: none !important;
+}
+
+.theme-dark {
+  --color-bg: #07090d;
+  --color-text: #e9eef6;
+  --color-subtle: rgba(233,238,246,0.75);
+  --color-panel: rgba(255,255,255,0.06);
+  --color-accent: #7ecbff;
+}
+
+// Layout
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+img { max-width: 100%; display: block; }
+
+// sterne
+.theme-dark #starfield {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  background: radial-gradient(ellipse at bottom, #0b0d12 0%, #05060a 60%, #020308 100%);
+}
+
+#page-layer { position: relative; z-index: 1; }
+
+.rune-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1; // hinter überschrift
+}
+
+.rune-bg svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.rune {
+  opacity: 1;
+  transform-origin: center;
+}
+
+@keyframes rune-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes rune-fade {
+  0%, 100% { opacity: 0.04; }
+  50%      { opacity: 0.16; }
+}
+
+.rune .rune-anim-rotate { animation: rune-rotate var(--rot-dur, 120s) linear infinite; }
+.rune .rune-anim-fade   { animation: rune-fade var(--fade-dur, 24s) ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rune .rune-anim-rotate,
+  .rune .rune-anim-fade { animation: none !important; }
+}
+
+// BEM konvention
+.game {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.game__header { padding: clamp(0.6rem, 1.2vw, 1rem) clamp(1rem, 2vw, 2rem); }
+
+.game__title {
+  margin: 0;
+  font-size: clamp(22px, 2.6vw, 36px);
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.game__main.bg-ingame {
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  min-height: 100dvh;
+  min-height: 100svh;
+  width: 100%;
+}
+
+.game__row, .game__section {
+  min-height: 0;
+}
+
+// Scoreboard
+.game__scoreboard {
+  position: static;
+}
+.game__scoreboard .title {
+  font-weight: 700;
+  margin-bottom: @space-xs;
+}
+
+.game__scoreboard .score-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: clamp(0.25rem, 0.8vw, 0.6rem);
+  column-gap: 10px;
+  row-gap: 4px;
+  align-items: center;
+  font-weight: 700;
+}
+.game__scoreboard .hdr {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.game__scoreboard .val {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.game__row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: clamp(0.6rem, 1.6vw, 1rem);
+  align-items: stretch;
+}
+
+// zu klein -> untereinander
+@media (max-width: 800px) {
+  .game__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.game__section--trump,
+.game__section--scoreboard {
+  justify-self: start;
+  padding: @space-md;
+  min-width: unset;
+  min-height: auto;
+}
+
+.game__section {
+  background: var(--color-panel);
+  backdrop-filter: blur(4px);
+  border-radius: @radius-md;
+  box-shadow: @shadow-1;
+  min-height: 120px;
+  max-height: none;
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+  display: flex;
+  flex-direction: column;
+}
+.game__section .title {
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  margin-bottom: clamp(0.4rem, 1vw, 0.6rem);
+}
+
+.game__section--scoreboard .game__scoreboard {
+  position: static;
+  top: auto; right: auto; left: auto; z-index: auto;
+  backdrop-filter: none;
+  padding: 0;
+  min-width: unset;
+  box-shadow: none;
+  font-size: 0.9rem;
+}
+
+.game__cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.4rem, 1.2vw, 0.8rem);
+}
+
+/* Ingame: scoreboard float responsive override for small screens */
+@media (max-width: 800px) {
+  .infloat-score {
+    position: static !important;
+    width: auto !important;
+  }
+}
+
+.game__hand .game__cards {
+  justify-content: flex-start;
+}
+
+// einfliegen
+.game__cards img {
+  width: clamp(52px, 9vw, 140px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+  border-radius: @radius-sm;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  transform-origin: center bottom;
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  animation: card-enter .80s ease-out both;
+}
+.game__cards img:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+  filter: brightness(1.05) saturate(1.02);
+}
+
+.game__section--trump .game__cards {
+  justify-content: center;
+}
+.game__section--trump .game__cards img {
+  height: clamp(90px, 14vh, 180px);
+  width: auto;
+}
+
+[aria-label="Aktueller Stich"] .game__cards img {
+  height: clamp(72px, 10vh, 150px);
+  width: auto;
+}
+
+.game__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-switch {
+  margin-left: auto;
+  background: transparent;
+  color: var(--color-text);
+  text-decoration: none;
+}
+.theme-switch:hover {
+  background: rgba(255,255,255,.08);
+}
+.theme-light .theme-switch { border-color: rgba(0,0,0,.25); }
+.theme-light .theme-switch:hover { background: rgba(0,0,0,.06); }
+
+@keyframes card-enter {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+.game__hand {
+  .player-name {
+    font-weight: 700;
+    margin-bottom: clamp(0.4rem, 1vw, 0.6rem);
+  }
+  .game__cards {
+    justify-content: flex-start;
+  }
+}
+.game__hand { min-height: auto; padding: clamp(0.5rem, 1.2vw, 0.9rem); }
+
+.game__hand .player-name { font-weight: 600; margin-bottom: @space-sm; }
+
+.game__footer { padding: clamp(0.6rem, 1.2vw, 1rem) clamp(1rem, 2vw, 2rem); color: var(--color-subtle); }
+
+@media (max-width: 900px) {
+  .game__row {
+    grid-template-columns: 1fr;
+    gap: clamp(0.8rem, 2vw, 1.25rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+h1, .h1 { font-size: clamp(1.8rem, 4vw, 3rem); }
+h2, .h2 { font-size: clamp(1.4rem, 3vw, 2.25rem); }
+h3, .h3 { font-size: clamp(1.2rem, 2.2vw, 1.8rem); }
+h4, .h4 { font-size: clamp(1.05rem, 1.8vw, 1.4rem); }
+
+.btn {
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  padding: clamp(0.55rem, 0.9vw, 0.8rem) clamp(1rem, 1.6vw, 1.5rem);
+  border-radius: clamp(6px, 0.6vw, 12px);
+}
+
+.btn-lg {
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  padding: clamp(0.7rem, 1.1vw, 1rem) clamp(1.2rem, 2vw, 2rem);
+}
+
+.game__row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: clamp(0.6rem, 1.6vw, 1rem);
+  align-items: stretch;
+  margin-bottom: clamp(0.8rem, 2vw, 1.25rem);
+}
+
+.game__section--trump,
+.game__section--scoreboard {
+  justify-self: stretch;
+  padding: inherit;
+}
+
+.game__section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.game__section .title { margin-bottom: clamp(0.4rem, 1vw, 0.6rem); }
+
+.game__section.game__section--scoreboard .game__scoreboard {
+  position: static !important;
+}
+
+.game__hand { min-height: auto; padding: clamp(0.5rem, 1.2vw, 0.9rem); }
+
+// Karten linksbündig
+.game__hand .game__cards { justify-content: flex-start; }
+
+.game__row {
+  display: grid;
+  grid-template-columns: 0.9fr 2.4fr 0.9fr;
+  gap: clamp(0.6rem, 1.6vw, 1rem);
+  align-items: start;
+  margin-bottom: clamp(1rem, 2.2vw, 1.5rem);
+}
+
+.game__section--trump,
+.game__section--scoreboard {
+  justify-self: stretch;
+  padding: clamp(0.5rem, 1vw, 0.8rem);
+  min-height: 0 !important;
+}
+
+.game__section--trump .game__cards { justify-content: center; }
+.game__section--trump .game__cards img {
+  height: clamp(100px, 8vh, 99999px);
+  width: auto !important;
+}
+
+[aria-label="Aktueller Stich"] { padding: clamp(0.6rem, 1.2vw, 1rem); }
+[aria-label="Aktueller Stich"] .game__cards img {
+  height: clamp(100px, 11vh, 160px);
+  width: auto !important;
+}
+
+.game__section.game__section--scoreboard .game__scoreboard {
+  position: static !important;
+}
+
+.game__hand {
+  min-height: 0 !important;
+  padding: clamp(0.4rem, 0.9vw, 0.75rem);
+}
+.game__hand .game__cards { justify-content: flex-start; gap: clamp(0.3rem, 0.8vw, 0.6rem); }
+
+.game__hand {
+  display: flex;
+  align-items: start;
+  gap: clamp(0.4rem, 0.9vw, 0.75rem);
+  padding: clamp(0.3rem, 0.7vw, 0.5rem);
+  min-height: 0 !important;
+}
+
+.game__hand .player-name {
+  margin: 0;
+  line-height: 3;
+  white-space: nowrap;
+}
+
+.game__hand .game__cards {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  gap: clamp(0.3rem, 0.8vw, 0.6rem);
+  align-items: center;
+}
+
+.game__hand .game__cards img {
+  height: clamp(200px, 200vh, 400px);
+  width: auto !important;
+}
+
+.img-fluid {
+  max-height: 145px !important;
+  border-radius: 0.3em !important;
+}
+
+.switch__style {
+  position: relative;
+  width: 50px;
+  height: 28px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  padding: 0;
+}
+
+.switch__style_span {
+  position: absolute;
+  top: 3px;
+  width: 22px;
+  height: 22px;
+  background-color: white;
+  border-radius: 50%;
+  transition: left 0.3s;
+  display: block;
+}
+
+@import "home.less";
+
+// schauen ob sinnvol
+.container-ingame {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 .5rem;
+  margin-left: 0;
+  margin-right: auto;
+  width: auto;
+}

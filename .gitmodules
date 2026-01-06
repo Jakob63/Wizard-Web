@@ -1,0 +1,4 @@
+[submodule "wizard"]
+	path = wizard
+	branch = refactor-Web-E
+	url = https://github.com/Jakob63/WizardSE.git
