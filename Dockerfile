@@ -1,19 +1,16 @@
-FROM sbtscala/scala-sbt:eclipse-temurin-alpine-22_36_1.10.3_3.5.1
-LABEL authors="jakob"
+# Production-ready OpenJDK 17
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-# Zuerst sbt-Metadaten kopieren, damit Abhängigkeiten gecacht werden
-COPY build.sbt /app/
-COPY project/ /app/project/
-RUN sbt update
+# Kopiere alle Projektdateien
+COPY . .
 
-# komplettes Projekt kopieren
-COPY . /app
+# Stage den Play-Webapp Subproject (Production Mode)
+RUN sbt wizardweb/stage
 
-# Backend-Port anpassen falls nötig
-EXPOSE 9000
+# JVM Limits für Free Dyno
+ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:MaxMetaspaceSize=128m"
 
-# Container startet das Backend mit sbt run
-CMD ["sh", "-c", "sbt -Dhttp.port=$PORT run"]
-
+# Start im Production Mode, Port aus Heroku-Env
+CMD ["sh", "-c", "./wizardweb/target/universal/stage/bin/wizard-web -Dhttp.port=$PORT $JAVA_OPTS"]
