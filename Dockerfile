@@ -6,8 +6,8 @@ WORKDIR /app
 # 1️⃣ Zuerst nur sbt Metadaten für Dependency Caching
 COPY build.sbt /app/
 COPY project /app/project/
-COPY wizard/build.sbt /app/wizard/
-COPY wizardweb/build.sbt /app/wizardweb/
+COPY wizard /app/wizard
+COPY wizardweb /app/wizardweb
 
 RUN sbt update
 
