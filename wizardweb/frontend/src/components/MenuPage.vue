@@ -14,9 +14,9 @@
             <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary"
-                @click="showOfflineGame = !showOfflineGame"
+                @click="goOfflineGame"
             >
-              {{ showOfflineGame ? 'Mini-Game ausblenden' : 'Mini-Game spielen' }}
+              Mini-Game spielen
             </button>
           </div>
         </div>
@@ -101,11 +101,6 @@
           </div>
         </div>
 
-        <!-- Offline Mini Game -->
-        <div class="mt-4" v-if="showOfflineGame">
-          <OfflineGame @close="showOfflineGame = false" />
-        </div>
-
       </div>
     </div>
   </main>
@@ -113,18 +108,15 @@
 
 <script>
 import { apiGet, apiPost } from '../api/client.js';
-import OfflineGame from './OfflineGame.vue';
 
 export default {
   name: 'MenuPage',
-  components: { OfflineGame },
 
   data() {
     return {
       selectedCount: 3,
       submitting: false,
       isOffline: typeof navigator !== 'undefined' ? !navigator.onLine : false,
-      showOfflineGame: false,
       errorMsg: ''
     };
   },
@@ -132,7 +124,6 @@ export default {
   methods: {
     selectCount(n) {
       if (n < 3 || n > 6) return;
-
       this.selectedCount = n;
       this.$nextTick(() => {
         const firstEmpty =
@@ -196,15 +187,15 @@ export default {
     async startGame() {
       if (this.submitting) return;
 
-      if (this.isOffline) {
-        this.showError('Du bist offline. Spiele solange das Mini-Game.');
-        this.showOfflineGame = true;
-        return;
-      }
-
       const names = this.collectNames();
       const err = this.validateNames(names);
       if (err) { this.showError(err); return; }
+
+      if (this.isOffline) {
+        this.showError('Keine Verbindung – spiele solange das Mini-Game.');
+        this.goOfflineGame();
+        return;
+      }
 
       this.submitting = true;
       this.hideError();
@@ -213,36 +204,24 @@ export default {
         const res = await apiPost('/pwa/api/players', { players: names });
         const target = (res && (res.first || res.tabs?.[0])) || '/ingame';
 
-        // ✅ ECHTES VUE ROUTING
+        // ✅ Vue Router Navigation
         await this.$router.push(target);
       } catch (e) {
-        let msg = 'Spielstart fehlgeschlagen.';
-        const offline =
-            e?.name === 'TypeError'
-            || !navigator.onLine;
-
-        if (offline) {
-          msg = 'Keine Verbindung – Offline-Modus aktiv.';
-          this.showOfflineGame = true;
-        }
-
-        this.showError(msg);
+        this.showError('Spielstart fehlgeschlagen.');
       } finally {
         this.submitting = false;
       }
+    },
+
+    goOfflineGame() {
+      // SPA-konforme Navigation zum Mini-Game
+      this.$router.push('/offline');
     }
   },
 
   mounted() {
-    this._onOnline = () => {
-      this.isOffline = false;
-      this.showOfflineGame = false;
-      this.hideError();
-    };
-
-    this._onOffline = () => {
-      this.isOffline = true;
-    };
+    this._onOnline = () => { this.isOffline = false; this.hideError(); };
+    this._onOffline = () => { this.isOffline = true; };
 
     window.addEventListener('online', this._onOnline);
     window.addEventListener('offline', this._onOffline);
