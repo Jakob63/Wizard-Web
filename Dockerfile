@@ -11,7 +11,7 @@ COPY build.sbt /app/
 COPY project /app/project/
 
 # Copy the main Scala sources
-COPY wizard/src/main/scala /app/src/main/scala
+COPY wizardweb/wizard/src/main/scala /app/src/main/scala
 
 # Copy the Play web app
 COPY wizardweb/app /app/app

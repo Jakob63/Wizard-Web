@@ -1,0 +1,146 @@
+package wizard.controller.controllerBaseImpl
+
+import org.apache.pekko.actor.ActorRef
+import wizard.aView.TextUI.showHand
+import wizard.actionmanagement.Observable
+import wizard.controller.GameState.Menu
+import wizard.controller.{GameState, aGameLogic, aRoundLogic}
+import wizard.model.cards.{Card, Dealer}
+import wizard.model.player.Player
+import wizard.model.rounds.{Game, Round}
+
+class BaseGameLogic extends Observable with aGameLogic {
+
+  var roundLogic: aRoundLogic = _
+
+  var varchoice: Option[Int] = None
+  var lastplayer: Option[List[Player]] = None
+  var trumpcard: Option[Card] = None
+  var trickCards: Option[List[Card]] = None
+  var state: Option[GameState] = Some(GameState.Menu)
+  var playerNumber: Option[Int] = None
+  var gameSocketActor: Option[ActorRef] = None
+
+  private var lastIllegalReason: Option[String] = None
+
+
+  override def startGame(): Unit = {
+    varchoice = Some(1)
+    askPlayerNumber()
+  }
+
+  override def handleChoice(choice: Int): Unit = {
+    varchoice = Some(choice)
+    if (choice == 2) {
+      notifyObservers("main menu exit")
+      System.exit(0)
+    } else if (choice != 1) {
+      notifyObservers("main menu wrong input")
+      notifyObservers("main menu")
+    } else {
+      println("Starting the game...")
+      askPlayerNumber()
+    }
+  }
+
+  override def enterPlayerNumber(playernumber: Int, current: Int, list: List[Player]): Unit = {
+    notifyObservers("player names", playernumber, current, list)
+  }
+
+  override def askPlayerNumber(): Unit = {
+    notifyObservers("input players")
+  }
+
+  override def createGame(players: List[Player]): Unit = {
+    val game = Game(players)
+    state = Some(GameState.Ingame)
+    notifyObservers("game started")
+    playGame(game, players)
+    gameSocketActor.foreach(_.tell("gameStarted", ActorRef.noSender))
+  }
+
+  override def createPlayers(numPlayers: Int, current: Int = 0, players: List[Player] = List()): Unit = {
+    playerNumber = Some(numPlayers)
+    if (current < numPlayers) {
+      notifyObservers("player names", numPlayers, current, players)
+    } else {
+      createGame(players)
+    }
+  }
+
+  override def validGame(number: Int): Boolean = {
+    number >= 3 && number <= 6
+  }
+
+  override def playGame(game: Game, players: List[Player]): Unit = {
+    for (i <- 1 to game.rounds) { // i = 1, 2, 3, ..., rounds
+      game.currentround = i
+      val round = new Round(players)
+      roundLogic.playRound(game.currentround, players)
+      gameSocketActor.foreach(_.tell(s"roundStarted:$i", ActorRef.noSender))
+    }
+  }
+
+  override def isOver(game: Game): Boolean = {
+    state = Some(GameState.Endscreen)
+    game.rounds == 0
+  }
+
+  // an Websocket
+
+  override def playersHands(players: List[Player]): Unit = {
+    lastplayer = Some(players)
+    gameSocketActor.foreach(_.tell("playersHands", ActorRef.noSender))
+  }
+
+  override def trumpCard(card: Card): Unit = {
+    trumpcard = Some(card)
+    gameSocketActor.foreach(_.tell(s"trumpCard:${card.color}:${card.value}", ActorRef.noSender))
+  }
+
+  override def trickCardsList(playedCard: Card): Unit = {
+    if (trickCards.isEmpty) {
+      trickCards = Some(List(playedCard))
+    } else {
+      val updatedTrickCards = trickCards.get :+ playedCard
+      trickCards = Some(updatedTrickCards)
+    }
+    gameSocketActor.foreach(_.tell(s"trickCards:${playedCard.value}", ActorRef.noSender))
+  }
+
+  override def resetTrickCards(): Unit = {
+    trickCards = None
+  }
+
+  override def playRound(currentround: Int, players: List[Player]): Unit = {
+    roundLogic.playRound(currentround, players)
+    gameSocketActor.foreach(_.tell(s"roundPlayed:$currentround", ActorRef.noSender))
+  }
+
+  override def getChoice: Option[Int] = varchoice
+  override def getState: Option[GameState] = state
+  override def getPlayer: Option[List[Player]] = lastplayer
+  override def getTrumpCard: Option[Card] = trumpcard
+  override def getTrickCards: Option[List[Card]] = trickCards
+  override def getPlayerNumber: Option[Int] = playerNumber
+
+  override def setLastIllegalReason(reason: String): Unit = {
+    lastIllegalReason = Option(reason)
+  }
+
+  override def getLastIllegalReason: Option[String] = lastIllegalReason
+
+  override def clearLastIllegalReason(): Unit = {
+    lastIllegalReason = None
+  }
+
+  override def consumeLastIllegalReason(): Option[String] = {
+    val tmp = lastIllegalReason
+    lastIllegalReason = None
+    tmp
+  }
+
+  def setGameSocketActor(actor: ActorRef): Unit = {
+    gameSocketActor = Some(actor)
+  }
+}

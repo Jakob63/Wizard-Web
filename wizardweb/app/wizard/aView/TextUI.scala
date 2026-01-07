@@ -1,111 +1,74 @@
-package controllers
+package wizard.aView
 
 import util.UserInput
-import wizard.aView.View
 import wizard.actionmanagement.Observer
 import wizard.controller.aGameLogic
-import wizard.model.cards.{Card, Color, Dealer, Value, colorToAnsi, valueToAnsi}
+import wizard.model.cards.*
 import wizard.model.player.Player
 
-import scala.compiletime.uninitialized
-
-
-object WebTui extends Observer with View{
+object TextUI extends Observer with View {
   var gameLogic: Option[aGameLogic] = None
-  var userInput: UserInput = uninitialized // wird beim Bootstrap gesetzt
-  @volatile var currentPromptPlayer: Option[String] = None
-  @volatile var currentPromptKind: Option[String] = None // "bid" | "card"
-
+  var userInput: UserInput = _ // wird beim Bootstrap gesetzt
+  
   override def init(gameLogic: aGameLogic): Unit = {
     this.gameLogic = Some(gameLogic)
   }
 
   override def update(updateMSG: String, obj: Any*): Unit = {
     updateMSG match {
-      case "which card" =>
-        val name = obj.head.asInstanceOf[Player].name
-        currentPromptPlayer = Some(name)
-        currentPromptKind = Some("card")
-        println(s"$name, which card do you want to play?")
+      case "which card" => println(s"${obj.head.asInstanceOf[Player].name}, which card do you want to play?")
       case "invalid card" => println("Invalid card. Please enter a valid index.")
       case "follow lead" => println(s"You must follow the lead suit ${obj.head.asInstanceOf[Color].toString}.")
-      case "which bid" =>
-        val name = obj.head.asInstanceOf[Player].name
-        currentPromptPlayer = Some(name)
-        currentPromptKind = Some("bid")
-        println(s"$name, how many tricks do you bid?")
+      case "which bid" => println(s"${obj.head.asInstanceOf[Player].name}, how many tricks do you bid?")
       case "invalid input, bid again" => println("Invalid input. Please enter a valid number.")
       case "print trump card" => println(s"Trump card: \n${showcard(obj.head.asInstanceOf[Card])}")
       case "cards dealt" => println("Cards have been dealt to all players.")
       case "trick winner" => println(s"${obj.head.asInstanceOf[Player].name} won the trick.")
       case "points after round" => println("Points after this round:")
-      case "main menu" => gameMenu()
+      case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
+      case "main menu" => gameMenuTUI()
       case "input players" => inputPlayers()
       case "game started" => println("Game officially started.")
       case "player names" => playerNames(obj.head.asInstanceOf[Int], obj(1).asInstanceOf[Int], obj(2).asInstanceOf[List[Player]])
       case "handle choice" => handleChoice(obj.head.asInstanceOf[Int])
-      case "show hand of Player x" =>
-        val p = obj.head.asInstanceOf[Player]
-        currentPromptPlayer = Some(p.name)
-        showHand(p)
-      case "print points all players" => obj.head.asInstanceOf[List[Player]].foreach(player => println(s"${player.name}: ${player.points} points"))
-      case "main menu wrong input" => println("Invalid input. Please enter 1 or 2.")
-      case other => println(s"[WARN] Unhandled update: $other")
+      case "main menu wrong input" => println("Invalid choice. Please enter 1 or 2.")
+      case "main menu exit" => println("Exiting the game. Goodbye!")
+      case "show hand of Player x" => showHand(obj.head.asInstanceOf[Player])
     }
+    // Fetch new data von Controller und update die View
   }
 
-  var latestPrint: String = ""
-
-  def gameMenu(): Unit = {
+  def gameMenuTUI(): Unit = {
     println("Welcome to Wizard!")
     println("1. Start Game")
     println()
     println("2. Exit")
     println("Please enter your choice (1 or 2): ")
+    var choice = 0
+    val input = userInput.readLine()
+    choice = input.toInt
+    if (choice.isInstanceOf[Int]) {
+      gameLogic.get.handleChoice(choice)
+    }
   }
 
   def handleChoice(choice: Int): Unit = {
     if (choice == 2) {
       println("Exiting the game. Goodbye!")
+      System.exit(0)
     } else if (choice != 1) {
       println("Invalid choice. Please enter 1 or 2.")
+      gameMenuTUI()
     } else {
       println("Starting the game...")
+      gameLogic.get.askPlayerNumber()
     }
   }
 
-  def gameMenue(): String = {
-    """<h1>Welcome to Wizard!</h1>
-      |<form action="/wizard/start" method="get">
-      |  <button type="submit">Start Game</button>
-      |</form>
-      |<form action="/wizard/exit" method="get">
-      |  <button type="submit">Exit</button>
-      |</form>
-      |""".stripMargin
-  }
-
-  def inputPlayersForm(): String = {
-    """<h2>Enter number of players (3-6):</h2>
-      |<form action="/wizard/players" method="post">
-      |  <input type="number" name="numPlayers" min="3" max="6" required>
-      |  <button type="submit">Submit</button>
-      |</form>
-      |""".stripMargin
-  }
-
-  def inputPlayers(): Unit = {
-    println("Enter the number of players (3-6): ")
-  }
-
-  def playerNames(numPlayers: Int, current: Int, players: List[Player]): Unit = {
-    println(s"Enter the name of player ${current + 1}: ")
-  }
-
-  def inputPlayers2(): List[Player] = {
+  def inputPlayers():Unit = {
     var numPlayers = -1
     while (numPlayers < 3 || numPlayers > 6) {
-      print("Enter the number of players (3-6): ")
+      print("Enter the number of players (3-6): \n")
       try {
         val input = userInput.readLine()
         numPlayers = input.toInt
@@ -118,20 +81,22 @@ object WebTui extends Observer with View{
           println("Invalid input. Please enter a valid number.")
       }
     }
+    gameLogic.get.createPlayers(numPlayers)
+  }
 
-    val players = for (i <- 1 to numPlayers) yield {
-      var name = ""
-      val pattern = "^[a-zA-Z0-9]+$".r
-      while (name == "" || !pattern.pattern.matcher(name).matches()) {
-        print(s"Enter the name of player $i: ")
-        name = userInput.readLine()
-        if (name == "" || !pattern.pattern.matcher(name).matches()) {
-          println("Invalid name. Please enter a name containing only letters and numbers.")
-        }
+  def playerNames(numPlayers: Int, current: Int, players: List[Player]): Unit = {
+    var name = ""
+    val pattern = "^[a-zA-Z0-9]+$".r
+    while (name == "" || !pattern.pattern.matcher(name).matches()) {
+      print(s"Enter the name of player ${current + 1}: ")
+      name = userInput.readLine()
+      if (name == "" || !pattern.pattern.matcher(name).matches()) {
+        println("Invalid name. Please enter a name containing only letters and numbers.")
       }
-      Player(name)
     }
-    players.toList
+    val player = Player(name)
+
+    gameLogic.get.createPlayers(numPlayers, current + 1, players.appended(player))
   }
 
   def showHand(player: Player): Unit = {
@@ -139,7 +104,7 @@ object WebTui extends Observer with View{
     if (player.hand.cards.isEmpty) {
       println("No cards in hand.")
     } else {
-      val cardLines = player.hand.cards.map(card => showcard(card).split("\n"))
+      val cardLines = player.hand.cards.map(card => TextUI.showcard(card).split("\n"))
       for (i <- cardLines.head.indices) {
         println(cardLines.map(_(i)).mkString(" "))
       }
@@ -177,13 +142,5 @@ object WebTui extends Observer with View{
     } else {
       s"Index $index is out of bounds."
     }
-  }
-
-  private def println(message: String): Unit = {
-    latestPrint += message + "\n"
-  }
-
-  private def println(): Unit = {
-    latestPrint += "\n"
   }
 }
