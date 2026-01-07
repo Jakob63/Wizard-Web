@@ -24,10 +24,14 @@ export default defineConfig(({ mode }) => {
             isProd && VitePWA({
                 registerType: 'autoUpdate',
                 injectRegister: 'auto',
+                strategies: 'generateSW',
                 workbox: {
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,vue}'],
                     maximumFileSizeToCacheInBytes: 5600000,
-                    navigateFallback: '/assets/dist/index.html'
+                    navigateFallback: '/assets/dist/index.html',
+                    cleanupOutdatedCaches: true,
+                    skipWaiting: true,
+                    clientsClaim: true
                 },
                 includeAssets: ['W_icon.png', '512_W_icon.png'],
                 manifest: {
