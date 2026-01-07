@@ -3,6 +3,6 @@ build:
     web: Dockerfile
 
 run:
-  web: JAVA_OPTS="-Xms128m -Xmx384m -XX:MaxMetaspaceSize=128m" sbt wizardWeb/run
+  web: sh -c 'JAVA_OPTS="-Xms128m -Xmx384m -XX:MaxMetaspaceSize=128m" sbt "wizardWeb/run"'
 
 
