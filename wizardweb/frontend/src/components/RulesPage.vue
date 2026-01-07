@@ -143,5 +143,5 @@ export default {
 <style scoped>
 main.rules { padding: 72px .75rem 1rem; }
 .title { font-weight: 600; }
-h2 { cursor: pointer; }
+h2 { cursor: pointer; user-select: none; }
 </style>

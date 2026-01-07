@@ -12,7 +12,8 @@
       <div v-else class="hint">Keine Spieler gefunden.</div>
 
       <div class="actions">
-        <a class="btn" href="/">Zurück zum Menü</a>
+        <!-- SPA-kompatibler Link -->
+        <a class="btn" href="#/menu" @click.prevent="$root.navigate('/menu')">Zurück zum Menü</a>
       </div>
     </div>
   </div>
@@ -29,13 +30,13 @@ export default {
     }
   },
   computed: {
-    sortedPlayers(){
+    sortedPlayers() {
       try {
         return [...this.players].sort((a,b) => (b?.points||0) - (a?.points||0));
       } catch(_) { return []; }
     }
   },
-  mounted(){
+  mounted() {
     try {
       const el = this.$el && this.$el.querySelector('#endscreen');
       if (el) {
@@ -92,15 +93,8 @@ h1 {
   align-items: baseline;
   font-variant-numeric: tabular-nums;
 }
-.name {
-  justify-self: start;
-  font-weight: 600;
-  color: #fff;
-}
-.pts {
-  justify-self: end;
-  color: #fff;
-}
+.name { justify-self: start; font-weight: 600; color: #fff; }
+.pts { justify-self: end; color: #fff; }
 
 .hint { opacity: .9; }
 
