@@ -3,4 +3,5 @@ build:
     web: Dockerfile
 
 run:
-  web: sbt run
+  web: sbt "project wizard-web" run
+
