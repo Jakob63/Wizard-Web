@@ -7,10 +7,10 @@
     </div>
     <h1 class="home-hero__title" data-text="Wizard">Wizard</h1>
     <div class="home-cta">
-      <!-- SPA-sicher -->
-      <a class="btn btn-outline-primary btn-lg" href="#/menu">
+      <!-- SPA-sicher mit Vue Router -->
+      <router-link class="btn btn-outline-primary btn-lg" to="/menu">
         Start Game
-      </a>
+      </router-link>
     </div>
   </main>
 </template>
@@ -18,12 +18,12 @@
 <script>
 export default {
   name: 'HomePage',
-  mounted(){
+  mounted() {
     try {
       const stars = this.$el.querySelectorAll('.starry-sky .star');
       const prefersReduced =
-        window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          window.matchMedia &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       const rerollStar = (star, alsoTiming = false, alsoSize = false) => {
         const left = Math.random() * 100;

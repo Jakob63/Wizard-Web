@@ -4,9 +4,9 @@
 
     <div class="home-cta" style="margin-bottom:1rem;">
       <!-- SPA-korrekter Start-Button -->
-      <a class="btn btn-outline-primary btn-lg" href="#/menu">
+      <router-link class="btn btn-outline-primary btn-lg" to="/menu">
         Start Game
-      </a>
+      </router-link>
     </div>
 
     <div id="gameArea" style="margin-top:1rem;"></div>
