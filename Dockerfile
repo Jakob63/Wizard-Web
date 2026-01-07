@@ -1,4 +1,4 @@
-FROM sbtscala/scala-sbt:eclipse-temurin-focal-17.0.9_9_1.9.7_3.3.1
+FROM openjdk:17
 
 WORKDIR /app
 
@@ -10,17 +10,22 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 COPY build.sbt /app/
 COPY project /app/project/
 
-# Dependencies herunterladen
-RUN sbt update
+# Copy the main Scala sources
+COPY wizard/src/main/scala /app/src/main/scala
 
-# Alles kopieren
-COPY . .
+# Copy the Play web app
+COPY wizardweb/app /app/app
+COPY wizardweb/conf /app/conf
+COPY wizardweb/public /app/public
 
-# Alle Projekte bauen + stage
+# Install Node.js (optional, needed for frontend assets)
+RUN apt-get update && apt-get install -y nodejs
+
+# Compile and stage the Play app
 RUN sbt clean compile stage
 
-# Free-Heroku RAM limit
-ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:MaxMetaspaceSize=128m"
+# Expose Play default port
+EXPOSE 9000
 
-# Start
-CMD ["sh", "-c", "./wizardweb/target/universal/stage/bin/wizard-web -Dhttp.port=$PORT $JAVA_OPTS"]
+# Start the Play app
+CMD ["target/universal/stage/bin/wizardweb", "-Dplay.http.secret.key=changeme"]
