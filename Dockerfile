@@ -20,7 +20,7 @@ COPY project /app/project/
 COPY wizardweb /app/wizardweb
 
 # Frontend Dist aus Stage 1 kopieren
-COPY --from=frontend-build /app/frontend/dist /app/wizardweb/public/dist
+COPY wizardweb/public/dist /app/wizardweb/public/dist
 
 # Compile + stage
 WORKDIR /app
