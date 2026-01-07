@@ -7,8 +7,10 @@
     </div>
     <h1 class="home-hero__title" data-text="Wizard">Wizard</h1>
     <div class="home-cta">
-      <!-- SPA-kompatibler Start-Button -->
-      <a class="btn btn-outline-primary btn-lg" href="#/menu" @click.prevent="$root.navigate('/menu')">Start Game</a>
+      <!-- SPA-sicher -->
+      <a class="btn btn-outline-primary btn-lg" href="#/menu">
+        Start Game
+      </a>
     </div>
   </main>
 </template>
@@ -19,7 +21,10 @@ export default {
   mounted(){
     try {
       const stars = this.$el.querySelectorAll('.starry-sky .star');
-      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const prefersReduced =
+        window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
       const rerollStar = (star, alsoTiming = false, alsoSize = false) => {
         const left = Math.random() * 100;
         const top = Math.random() * 100;
@@ -47,9 +52,9 @@ export default {
         }
         star.addEventListener('animationiteration', () => rerollStar(star));
       });
-    } catch(e) { }
+    } catch (_) {}
   }
-}
+};
 </script>
 
 <style lang="less">

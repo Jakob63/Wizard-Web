@@ -61,62 +61,18 @@
       </ul>
     </section>
 
-    <!-- video -->
+    <!-- Video -->
     <section aria-label="Anleitungsvideo" style="display:flex; justify-content:center; margin: 24px 0;">
       <lite-youtube ref="yt" videoid="6jVsRzdVbUA" style="max-width:560px; display:block;"></lite-youtube>
     </section>
 
-    </main>
+  </main>
 </template>
 
 <script>
 export default {
   name: 'RulesPage',
-  mounted(){
-    try {
-      if (!document.querySelector('link[data-preconnect-yt]')) {
-        const p1 = document.createElement('link'); p1.rel = 'preconnect'; p1.href = 'https://www.youtube.com'; p1.setAttribute('data-preconnect-yt','1'); document.head.appendChild(p1);
-        const p2 = document.createElement('link'); p2.rel = 'preconnect'; p2.href = 'https://i.ytimg.com'; p2.setAttribute('data-preconnect-yt','1'); document.head.appendChild(p2);
-      }
-      if (!document.querySelector('script[data-lite-yt]')) {
-        const s = document.createElement('script');
-        s.type = 'module';
-        s.src = 'https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.js';
-        s.setAttribute('data-lite-yt','1');
-        document.head.appendChild(s);
-      }
-      if (!document.querySelector('link[data-lite-yt-css]')) {
-        const l = document.createElement('link');
-        l.rel = 'stylesheet';
-        l.href = 'https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.css';
-        l.setAttribute('data-lite-yt-css','1');
-        document.head.appendChild(l);
-      }
-      const ensureVisibleFallback = () => {
-        try {
-          const el = this.$refs.yt || document.querySelector('lite-youtube[videoid]');
-          if (!el) return;
-          const tagDefined = !!(window.customElements && customElements.get('lite-youtube'));
-          const rect = (typeof el.getBoundingClientRect === 'function') ? el.getBoundingClientRect() : { width: 0, height: 0 };
-          const tooSmall = !rect || rect.width < 10 || rect.height < 10;
-          if (tagDefined && !tooSmall) return; // alles gut
-          const vid = el.getAttribute('videoid') || '6jVsRzdVbUA';
-          const iframe = document.createElement('iframe');
-          iframe.width = '560';
-          iframe.height = '315';
-          iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(vid)}?rel=0`;
-          iframe.title = 'YouTube video player';
-          iframe.frameBorder = '0';
-          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-          iframe.allowFullscreen = true;
-          el.replaceWith(iframe);
-        } catch(_) {}
-      };
-      setTimeout(ensureVisibleFallback, 1200);
-      setTimeout(ensureVisibleFallback, 2500);
-    } catch(_) {}
-  },
-  data(){
+  data() {
     return {
       open: {
         ziel: true,
@@ -131,17 +87,72 @@ export default {
     };
   },
   methods: {
-    toggle(key){
-      if (this.open && Object.prototype.hasOwnProperty.call(this.open, key)) {
+    toggle(key) {
+      if (Object.prototype.hasOwnProperty.call(this.open, key)) {
         this.open[key] = !this.open[key];
       }
     }
+  },
+  mounted() {
+    // Lite YouTube Embed: Preconnect & Fallback
+    try {
+      if (!document.querySelector('link[data-preconnect-yt]')) {
+        ['https://www.youtube.com','https://i.ytimg.com'].forEach(url => {
+          const link = document.createElement('link');
+          link.rel = 'preconnect';
+          link.href = url;
+          link.setAttribute('data-preconnect-yt','1');
+          document.head.appendChild(link);
+        });
+      }
+
+      if (!document.querySelector('script[data-lite-yt]')) {
+        const s = document.createElement('script');
+        s.type = 'module';
+        s.src = 'https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.js';
+        s.setAttribute('data-lite-yt','1');
+        document.head.appendChild(s);
+      }
+
+      if (!document.querySelector('link[data-lite-yt-css]')) {
+        const l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = 'https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.css';
+        l.setAttribute('data-lite-yt-css','1');
+        document.head.appendChild(l);
+      }
+
+      // Fallback: Iframe, falls Lite YouTube nicht geladen
+      const ensureVisibleFallback = () => {
+        try {
+          const el = this.$refs.yt || document.querySelector('lite-youtube[videoid]');
+          if (!el) return;
+          const tagDefined = !!(window.customElements && customElements.get('lite-youtube'));
+          const rect = el.getBoundingClientRect?.() || { width: 0, height: 0 };
+          const tooSmall = !rect || rect.width < 10 || rect.height < 10;
+          if (tagDefined && !tooSmall) return;
+
+          const vid = el.getAttribute('videoid') || '6jVsRzdVbUA';
+          const iframe = document.createElement('iframe');
+          iframe.width = '560';
+          iframe.height = '315';
+          iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(vid)}?rel=0`;
+          iframe.title = 'YouTube video player';
+          iframe.frameBorder = '0';
+          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+          iframe.allowFullscreen = true;
+          el.replaceWith(iframe);
+        } catch(_) {}
+      };
+      setTimeout(ensureVisibleFallback, 1200);
+      setTimeout(ensureVisibleFallback, 2500);
+
+    } catch(_) {}
   }
-}
+};
 </script>
 
 <style scoped>
-main.rules { padding: 72px .75rem 1rem; }
-.title { font-weight: 600; }
-h2 { cursor: pointer; user-select: none; }
+main.rules { padding: 72px 0.75rem 1rem; }
+h2 { cursor: pointer; user-select: none; margin-top: 1rem; }
 </style>

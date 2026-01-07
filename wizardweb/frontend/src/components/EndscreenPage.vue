@@ -4,20 +4,24 @@
       <h1>Spielende</h1>
 
       <div v-if="sortedPlayers.length" class="score-list">
-        <div v-for="(p, idx) in sortedPlayers" :key="p.name + idx" class="row">
+        <div
+            v-for="(p, idx) in sortedPlayers"
+            :key="p.name + idx"
+            class="row"
+        >
           <span class="name">{{ idx + 1 }}. {{ p.name }}</span>
           <span class="pts">{{ p.points }}</span>
         </div>
       </div>
+
       <div v-else class="hint">Keine Spieler gefunden.</div>
 
       <div class="actions">
-        <!-- SPA-kompatibler Link -->
-        <a class="btn" href="#/menu" @click.prevent="$root.navigate('/menu')">Zurück zum Menü</a>
+        <!-- SPA-sicherer Hash-Link -->
+        <a class="btn" href="#/menu">Zurück zum Menü</a>
       </div>
     </div>
   </div>
-  
 </template>
 
 <script>
@@ -32,20 +36,27 @@ export default {
   computed: {
     sortedPlayers() {
       try {
-        return [...this.players].sort((a,b) => (b?.points||0) - (a?.points||0));
-      } catch(_) { return []; }
+        return [...this.players].sort(
+            (a, b) => (b?.points || 0) - (a?.points || 0)
+        );
+      } catch (_) {
+        return [];
+      }
     }
   },
   mounted() {
     try {
-      const el = this.$el && this.$el.querySelector('#endscreen');
+      const el = this.$el?.querySelector('#endscreen');
       if (el) {
-        const imgUrl = new URL('../../../public/images/backgrounds/Wizard_game_background2_GUI.png', import.meta.url).href;
+        const imgUrl = new URL(
+            '../../../public/images/backgrounds/Wizard_game_background2_GUI.png',
+            import.meta.url
+        ).href;
         el.style.backgroundImage = `url(${imgUrl})`;
       }
-    } catch(_) {}
+    } catch (_) {}
   }
-}
+};
 </script>
 
 <style>
@@ -93,12 +104,26 @@ h1 {
   align-items: baseline;
   font-variant-numeric: tabular-nums;
 }
-.name { justify-self: start; font-weight: 600; color: #fff; }
-.pts { justify-self: end; color: #fff; }
 
-.hint { opacity: .9; }
+.name {
+  justify-self: start;
+  font-weight: 600;
+  color: #fff;
+}
 
-.actions { margin-top: clamp(12px, 2vw, 20px); }
+.pts {
+  justify-self: end;
+  color: #fff;
+}
+
+.hint {
+  opacity: .9;
+}
+
+.actions {
+  margin-top: clamp(12px, 2vw, 20px);
+}
+
 .btn {
   display: inline-block;
   padding: 8px 14px;
@@ -109,6 +134,12 @@ h1 {
   text-decoration: none;
   transition: background .2s ease, transform .05s ease;
 }
-.btn:hover { background: rgba(255,255,255,0.25); }
-.btn:active { transform: translateY(1px); }
+
+.btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
 </style>

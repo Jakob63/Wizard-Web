@@ -1,8 +1,8 @@
 <template>
   <div id="shell">
     <MainPage>
-      <!-- Vue Router zeigt hier automatisch die aktuelle Seite -->
-      <router-view :refresh-url="refreshUrl" />
+      <!-- Vue Router rendert hier automatisch die Seite -->
+      <router-view />
     </MainPage>
   </div>
 </template>
@@ -12,18 +12,7 @@ import MainPage from './components/MainPage.vue';
 
 export default {
   name: 'App',
-  components: { MainPage },
-  computed: {
-    // Props an gerenderte Komponenten weiterreichen
-    refreshUrl() {
-      try {
-        const url = new URL(window.location.href);
-        return url.searchParams.get('to') || url.searchParams.get('url') || '';
-      } catch (_) {
-        return '';
-      }
-    }
-  }
+  components: { MainPage }
 };
 </script>
 

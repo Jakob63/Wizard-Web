@@ -123,6 +123,7 @@ tr:last-child td {
   cursor: pointer;
 }
 
+/* Dark mode Anpassungen */
 :global(html[data-bs-theme="dark"]) th,
 :global(html[data-bs-theme="dark"]) td {
   border-bottom-color: rgba(255,255,255,0.12);

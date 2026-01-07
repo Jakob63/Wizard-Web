@@ -11,7 +11,7 @@ export default {
     try {
       const tpl = document.getElementById('tui-raw-template');
       if (tpl && this.$refs.host) {
-        // Für <template> Element: nutze firstElementChild, sonst innerHTML
+        // Wenn es ein <template>-Element ist, nutze dessen content
         const html = tpl.tagName === 'TEMPLATE'
             ? tpl.content?.firstElementChild?.outerHTML || ''
             : tpl.innerHTML || '';

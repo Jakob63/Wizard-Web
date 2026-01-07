@@ -6,7 +6,9 @@
       <button class="btn" @click="reset">Neu</button>
       <button class="btn" @click="$emit('close')">Schließen</button>
     </div>
+
     <canvas ref="canvas" width="640" height="200" aria-label="Dino Runner"></canvas>
+
     <div class="bar" style="margin-top:6px">
       <div>Score: <span>{{ scoreRounded }}</span> · Best: <span>{{ best }}</span></div>
       <button class="btn" @click="reconnect">Erneut verbinden</button>
@@ -18,6 +20,7 @@
 export default {
   name: 'OfflineGame',
   emits: ['close'],
+
   data() {
     return {
       ctx: null,
@@ -37,9 +40,11 @@ export default {
       pointerHandler: null
     };
   },
+
   computed: {
     scoreRounded() { return Math.floor(this.score); }
   },
+
   mounted() {
     const canvas = this.$refs.canvas;
     this.ctx = canvas.getContext('2d');
@@ -47,10 +52,12 @@ export default {
 
     try { this.best = +localStorage.getItem('dino_best') || 0; } catch (_) {}
 
+    // Event-Handler
     this.keyHandler = e => {
       if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); this.jump(); }
       if ((e.code === 'KeyR' || e.key === 'r') && this.gameOver) this.reset();
     };
+
     this.pointerHandler = () => this.jump();
 
     window.addEventListener('keydown', this.keyHandler, { passive: false });
@@ -59,6 +66,7 @@ export default {
 
     this.loop();
   },
+
   beforeUnmount() {
     cancelAnimationFrame(this.raf);
     const canvas = this.$refs.canvas;
@@ -66,8 +74,14 @@ export default {
     if (canvas) canvas.removeEventListener('pointerdown', this.pointerHandler);
     window.removeEventListener('online', this.reconnect);
   },
+
   methods: {
-    reconnect() { location.reload(); },
+    reconnect() {
+      // SPA-kompatibel
+      if (this.$router) this.$router.go(0);
+      else window.location.reload();
+    },
+
     reset() {
       this.dino.y = this.GROUND_Y - this.dino.h;
       this.dino.vy = 0;
@@ -81,19 +95,23 @@ export default {
       cancelAnimationFrame(this.raf);
       this.loop();
     },
+
     jump() {
       if (this.gameOver) { this.reset(); return; }
       if (this.dino.onGround) { this.dino.vy = this.JUMP_VELOCITY; this.dino.onGround = false; }
     },
+
     spawnObstacle() {
       const height = 20 + Math.floor(Math.random() * 18);
       const width = 10 + Math.floor(Math.random() * 14);
       const canvas = this.$refs.canvas;
       this.obstacles.push({ x: canvas.width + 10, y: this.GROUND_Y - height, w: width, h: height });
     },
+
     aabb(a, b) {
       return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
     },
+
     step() {
       const d = this.dino;
       d.vy += this.GRAVITY;
@@ -124,6 +142,7 @@ export default {
         try { localStorage.setItem('dino_best', this.best); } catch (_) {}
       }
     },
+
     draw() {
       const ctx = this.ctx;
       const canvas = this.$refs.canvas;
@@ -145,7 +164,7 @@ export default {
       ctx.fillStyle = '#e6e6e6';
       ctx.fillRect(Math.round(this.dino.x), Math.round(this.dino.y), this.dino.w, this.dino.h);
 
-      // Dino Beine Animation
+      // Beine Animation
       if (!this.gameOver && this.dino.onGround) {
         const t = Date.now() / 120;
         const s = Math.sin(t);
@@ -174,6 +193,7 @@ export default {
       ctx.textAlign = 'right';
       ctx.fillText(String(Math.floor(this.score)), canvas.width - 8, 18);
     },
+
     loop() {
       this.step();
       this.draw();
@@ -185,9 +205,9 @@ export default {
 </script>
 
 <style scoped>
-.offline-game { width:min(640px, 95vw); margin: 0 auto; }
-.bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px; }
-.btn { background:#2a2a2a; color:#fff; border:1px solid #444; border-radius:6px; padding:6px 10px; cursor:pointer; }
-.hint { font-size:.9rem; color:#aaa; }
-canvas { width:100%; height:auto; background:linear-gradient(#1b1b1b, #121212); border:1px solid #333; border-radius:8px; image-rendering:pixelated; }
+.offline-game { width: min(640px, 95vw); margin: 0 auto; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.btn { background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.hint { font-size: .9rem; color: #aaa; }
+canvas { width: 100%; height: auto; background: linear-gradient(#1b1b1b, #121212); border: 1px solid #333; border-radius: 8px; image-rendering: pixelated; }
 </style>
