@@ -3,4 +3,4 @@ build:
     web: Dockerfile
 
 run:
-  web: sh -c './wizardweb/target/universal/stage/bin/wizard-web -Dhttp.port=$PORT $JAVA_OPTS'
+  web: ./wizardweb/target/universal/stage/bin/wizard-web -Dhttp.port=$PORT $JAVA_OPTS

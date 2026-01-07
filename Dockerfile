@@ -1,21 +1,19 @@
-# Base Image mit sbt + JDK17
 FROM sbtscala/scala-sbt:eclipse-temurin-focal-17.0.9_9_1.9.7_3.3.1
 
 WORKDIR /app
 
-# 1️⃣ Zuerst alles kopieren, was SBT für Dependency Caching braucht
+# 1️⃣ sbt Metadaten für Dependency Caching
 COPY build.sbt /app/
 COPY project /app/project/
-COPY wizard /app/wizard
-COPY wizardweb /app/wizardweb
+COPY wizard/build.sbt /app/wizard/
+COPY wizardweb/build.sbt /app/wizardweb/
 
-# Dependencies auflösen (cached)
 RUN sbt update
 
-# 2️⃣ Dann komplettes Projekt kopieren (für Templates / Assets)
+# 2️⃣ komplettes Projekt kopieren
 COPY . .
 
-# 3️⃣ Production Build für Multi-Project aus Root
+# 3️⃣ Stage aus Root aufrufen (inkl. wizard)
 RUN sbt stage
 
 # 4️⃣ RAM Limits für Free Dyno
