@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
                 workbox: {
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,vue}'],
                     maximumFileSizeToCacheInBytes: 5600000,
-                    navigateFallback: '/index.html'
+                    navigateFallback: '/assets/dist/index.html'
                 },
                 includeAssets: ['W_icon.png', '512_W_icon.png'],
                 manifest: {
