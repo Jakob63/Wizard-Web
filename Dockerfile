@@ -1,18 +1,4 @@
-# --- Stage 1: Frontend Build ---
-FROM node:20 AS frontend-build
-WORKDIR /app/frontend
-
-# Package.json kopieren für caching
-COPY wizardweb/frontend/package*.json ./
-RUN npm ci
-
-# kompletten Frontend-Code kopieren
-COPY wizardweb/frontend/ ./
-
-# Build ausführen (erzeugt public/dist)
-RUN npm run build
-
-# --- Stage 2: Backend Build ---
+# --- Backend Build ---
 FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
@@ -21,7 +7,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
  && apt-get install -y nodejs unzip curl
 
 # SBT installieren
-RUN curl -L -o sbt.zip https://github.com/sbt/sbt/releases/download/v1.11.7/sbt-1.11.7.zip \
+RUN apt-get update && apt-get install -y curl unzip \
+ && curl -L -o sbt.zip https://github.com/sbt/sbt/releases/download/v1.11.7/sbt-1.11.7.zip \
  && unzip sbt.zip -d /opt/ \
  && ln -s /opt/sbt/bin/sbt /usr/local/bin/sbt
 
@@ -36,6 +23,7 @@ COPY wizardweb /app/wizardweb
 COPY --from=frontend-build /app/frontend/dist /app/wizardweb/public/dist
 
 # Compile + stage
+WORKDIR /app
 RUN sbt "clean; compile; stage"
 
 # Heroku Port
