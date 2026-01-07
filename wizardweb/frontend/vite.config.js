@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
     const isProd = mode === 'production';
 
     return {
-        base: isProd ? '/assets/dist/' : '/',
+        base: '/',
         build: {
             outDir: '../public/dist',
             emptyOutDir: true
