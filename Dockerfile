@@ -15,4 +15,5 @@ COPY . /app
 EXPOSE 9000
 
 # Container startet das Backend mit sbt run
-CMD ["sbt", "run"]
+CMD ["sh", "-c", "sbt -Dhttp.port=$PORT run"]
+
