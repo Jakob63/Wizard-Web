@@ -117,6 +117,7 @@ export default {
   components: { WizardScore },
 
   props: {
+    name: { type: String, default: '' },
     players: { type: Array, default: () => window.INGAME_DATA?.players || [] },
     trumpCard: { type: Object, default: () => window.INGAME_DATA?.trumpCard || null },
     trickCards: { type: Array, default: () => window.INGAME_DATA?.trickCards || [] }
@@ -191,7 +192,10 @@ export default {
 
     async fetchGameState() {
       try {
-        const data = await apiGet(`/pwa/api/gameState${window.location.search}`);
+        const playerName = this.name || new URLSearchParams(window.location.search).get('player') || '';
+        const query = playerName ? `?player=${encodeURIComponent(playerName)}` : window.location.search;
+
+        const data = await apiGet(`/pwa/api/gameState${query}`);
         this.localPlayers = data.players || [];
         this.localTrickCards = data.trickCards || [];
         this.localTrumpCard = data.trumpCard || null;

@@ -15,6 +15,7 @@ const routes = [
     { path: '/rules', component: RulesPage },
     { path: '/loading', component: LoadingPage },
     { path: '/ingame', component: IngamePage },
+    { path: '/play/:name', component: IngamePage, props: true },
     { path: '/endscreen', component: EndscreenPage }
 ];
 
