@@ -1,24 +1,26 @@
-# 1️⃣ Base Image mit sbt + JDK17
 FROM sbtscala/scala-sbt:eclipse-temurin-focal-17.0.9_9_1.9.7_3.3.1
 
-# 2️⃣ Arbeitsverzeichnis
 WORKDIR /app
 
-# 3️⃣ Nur SBT Metadaten für Cache kopieren (build.sbt + project/)
+# Node.js für sbt-web
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+ && apt-get install -y nodejs
+
+# SBT Metadaten kopieren für Caching
 COPY build.sbt /app/
 COPY project /app/project/
 
-# 4️⃣ Dependencies herunterladen
+# Dependencies herunterladen
 RUN sbt update
 
-# 5️⃣ **Gesamtes Projekt kopieren** (wizard + wizardweb)
+# Alles kopieren
 COPY . .
 
-# 6️⃣ Production Build für wizardweb (Stage)
-RUN sbt wizardweb/stage
+# Alle Projekte bauen + stage
+RUN sbt clean compile stage
 
-# 7️⃣ Free-Heroku RAM Limits
+# Free-Heroku RAM limit
 ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:MaxMetaspaceSize=128m"
 
-# 8️⃣ Production Start
+# Start
 CMD ["sh", "-c", "./wizardweb/target/universal/stage/bin/wizard-web -Dhttp.port=$PORT $JAVA_OPTS"]
