@@ -31,5 +31,5 @@ export default {
 </script>
 
 <style lang="less">
-@import '../../../app/assets/stylesheets/home.less';
+@import '@playstyles/home.less';
 </style>

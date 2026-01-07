@@ -45,8 +45,10 @@ export default defineConfig(({ mode }) => {
                 devOptions: { enabled: false }
             })
         ].filter(Boolean),
+
         resolve: {
             alias: {
+                // LESS
                 '@playstyles': path.resolve(__dirname, '../app/assets/stylesheets')
             }
         },
