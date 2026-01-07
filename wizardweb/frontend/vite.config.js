@@ -46,12 +46,6 @@ export default defineConfig(({ mode }) => {
             })
         ].filter(Boolean),
 
-        resolve: {
-            alias: {
-                // LESS
-                '@playstyles': path.resolve(__dirname, '../app/assets/stylesheets')
-            }
-        },
         server: {
             fs: {
                 allow: [

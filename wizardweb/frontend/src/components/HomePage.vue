@@ -107,5 +107,5 @@ export default {
 </script>
 
 <style lang="less">
-@import '@playstyles/home.less';
+@import "../../../app/assets/stylesheets/home.less";
 </style>
