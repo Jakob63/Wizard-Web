@@ -22,7 +22,7 @@ RUN curl -L -o sbt.zip https://github.com/sbt/sbt/releases/download/v1.11.7/sbt-
 
 # Compile + stage
 WORKDIR /app
-RUN sbt "clean compile stage"
+RUN sbt "clean; compile; stage"
 
 # Heroku port
 ENV PORT 9000
