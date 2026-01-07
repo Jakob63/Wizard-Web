@@ -1,33 +1,49 @@
-# Leichtgewichtiges JDK 17 für Play
+# === Stage 1: Build Frontend ===
+FROM node:20 AS frontend-build
+WORKDIR /app/frontend
+
+# Package.json für caching kopieren
+COPY wizardweb-frontend/package*.json ./
+
+# Node-Modules installieren
+RUN npm ci
+
+# Frontend-Code kopieren
+COPY wizardweb-frontend/ ./
+
+# Build ausführen (erzeugt dist/)
+RUN npm run build
+
+# === Stage 2: Backend + Assets ===
 FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 
-# Node.js (für sbt-web falls du Assets hast)
+# Node.js für sbt-web falls nötig (optional, kann man auch weglassen)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
- && apt-get install -y nodejs
+ && apt-get install -y nodejs unzip curl
 
-# Kopiere Build-Dateien für Caching
-COPY build.sbt /app/
-COPY project /app/project/
-
-# Kopiere die gesamte Play App
-COPY wizardweb /app/wizardweb
-
-# SBT installieren (falls nicht in Base Image)
-RUN apt-get update && apt-get install -y curl unzip
+# SBT installieren
 RUN curl -L -o sbt.zip https://github.com/sbt/sbt/releases/download/v1.11.7/sbt-1.11.7.zip \
  && unzip sbt.zip -d /opt/ \
  && ln -s /opt/sbt/bin/sbt /usr/local/bin/sbt
 
-# Compile + stage
-WORKDIR /app
+# Play App kopieren
+COPY wizardweb /app/wizardweb
+
+# Frontend-Build aus Stage 1 ins Backend kopieren
+# Wir nehmen die dist-Dateien und legen sie in public/dist
+RUN mkdir -p /app/wizardweb/public/dist
+COPY --from=frontend-build /app/frontend/dist/ /app/wizardweb/public/dist/
+
+# Builden + Stage
+WORKDIR /app/wizardweb
 RUN sbt "clean; compile; stage"
 
-# Heroku port
+# Heroku Port
 ENV PORT 9000
 
 EXPOSE 9000
 
-# Starte die Play App
-CMD ["./wizardweb/target/universal/stage/bin/wizardweb", "-Dplay.http.secret.key=devkey123", "-Dhttp.port=${PORT}"]
+# CMD mit Secret Key
+CMD ["./target/universal/stage/bin/wizardweb", "-Dplay.http.secret.key=$PLAY_SECRET", "-Dhttp.port=$PORT"]

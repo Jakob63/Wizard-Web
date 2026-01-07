@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     return {
         base: isProd ? '/assets/dist/' : '/',
         build: {
-            outDir: '../wizardweb/public/dist',
+            outDir: '../public/dist',
             emptyOutDir: true
         },
 
