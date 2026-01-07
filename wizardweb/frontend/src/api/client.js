@@ -1,4 +1,4 @@
-export const BACKEND = (import.meta?.env?.VITE_BACKEND_URL) || 'http://localhost:9000';
+export const BACKEND = (import.meta?.env?.VITE_BACKEND_URL) || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9000');
 
 function buildUrl(path, query) {
   const base = `${BACKEND}${path.startsWith('/') ? '' : '/'}${path}`;

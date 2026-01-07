@@ -75,8 +75,6 @@
 
 <script>
 import { useRoute } from 'vue-router';
-import { BACKEND } from '../api/client.js';
-
 export default {
   name: 'MainPage',
 

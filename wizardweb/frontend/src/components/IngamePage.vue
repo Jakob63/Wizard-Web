@@ -109,7 +109,7 @@
 </template>
 
 <script>
-import { BACKEND } from '../api/client.js';
+import { apiGet, apiPost } from '../api/client.js';
 import WizardScore from './WizardScore.vue';
 
 export default {
@@ -190,47 +190,43 @@ export default {
     },
 
     async fetchGameState() {
-      const res = await fetch(`${BACKEND}/pwa/api/gameState${window.location.search}`, {
-        credentials: 'include',
-        cache: 'no-store'
-      });
-      if (!res.ok) return;
+      try {
+        const data = await apiGet(`/pwa/api/gameState${window.location.search}`);
+        this.localPlayers = data.players || [];
+        this.localTrickCards = data.trickCards || [];
+        this.localTrumpCard = data.trumpCard || null;
+        this.localHands = data.hands || [];
+        this.localCurrentPromptPlayer = data.currentPromptPlayer || '';
+        this.localCurrentPromptKind = data.currentPromptKind || '';
 
-      const data = await res.json();
-      this.localPlayers = data.players || [];
-      this.localTrickCards = data.trickCards || [];
-      this.localTrumpCard = data.trumpCard || null;
-      this.localHands = data.hands || [];
-      this.localCurrentPromptPlayer = data.currentPromptPlayer || '';
-      this.localCurrentPromptKind = data.currentPromptKind || '';
-
-      this.scoreRows = this.localPlayers.map(p => ({
-        name: p.name,
-        bid: Number(p.roundBids?.at(-1) || 0),
-        points: Number(p.points || 0)
-      }));
+        this.scoreRows = this.localPlayers.map(p => ({
+          name: p.name,
+          bid: Number(p.roundBids?.at(-1) || 0),
+          points: Number(p.points || 0)
+        }));
+      } catch (e) {
+        // ignore errors during poll
+      }
     },
 
     async submitBid(player) {
       if (!this.isBidTurnFor(player)) return;
-      await fetch(`${BACKEND}/pwa/api/bid`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ player, bid: Number(this.bids[player] || 0) })
-      });
-      this.fetchGameState();
+      try {
+        await apiPost('/pwa/api/bid', { player, bid: Number(this.bids[player] || 0) });
+        this.fetchGameState();
+      } catch (e) {
+        console.error('Bid failed', e);
+      }
     },
 
     async maybePlay(player, cardId) {
       if (!this.isCardTurnFor(player)) return;
-      await fetch(`${BACKEND}/pwa/api/playCard`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ player, cardId })
-      });
-      this.fetchGameState();
+      try {
+        await apiPost('/pwa/api/playCard', { player, cardId });
+        this.fetchGameState();
+      } catch (e) {
+        console.error('Play card failed', e);
+      }
     }
   },
 
