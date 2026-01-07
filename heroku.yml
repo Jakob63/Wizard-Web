@@ -3,4 +3,4 @@ build:
     web: Dockerfile
 
 run:
-  web: ./target/universal/stage/bin/wizardweb -Dhttp.port=${PORT} -Dplay.http.secret.key=devkey123
+  web: ./wizardweb/target/universal/stage/bin/wizardweb -Dhttp.port=$PORT -Dplay.http.secret.key=devkey123

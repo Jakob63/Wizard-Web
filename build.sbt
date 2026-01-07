@@ -37,7 +37,7 @@ lazy val wizardweb = (project in file("wizardweb")).enablePlugins(PlayScala).dep
   )
 
 lazy val root = (project in file("."))
-  .aggregate(wizard, wizardweb)
+  .aggregate(wizardweb)
   .settings(
     name := "Wizard-Web"
   )
