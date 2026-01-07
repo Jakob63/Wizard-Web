@@ -1,5 +1,5 @@
 # Base Image mit sbt + JDK17
-FROM hseeberger/scala-sbt:17.0.8_1.9.8_2.13.12
+FROM sbtscala/scala-sbt:eclipse-temurin-focal-17.0.9_9_1.9.7_3.3.1
 
 WORKDIR /app
 
