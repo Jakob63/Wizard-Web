@@ -1,31 +1,19 @@
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 
-# Node.js für sbt-web
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
- && apt-get install -y nodejs
+# SBT Metadaten kopieren
+COPY wizardweb/build.sbt /app/
+COPY wizardweb/project /app/project/
 
-# SBT Metadaten kopieren für Caching
-COPY build.sbt /app/
-COPY project /app/project/
+# App sources kopieren
+COPY wizardweb/ /app/
 
-# Copy the main Scala sources
-COPY wizardweb/wizard/src/main/scala /app/src/main/scala
-
-# Copy the Play web app
-COPY wizardweb/app /app/app
-COPY wizardweb/conf /app/conf
-COPY wizardweb/public /app/public
-
-# Install Node.js (optional, needed for frontend assets)
-RUN apt-get update && apt-get install -y nodejs
-
-# Compile and stage the Play app
+# Compile + stage
 RUN sbt clean compile stage
 
-# Expose Play default port
+# Expose Heroku Port
 EXPOSE 9000
 
-# Start the Play app
-CMD ["target/universal/stage/bin/wizardweb", "-Dplay.http.secret.key=changeme"]
+# CMD für Free-Heroku: einfacher Secret Key
+CMD ["./target/universal/stage/bin/wizardweb", "-Dplay.http.secret.key=devkey123", "-Dhttp.port=${PORT}"]
