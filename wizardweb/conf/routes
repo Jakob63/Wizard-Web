@@ -2,11 +2,10 @@
 # This file defines all application routes (Higher priority routes first)
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
+# Static assets (JS, CSS, images, manifest, sw, etc.)
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 GET     /                           controllers.HomeController.index()
-
-# von /public to assets
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 GET     /menu                       controllers.HomeController.index()
 

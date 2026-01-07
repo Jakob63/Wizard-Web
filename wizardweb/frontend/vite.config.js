@@ -5,7 +5,14 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
     const isProd = mode === 'production';
+
     return {
+        base: isProd ? '/assets/dist/' : '/',
+        build: {
+            outDir: '../wizardweb/public/dist',
+            emptyOutDir: true
+        },
+
         plugins: [
             vue({
                 template: {
