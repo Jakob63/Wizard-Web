@@ -1,16 +1,16 @@
-# Production-ready OpenJDK 17
-FROM eclipse-temurin:17-jre-alpine
+# Base Image mit sbt + JDK17
+FROM hseeberger/scala-sbt:17.0.8_1.9.8_2.13.12
 
 WORKDIR /app
 
-# Kopiere alle Projektdateien
+# Projekt kopieren
 COPY . .
 
-# Stage den Play-Webapp Subproject (Production Mode)
+# Production Build
 RUN sbt wizardweb/stage
 
-# JVM Limits für Free Dyno
+# RAM Limits für Free Dyno
 ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:MaxMetaspaceSize=128m"
 
-# Start im Production Mode, Port aus Heroku-Env
+# Production Start
 CMD ["sh", "-c", "./wizardweb/target/universal/stage/bin/wizard-web -Dhttp.port=$PORT $JAVA_OPTS"]
