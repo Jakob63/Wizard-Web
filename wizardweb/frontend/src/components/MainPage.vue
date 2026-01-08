@@ -38,7 +38,14 @@ import { BACKEND } from '../api/client.js';
 export default {
   name: 'MainPage',
   data(){
-    const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const getPath = () => {
+        if (typeof window === 'undefined') return '/';
+        const h = window.location.hash.replace('#', '');
+        const p = window.location.pathname;
+        if (h && h !== '/') return h;
+        if (p.includes('/assets/dist/index.html')) return '/';
+        return p || '/';
+    };
     const cookieTheme = (() => {
       try {
         const m = document.cookie.match(/(?:^|; )theme=([^;]+)/);
@@ -46,7 +53,7 @@ export default {
       } catch { return 'auto'; }
     })();
     return {
-      path,
+      path: getPath(),
       theme: cookieTheme === 'light' || cookieTheme === 'dark' ? cookieTheme : 'dark'
     };
   },
@@ -65,7 +72,18 @@ export default {
   mounted(){
     try {
       document.documentElement.setAttribute('data-bs-theme', this.theme === 'auto' ? 'auto' : this.theme);
-      window.addEventListener('popstate', () => { this.path = window.location.pathname; try { this.updateBodyClasses(); } catch(_) {} });
+      const onPathChange = () => {
+          const h = window.location.hash.replace('#', '');
+          const p = window.location.pathname;
+          let newPath = '/';
+          if (h && h !== '/') newPath = h;
+          else if (!p.includes('/assets/dist/index.html')) newPath = p;
+
+          this.path = newPath || '/';
+          try { this.updateBodyClasses(); } catch(_) {}
+      };
+      window.addEventListener('popstate', onPathChange);
+      window.addEventListener('hashchange', onPathChange);
     } catch(_) {}
 
     try { this.updateBodyClasses(); } catch(_) {}

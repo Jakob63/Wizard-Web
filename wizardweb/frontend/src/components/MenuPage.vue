@@ -155,15 +155,19 @@ export default {
       this.hideError();
       try {
         const res = await apiPost('/pwa/api/players', { players: names });
-        const target = (res && (res.first || res.tabs?.[0])) || '/ingame';
+        const rawTarget = (res && (res.first || res.tabs?.[0])) || '/ingame';
+        // Für den Hash-Router müssen wir sicherstellen, dass wir entweder zum Hash navigieren
+        // oder der Router den Pfad erkennt. Die sicherste Methode für SPA-Navigation ist:
+        const target = rawTarget.startsWith('/') ? '#' + rawTarget : '#/' + rawTarget;
+
         try {
-          if (window.history && typeof window.history.pushState === 'function') {
-            window.history.pushState({}, '', target);
-            window.dispatchEvent(new PopStateEvent('popstate'));
+          if (window.location.hash !== target) {
+            window.location.hash = target;
           } else {
-            window.location.href = target;
+            // Falls wir schon da sind (z.B. Refresh), Trigger manuell
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
           }
-        } catch(_) { window.location.href = target; }
+        } catch(_) { window.location.href = '/' + target; }
       } catch(e){
         let msg = 'Spielstart fehlgeschlagen.';
         try {
