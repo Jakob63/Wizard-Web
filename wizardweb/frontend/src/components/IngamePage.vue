@@ -137,7 +137,9 @@ export default {
     trickCards: { type: Array, default: () => (window.INGAME_DATA?.trickCards || []) }
   },
   data(){
-    const path = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '/ingame';
+    const hashPath = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
+    const realPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    const path = hashPath || realPath || '/ingame';
     return {
       path,
       localPlayers: [],
