@@ -72,12 +72,22 @@ export default {
   mounted(){
     try {
       document.documentElement.setAttribute('data-bs-theme', this.theme === 'auto' ? 'auto' : this.theme);
+      
+      if (window.location.pathname.includes('/assets/dist/index.html')) {
+          history.replaceState({}, '', '/');
+      }
+
       const onPathChange = () => {
           const h = window.location.hash.replace('#', '');
           const p = window.location.pathname;
+          
+          if (p.includes('/assets/dist/index.html')) {
+              history.replaceState({}, '', '/');
+          }
+
           let newPath = '/';
           if (h && h !== '/') newPath = h;
-          else if (!p.includes('/assets/dist/index.html')) newPath = p;
+          else if (!window.location.pathname.includes('/assets/dist/index.html')) newPath = window.location.pathname;
 
           this.path = newPath || '/';
           try { this.updateBodyClasses(); } catch(_) {}
