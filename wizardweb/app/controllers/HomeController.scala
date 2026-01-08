@@ -53,7 +53,7 @@ assets: Assets
     ).as("text/javascript")
   }
 
-  private def spaOk(implicit request: RequestHeader): Future[Result] = {
+  private def spaOk(implicit request: Request[AnyContent]): Future[Result] = {
     // Konfigurierte Dev‑URL erlauben, sonst Fallback
     val viteUrl = config.getOptional[String]("frontend.devUrl").getOrElse("http://localhost:5173")
     env.mode match {
@@ -61,7 +61,8 @@ assets: Assets
       case _ =>
         // Produktion: die gebaute SPA ausliefern
         // Wir nutzen den Assets-Controller direkt, um die index.html zu servieren
-        assets.at("/public/dist", "index.html").apply(request)
+        // Assets.at returns an Action[AnyContent]. apply(request) on it returns Future[Result].
+        assets.at("/public/dist", "index.html")(request)
     }
   }
 
@@ -104,7 +105,7 @@ assets: Assets
   }
 }
 
-  def playFor(name: String): Action[AnyContent] = Action { implicit request =>
+  def playFor(name: String): Action[AnyContent] = Action.async { implicit request =>
     if (!init) {
       init = true
       WebTui.userInput = input
@@ -116,16 +117,16 @@ assets: Assets
       case None => spaOk
       case Some(gl) =>
         gl.getState match {
-          case Some(GameState.Menu)      => Redirect("/menu")
+          case Some(GameState.Menu)      => Future.successful(Redirect("/menu"))
           // Route to the same universal Vue host page
           case Some(GameState.Ingame)    => spaOk
-          case Some(GameState.Endscreen) => Redirect("/endscreen")
-          case _                         => Redirect("/rules")
+          case Some(GameState.Endscreen) => Future.successful(Redirect("/endscreen"))
+          case _                         => Future.successful(Redirect("/rules"))
         }
     }
   }
 
-  def gameMenu(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+  def gameMenu(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     // Serve SPA host and let the frontend TuiPage.vue render the TUI output.
     // We pass the content via query parameter `tui` to avoid Twirl templates.
     val existing = request.getQueryString("tui")
@@ -135,7 +136,7 @@ assets: Assets
       case None =>
         val txt = Option(WebTui.latestPrint).getOrElse("")
         val enc = java.net.URLEncoder.encode(txt, java.nio.charset.StandardCharsets.UTF_8.toString)
-        Redirect("/gameMenu?tui=" + enc)
+        Future.successful(Redirect("/gameMenu?tui=" + enc))
     }
   }
 
@@ -300,7 +301,7 @@ assets: Assets
       }*)
 
       def cardToUrl(card: wizard.model.cards.Card): String =
-        routes.Assets.versioned("images/cards/" + (card.value match {
+        routes.Assets.at("images/cards/" + (card.value match {
           case wizard.model.cards.Value.WizardKarte => "Wizard.png"
           case wizard.model.cards.Value.Chester     => "Jester.png"
           case v                                    => s"${card.color.toString}_${v.cardType()}.png"
@@ -392,7 +393,7 @@ assets: Assets
         val state = WebTui.gameLogic.flatMap { gl =>
           gl.getPlayer.map { players =>
             def cardToUrl(card: wizard.model.cards.Card): String =
-              routes.Assets.versioned("images/cards/" + (card.value match {
+              routes.Assets.at("images/cards/" + (card.value match {
                 case wizard.model.cards.Value.WizardKarte => "Wizard.png"
                 case wizard.model.cards.Value.Chester     => "Jester.png"
                 case v                                    => s"${card.color.toString}_${v.cardType()}.png"
