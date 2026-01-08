@@ -139,14 +139,9 @@ export default {
   data(){
     const hashPath = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
     const realPath = typeof window !== 'undefined' ? window.location.pathname : '';
-    
-    // Priorität:
-    // 1. Hash-Pfad (normale SPA Navigation)
-    // 2. Real-Pfad (wenn vom Server via /play/:name ausgeliefert)
+
     let path = hashPath || realPath || '/ingame';
 
-    // Spezialfall: Wenn wir auf /assets/dist/index.html sind (Heroku Static),
-    // ignorieren wir diesen Pfadteil für das Routing.
     if (path.includes('/assets/dist/index.html')) {
         path = hashPath || '/ingame';
     }

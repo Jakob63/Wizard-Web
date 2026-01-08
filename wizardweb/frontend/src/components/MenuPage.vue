@@ -156,25 +156,18 @@ export default {
       try {
         const res = await apiPost('/pwa/api/players', { players: names });
         const rawTarget = (res && (res.first || res.tabs?.[0])) || '/ingame';
-        // Für den Hash-Router müssen wir sicherstellen, dass wir entweder zum Hash navigieren
-        // oder der Router den Pfad erkennt. Die sicherste Methode für SPA-Navigation ist:
         const target = rawTarget.startsWith('/') ? '#' + rawTarget : '#/' + rawTarget;
 
         try {
           if (window.location.hash !== target) {
             window.location.hash = target;
           } else {
-            // Falls wir schon da sind (z.B. Refresh), Trigger manuell
             window.dispatchEvent(new HashChangeEvent('hashchange'));
           }
         } catch(_) { window.location.href = '/' + target; }
       } catch(e){
         let msg = 'Spielstart fehlgeschlagen.';
         try {
-          // Robust Offline/Netzfehler-Erkennung:
-          // - navigator.onLine kann bei SW-Offline noch true sein
-          // - fetch wirft TypeError ohne status
-          // - Chromium meldet ERR_INTERNET_DISCONNECTED im message-Text
           const m = String(e && (e.message || e.toString()) || '').toLowerCase();
           const isTypeErr = (e && e.name === 'TypeError');
           const statusOffline = (e && (e.status === 0 || e.status === 503));

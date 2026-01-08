@@ -93,7 +93,7 @@ export default {
     }
   },
   mounted() {
-    // Lite YouTube Embed: Preconnect & Fallback
+    // YT
     try {
       if (!document.querySelector('link[data-preconnect-yt]')) {
         const p1 = document.createElement('link'); p1.rel = 'preconnect'; p1.href = 'https://www.youtube.com'; p1.setAttribute('data-preconnect-yt','1'); document.head.appendChild(p1);
@@ -123,7 +123,6 @@ export default {
         document.head.appendChild(l);
       }
 
-      // Fallback: Iframe, falls Lite YouTube nicht geladen
       const ensureVisibleFallback = () => {
         try {
           const el = this.$refs.yt || document.querySelector('lite-youtube[videoid]');
@@ -131,7 +130,7 @@ export default {
           const tagDefined = !!(window.customElements && customElements.get('lite-youtube'));
           const rect = (typeof el.getBoundingClientRect === 'function') ? el.getBoundingClientRect() : { width: 0, height: 0 };
           const tooSmall = !rect || rect.width < 10 || rect.height < 10;
-          if (tagDefined && !tooSmall) return; // alles gut
+          if (tagDefined && !tooSmall) return;
 
           const vid = el.getAttribute('videoid') || '6jVsRzdVbUA';
           const iframe = document.createElement('iframe');

@@ -14,7 +14,6 @@ function buildUrl(path, query) {
 }
 
 function getCsrfToken() {
-  // Try meta tag injected by backend; fallback to Play's 'nocheck' header
   try {
     const m = (typeof document !== 'undefined') && document.querySelector('meta[name="csrf-token"]');
     const t = m && m.getAttribute('content');

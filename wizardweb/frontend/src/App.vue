@@ -1,7 +1,6 @@
 <template>
   <div id="shell">
     <MainPage>
-      <!-- Vue Router rendert hier automatisch die Seite -->
       <router-view />
     </MainPage>
   </div>
