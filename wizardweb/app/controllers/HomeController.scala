@@ -14,14 +14,16 @@ import wizard.model.rounds.Game
 import _root_.util.UserInput
 import play.api.routing.JavaScriptReverseRouter
 import play.api.{Configuration, Environment, Mode}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class HomeController @Inject() (
 cc: ControllerComponents,
 input: UserInput,
 config: Configuration,
-env: Environment
-)extends AbstractController(cc) {
+env: Environment,
+assets: Assets
+)(implicit ec: ExecutionContext) extends AbstractController(cc) {
 
   private var init = false
 
@@ -51,19 +53,19 @@ env: Environment
     ).as("text/javascript")
   }
 
-  private def spaOk(implicit request: RequestHeader) = {
+  private def spaOk(implicit request: RequestHeader): Future[Result] = {
     // Konfigurierte Dev‑URL erlauben, sonst Fallback
     val viteUrl = config.getOptional[String]("frontend.devUrl").getOrElse("http://localhost:5173")
     env.mode match {
-      case Mode.Dev => TemporaryRedirect(viteUrl + request.uri).withHeaders("Cache-Control" -> "no-store")
+      case Mode.Dev => Future.successful(TemporaryRedirect(viteUrl + request.uri).withHeaders("Cache-Control" -> "no-store"))
       case _ =>
-        // Produktion: die gebaute SPA ausliefern (z. B. aus /public/dist/index.html)
-        // Falls du deinen Vite-Build nach /public/dist kopierst:
-        Redirect("/assets/dist/index.html").withHeaders("Cache-Control" -> "no-store")
+        // Produktion: die gebaute SPA ausliefern
+        // Wir nutzen den Assets-Controller direkt, um die index.html zu servieren
+        assets.at("/public/dist", "index.html").apply(request)
     }
   }
 
-  def index(): Action[AnyContent] = Action { implicit request =>
+  def index(): Action[AnyContent] = Action.async { implicit request =>
     spaOk
   }
 
@@ -73,12 +75,12 @@ env: Environment
     Redirect(routes.HomeController.index())
   }
 
-  def rules(): Action[AnyContent] = Action { implicit request =>
+  def rules(): Action[AnyContent] = Action.async { implicit request =>
     // Serve SPA host; frontend renders RulesPage.vue at /rules
     spaOk
   }
 
-  def ingame(): Action[AnyContent] = Action { implicit request =>
+  def ingame(): Action[AnyContent] = Action.async { implicit request =>
     // TUI lazy starten
     if (!init) {
       init = true
