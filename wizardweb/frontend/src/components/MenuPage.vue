@@ -155,16 +155,9 @@ export default {
       this.hideError();
       try {
         const res = await apiPost('/pwa/api/players', { players: names });
-        const rawTarget = (res && (res.first || res.tabs?.[0])) || '/ingame';
-        const target = rawTarget.startsWith('/') ? '#' + rawTarget : '#/' + rawTarget;
-
-        try {
-          if (window.location.hash !== target) {
-            window.location.hash = target;
-          } else {
-            window.dispatchEvent(new HashChangeEvent('hashchange'));
-          }
-        } catch(_) { window.location.href = '/' + target; }
+        const target = (res && (res.first || res.tabs?.[0])) || '/ingame';
+        
+        this.$router.push(target);
       } catch(e){
         let msg = 'Spielstart fehlgeschlagen.';
         try {

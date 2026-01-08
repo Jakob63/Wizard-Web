@@ -40,9 +40,7 @@ export default {
   data(){
     const getPath = () => {
         if (typeof window === 'undefined') return '/';
-        const h = window.location.hash.replace('#', '');
         const p = window.location.pathname;
-        if (h && h !== '/') return h;
         if (p.includes('/assets/dist/index.html')) return '/';
         return p || '/';
     };
@@ -78,22 +76,19 @@ export default {
       }
 
       const onPathChange = () => {
-          const h = window.location.hash.replace('#', '');
           const p = window.location.pathname;
           
           if (p.includes('/assets/dist/index.html')) {
               history.replaceState({}, '', '/');
           }
+          
+          let newPath = p || '/';
+          if (newPath.includes('/assets/dist/index.html')) newPath = '/';
 
-          let newPath = '/';
-          if (h && h !== '/') newPath = h;
-          else if (!window.location.pathname.includes('/assets/dist/index.html')) newPath = window.location.pathname;
-
-          this.path = newPath || '/';
+          this.path = newPath;
           try { this.updateBodyClasses(); } catch(_) {}
       };
       window.addEventListener('popstate', onPathChange);
-      window.addEventListener('hashchange', onPathChange);
     } catch(_) {}
 
     try { this.updateBodyClasses(); } catch(_) {}
