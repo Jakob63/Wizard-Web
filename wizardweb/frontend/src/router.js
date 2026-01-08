@@ -7,6 +7,7 @@ import RulesPage from './components/RulesPage.vue';
 import IngamePage from './components/IngamePage.vue';
 import LoadingPage from './components/LoadingPage.vue';
 import EndscreenPage from './components/EndscreenPage.vue';
+import TuiPage from './components/TuiPage.vue';
 
 const routes = [
     { path: '/', component: IndexPage },
@@ -16,7 +17,8 @@ const routes = [
     { path: '/loading', component: LoadingPage },
     { path: '/ingame', component: IngamePage },
     { path: '/play/:name', component: IngamePage, props: true },
-    { path: '/endscreen', component: EndscreenPage }
+    { path: '/endscreen', component: EndscreenPage },
+    { path: '/tui', component: TuiPage }
 ];
 
 const router = createRouter({

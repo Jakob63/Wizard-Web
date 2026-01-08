@@ -3,14 +3,56 @@
     <div class="starry-sky" aria-hidden="true">
       <span class="star"></span>
       <span class="star star--big"></span>
-      <!-- ... die restlichen Sterne ... -->
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star star--big"></span>
+      <span class="star"></span>
+      <span class="star"></span>
+      <span class="star"></span>
     </div>
     <h1 class="home-hero__title" data-text="Wizard">Wizard</h1>
     <div class="home-cta">
-      <!-- SPA-sicher mit Vue Router -->
-      <router-link class="btn btn-outline-primary btn-lg" to="/menu">
-        Start Game
-      </router-link>
+      <a class="btn btn-outline-primary btn-lg" href="#" @click.prevent="start">Start Game</a>
     </div>
   </main>
 </template>
@@ -18,13 +60,20 @@
 <script>
 export default {
   name: 'HomePage',
-  mounted() {
+  methods: {
+    start(){
+      try {
+        if (typeof window.start_game === 'function') { window.start_game(); return; }
+        window.location.href = '/menu';
+        return;
+      } catch(_) {}
+      try { window.location.href = '/menu'; } catch(_) {}
+    }
+  },
+  mounted(){
     try {
       const stars = this.$el.querySelectorAll('.starry-sky .star');
-      const prefersReduced =
-          window.matchMedia &&
-          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
+      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const rerollStar = (star, alsoTiming = false, alsoSize = false) => {
         const left = Math.random() * 100;
         const top = Math.random() * 100;
@@ -52,9 +101,9 @@ export default {
         }
         star.addEventListener('animationiteration', () => rerollStar(star));
       });
-    } catch (_) {}
+    } catch(e) { }
   }
-};
+}
 </script>
 
 <style lang="less">

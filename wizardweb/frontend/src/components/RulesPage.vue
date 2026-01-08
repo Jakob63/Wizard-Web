@@ -65,7 +65,6 @@
     <section aria-label="Anleitungsvideo" style="display:flex; justify-content:center; margin: 24px 0;">
       <lite-youtube ref="yt" videoid="6jVsRzdVbUA" style="max-width:560px; display:block;"></lite-youtube>
     </section>
-
   </main>
 </template>
 
@@ -88,7 +87,7 @@ export default {
   },
   methods: {
     toggle(key) {
-      if (Object.prototype.hasOwnProperty.call(this.open, key)) {
+      if (this.open && Object.prototype.hasOwnProperty.call(this.open, key)) {
         this.open[key] = !this.open[key];
       }
     }
@@ -97,6 +96,8 @@ export default {
     // Lite YouTube Embed: Preconnect & Fallback
     try {
       if (!document.querySelector('link[data-preconnect-yt]')) {
+        const p1 = document.createElement('link'); p1.rel = 'preconnect'; p1.href = 'https://www.youtube.com'; p1.setAttribute('data-preconnect-yt','1'); document.head.appendChild(p1);
+        const p2 = document.createElement('link'); p2.rel = 'preconnect'; p2.href = 'https://i.ytimg.com'; p2.setAttribute('data-preconnect-yt','1'); document.head.appendChild(p2);
         ['https://www.youtube.com','https://i.ytimg.com'].forEach(url => {
           const link = document.createElement('link');
           link.rel = 'preconnect';
@@ -128,9 +129,9 @@ export default {
           const el = this.$refs.yt || document.querySelector('lite-youtube[videoid]');
           if (!el) return;
           const tagDefined = !!(window.customElements && customElements.get('lite-youtube'));
-          const rect = el.getBoundingClientRect?.() || { width: 0, height: 0 };
+          const rect = (typeof el.getBoundingClientRect === 'function') ? el.getBoundingClientRect() : { width: 0, height: 0 };
           const tooSmall = !rect || rect.width < 10 || rect.height < 10;
-          if (tagDefined && !tooSmall) return;
+          if (tagDefined && !tooSmall) return; // alles gut
 
           const vid = el.getAttribute('videoid') || '6jVsRzdVbUA';
           const iframe = document.createElement('iframe');
