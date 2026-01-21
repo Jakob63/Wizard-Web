@@ -1,5 +1,5 @@
 <template>
-  <div class="game" :class="[themeClass, pageClass]">
+  <div class="game" :class="pageClass">
     <canvas id="starfield" aria-hidden="true"></canvas>
     <div id="page-layer">
       <nav :class="navbarClass">
@@ -13,12 +13,26 @@
           </button>
 
           <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link" :class="{active: path === '/rules'}" href="/rules" @click.prevent="navigate('/rules')">Rules</a>
+                <router-link class="nav-link" to="/rules">Rules</router-link>
               </li>
               <li class="nav-item">
-                <a class="nav-link" :class="{active: path === '/menu'}" href="/menu" @click.prevent="navigate('/menu')">Game</a>
+                <router-link class="nav-link" to="/menu">Game</router-link>
+              </li>
+            </ul>
+            <ul class="navbar-nav mb-2 mb-lg-0">
+              <li class="nav-item" v-if="!user">
+                <router-link class="nav-link" to="/login">Login</router-link>
+              </li>
+              <li class="nav-item" v-if="!user">
+                <router-link class="nav-link" to="/register">Register</router-link>
+              </li>
+              <li class="nav-item" v-if="user">
+                <span class="nav-link text-info">Logged in as {{ user.displayName || user.email || 'User' }}</span>
+              </li>
+              <li class="nav-item" v-if="user">
+                <a class="nav-link" href="#" @click.prevent="$emit('logout')">Logout</a>
               </li>
               <li class="nav-item ms-2 d-flex align-items-center">
                 <button type="button" class="btn btn-sm" :class="theme === 'light' ? 'btn-outline-dark' : 'btn-outline-light'" @click="toggleTheme">{{ toggleLabel }}</button>
@@ -37,6 +51,7 @@
 import { BACKEND } from '../api/client';
 export default {
   name: 'MainPage',
+  props: ['user'],
   data(){
     const path = typeof window !== 'undefined' ? window.location.pathname : '/';
     const cookieTheme = (() => {
@@ -54,7 +69,6 @@ export default {
     isHome(){ return this.path === '/' || this.path === '/home'; },
     isIngame(){ return this.path === '/ingame'; },
     pageClass(){ return this.isHome ? 'page-home' : (this.isIngame ? 'page-ingame' : ''); },
-    themeClass(){ return this.theme === 'light' ? 'theme-light' : (this.theme === 'dark' ? 'theme-dark' : 'theme-auto'); },
     toggleLabel(){ return this.theme === 'dark' ? 'Light Mode' : 'Dark Mode'; },
     navbarClass(){
       const base = this.theme === 'light' ? 'navbar navbar-expand-lg navbar-light bg-white' : 'navbar navbar-expand-lg navbar-dark bg-dark';
@@ -62,10 +76,25 @@ export default {
       return base + ' fixed-top px-0';
     }
   },
+  watch: {
+    '$route'(to) {
+      this.path = to.path;
+      try { this.updateBodyClasses(); } catch(_) {}
+    }
+  },
   mounted(){
     try {
+      const theme = this.theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : this.theme;
       document.documentElement.setAttribute('data-bs-theme', this.theme === 'auto' ? 'auto' : this.theme);
-      window.addEventListener('popstate', () => { this.path = window.location.pathname; try { this.updateBodyClasses(); } catch(_) {} });
+      if (this.theme === 'auto') {
+        // Simple auto handling for body classes
+        const updateAuto = (e) => {
+          if (this.theme === 'auto') {
+            this.updateBodyClasses();
+          }
+        };
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateAuto);
+      }
     } catch(_) {}
 
     try { this.updateBodyClasses(); } catch(_) {}
@@ -178,26 +207,20 @@ export default {
     } catch(_) {}
   },
   methods: {
-    navigate(to){
-      try {
-        if (window.location.pathname !== to) {
-          history.pushState({}, '', to);
-        }
-        try { window.dispatchEvent(new PopStateEvent('popstate')); } catch(_) {}
-        this.path = window.location.pathname;
-        try { this.updateBodyClasses(); } catch(_) {}
-      } catch(_) {
-        window.location.href = to;
-      }
-    },
     updateBodyClasses(){
       const body = document.body;
       if (!body) return;
       const themeCls = ['theme-light','theme-dark','theme-auto'];
       themeCls.forEach(c => body.classList.remove(c));
-      if (this.theme === 'light') body.classList.add('theme-light');
-      else if (this.theme === 'dark') body.classList.add('theme-dark');
-      else body.classList.add('theme-auto');
+      
+      let effectiveTheme = this.theme;
+      if (effectiveTheme === 'auto') {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        body.classList.add('theme-auto');
+      }
+      
+      if (effectiveTheme === 'light') body.classList.add('theme-light');
+      else body.classList.add('theme-dark');
 
       const pageCls = ['page-home','page-ingame'];
       pageCls.forEach(c => body.classList.remove(c));
@@ -212,6 +235,16 @@ export default {
         document.documentElement.setAttribute('data-bs-theme', next);
       } catch(_) {}
       try { this.updateBodyClasses(); } catch(_) {}
+      
+      // Dispatch event to notify non-Vue scripts (like stars.js and runes.js)
+      window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: next } }));
+
+      if (next === 'light' && this.isHome) {
+        try {
+          const runes = new URL('../../../public/javascripts/runes.js', import.meta.url).href;
+          import(/* @vite-ignore */ runes);
+        } catch(_) {}
+      }
     }
   }
 }

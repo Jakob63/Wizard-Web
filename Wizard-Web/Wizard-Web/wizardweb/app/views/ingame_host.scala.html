@@ -1,0 +1,42 @@
+@(logic: wizard.controller.aGameLogic)(implicit request: play.api.mvc.RequestHeader)
+
+    <div id="ingame-app"></div>
+
+    <!-- Vue 3 and SFC loader to mount the compiled IngamePage.vue from public/assets -->
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/vue3-sfc-loader/dist/vue3-sfc-loader.global.js"></script>
+
+    <script>
+      (function(){
+        // Provide a global INGAME_URL used by various legacy helpers
+        try { window.INGAME_URL = "@routes.HomeController.ingame().url"; } catch(_) {}
+
+        // Bootstrap helper: mount the SFC at runtime via vue3-sfc-loader
+        function mountSfc(){
+          try {
+            if (!window.Vue || !window['vue3-sfc-loader']) return;
+            const { createApp } = Vue;
+            const { loadModule } = window['vue3-sfc-loader'];
+            const options = {
+              moduleCache: { vue: Vue },
+              async getFile(url) {
+                const res = await fetch(url, { cache: 'no-store' });
+                if (!res.ok) throw new Error('Failed to fetch ' + url);
+                return await res.text();
+              },
+              addStyle(textContent) {
+                const style = Object.assign(document.createElement('style'), { textContent });
+                document.head.appendChild(style);
+              }
+            };
+            const url = '@routes.Assets.versioned("components/IngamePage.vue")';
+            loadModule(url, options).then((mod) => {
+              const comp = mod.default || mod;
+              createApp(comp).mount('#ingame-app');
+            }).catch(e => console.warn('Failed to mount IngamePage.vue', e));
+          } catch(e) { console.warn('Ingame SFC bootstrap failed', e); }
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountSfc); else mountSfc();
+      })();
+    </script>

@@ -4,5 +4,6 @@ import util.{QueueInput, UserInput}
 class Module extends AbstractModule {
   override def configure(): Unit = {
     bind(classOf[UserInput]).to(classOf[QueueInput])
+    install(new modules.SilhouetteModule)
   }
 }

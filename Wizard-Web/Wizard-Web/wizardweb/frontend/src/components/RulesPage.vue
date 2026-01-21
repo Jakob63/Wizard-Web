@@ -1,0 +1,102 @@
+<template>
+  <main id="rules-vue-root" class="rules">
+    <h1>Wizard – Spielregeln</h1>
+
+    <section>
+      <h2>Spielziel</h2>
+      <p>Das Ziel des Spiels ist es, möglichst genau vorherzusagen, wie viele Stiche man in jeder Runde machen wird. Für jede richtige Vorhersage gibt es Punkte.</p>
+    </section>
+
+    <section>
+      <h2>Spielmaterial</h2>
+      <ul>
+        <li>60 Karten (13 Karten pro Farbe: rot, gelb, grün, blau, + 4 Zauberer, 4 Narren)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Spieleranzahl</h2>
+      <p>3–6 Spieler</p>
+    </section>
+
+    <section>
+      <h2>Spielablauf</h2>
+      <ol>
+        <li>Das Spiel besteht aus mehreren Runden. In der ersten Runde bekommt jeder Spieler 1 Karte, in der zweiten 2 Karten, usw. – bis alle Karten aufgebraucht sind.</li>
+        <li>In jeder Runde wird eine Trumpffarbe bestimmt (die Karte vom Nachziehstapel wird aufgedeckt). Ist es ein Zauberer, sucht sich der Spieler <strong>links vom Dealer</strong> den Trumpf für die Runde aus. Ist es ein Narr, gibt es <strong>keinen Trumpf</strong>.</li>
+        <li>Jeder Spieler sagt reihum voraus, wie viele Stiche er in dieser Runde machen wird.</li>
+        <li>Dann wird gespielt: Im Uhrzeigersinn spielt jeder eine Karte aus. Die Farbe der ersten Karte muss bedient werden. Wenn man keine Karte der geforderten Farbe hat, darf man eine beliebige Karte spielen.</li>
+        <li>Der höchste Trumpf gewinnt den Stich. Falls kein Trumpf gespielt wurde, gewinnt die höchste Karte der angespielten Farbe. Zauberer sind immer am höchsten, Narren am niedrigsten.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Kartenrangfolge</h2>
+      <ul>
+        <li><strong>Zauberer</strong> (höchste Karte, sticht immer – es sei denn, ein anderer Zauberer wurde zuerst gespielt)</li>
+        <li>Normale Zahlenkarten (1–13, nach Farbe sortiert)</li>
+        <li><strong>Narr</strong> (wertlos, gewinnt nie einen Stich – es sei denn, es wurden nur Narren gespielt)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Punktevergabe</h2>
+      <ul>
+        <li>Richtige Vorhersage: 20 Punkte + 10 Punkte pro gemachtem Stich</li>
+        <li>Falsche Vorhersage: -10 Punkte pro Abweichung (z. B. 2 gesagt, aber 0 gemacht = -20 Punkte)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Spielende</h2>
+      <p>Das Spiel endet nach der Runde, in der alle Karten verteilt wurden (je nach Spieleranzahl unterschiedlich viele Runden). Der Spieler mit den meisten Punkten gewinnt.</p>
+    </section>
+
+    <section>
+      <h2>Besondere Hinweise</h2>
+      <ul>
+        <li>Zauberer darf jederzeit gespielt werden.</li>
+        <li>Narr darf ebenfalls jederzeit gespielt werden.</li>
+        <li>Wenn der erste Spieler eines Stichs einen Zauberer spielt, bestimmt die nächste Karte die Farbe, die bedient werden muss.</li>
+      </ul>
+    </section>
+
+    <p><em>Dies ist eine vereinfachte Darstellung der Regeln des Spiels Wizard.</em></p>
+
+    <!-- Anleitungsvideo (am Seitenende) -->
+    <section aria-label="Anleitungsvideo" style="display:flex; justify-content:center; margin: 24px 0;">
+      <!-- Der gewünschte Short: https://www.youtube.com/shorts/6jVsRzdVbUA -->
+      <lite-youtube videoid="6jVsRzdVbUA" style="max-width:560px"></lite-youtube>
+    </section>
+  </main>
+</template>
+
+<script>
+export default {
+  name: 'RulesPage',
+  mounted(){
+    // Load Lite YouTube Embed script once
+    try {
+      if (!document.querySelector('script[data-lite-yt]')) {
+        const s = document.createElement('script');
+        s.type = 'module';
+        s.src = 'https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.js';
+        s.setAttribute('data-lite-yt','1');
+        document.head.appendChild(s);
+      }
+      // Ensure the component styles are present so the video placeholder is visible
+      if (!document.querySelector('link[data-lite-yt-css]')) {
+        const l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = 'https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.css';
+        l.setAttribute('data-lite-yt-css','1');
+        document.head.appendChild(l);
+      }
+    } catch(_) {}
+  }
+}
+</script>
+
+<style>
+/* Uses global styles from main.less imported by MainPage.vue (.rules section) */
+</style>

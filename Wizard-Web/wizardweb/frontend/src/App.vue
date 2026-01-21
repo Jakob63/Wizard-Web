@@ -1,57 +1,25 @@
 <template>
   <div id="shell">
-    <MainPage>
-      <component :is="viewComponent" :refresh-url="refreshUrl" />
+    <MainPage :user="user" @logout="logout">
+      <router-view :refresh-url="refreshUrl" />
     </MainPage>
   </div>
-
 </template>
 
 <script>
-import IndexPage from './components/IndexPage.vue'
-import HomePage from './components/HomePage.vue'
-import IngamePage from './components/IngamePage.vue'
-import LoadingPage from './components/LoadingPage.vue'
-import EndscreenPage from './components/EndscreenPage.vue'
-import RulesPage from './components/RulesPage.vue'
-import MenuPage from './components/MenuPage.vue'
 import MainPage from './components/MainPage.vue'
+import { auth } from './firebase'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+
 export default {
   name: 'App',
-  components: { IndexPage, HomePage, IngamePage, LoadingPage, EndscreenPage, RulesPage, MenuPage, MainPage },
+  components: { MainPage },
   data(){
-    const normalize = (p) => {
-      try {
-        if (!p) return '/';
-        let n = p.replace(/\/+?/g, '/');
-        if (!n.startsWith('/')) n = '/' + n;
-        if (n.length > 1 && n.endsWith('/')) n = n.substring(0, n.length - 1);
-        return n;
-      } catch(_) { return '/'; }
+    return { 
+      user: null
     };
-    const raw = typeof window !== 'undefined' ? window.location.pathname : '/';
-    const path = normalize(raw);
-    try {
-      if (typeof window !== 'undefined' && path !== raw && window.history && window.history.replaceState) {
-        window.history.replaceState({}, '', path + window.location.search + window.location.hash);
-      }
-    } catch(_) {}
-    return { path };
   },
   computed: {
-    viewComponent(){
-      if (this.path && this.path.startsWith('/play/')) return 'IngamePage';
-      switch (this.path) {
-        case '/loading': return 'LoadingPage';
-        case '/ingame': return 'IngamePage';
-        case '/endscreen': return 'EndscreenPage';
-        case '/menu': return 'MenuPage';
-        case '/rules': return 'RulesPage';
-        case '/home': return 'HomePage';
-        case '/':
-        default: return 'IndexPage';
-      }
-    },
     refreshUrl(){
       try {
         const url = new URL(window.location.href);
@@ -59,19 +27,80 @@ export default {
       } catch(_) { return ''; }
     }
   },
+  methods: {
+    logout() {
+      signOut(auth).then(() => {
+        this.$router.push('/login');
+      });
+    }
+  },
   mounted(){
-    const normalize = (p) => {
-      try {
-        if (!p) return '/';
-        let n = p.replace(/\/+?/g, '/');
-        if (!n.startsWith('/')) n = '/' + n;
-        if (n.length > 1 && n.endsWith('/')) n = n.substring(0, n.length - 1);
-        return n;
-      } catch(_) { return '/'; }
-    };
-    try {
-      window.addEventListener('popstate', () => { this.path = normalize(window.location.pathname); });
-    } catch(_) {}
+    onAuthStateChanged(auth, async (user) => {
+      console.log("[DEBUG_LOG] onAuthStateChanged triggered. User authenticated:", !!user);
+      if (user) {
+        console.log("[DEBUG_LOG] Full Firebase user object:", JSON.stringify({
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          providerData: user.providerData,
+          photoURL: user.photoURL
+        }, null, 2));
+        
+        const mapUser = (u) => {
+          let name = u.displayName;
+          
+          console.log("[DEBUG_LOG] Mapping user. Initial displayName:", name);
+          
+          if (!name && u.providerData && u.providerData.length > 0) {
+            console.log("[DEBUG_LOG] Checking providerData...");
+            const githubData = u.providerData.find(p => p.providerId === 'github.com');
+            if (githubData) {
+              name = githubData.displayName || githubData.email;
+              console.log("[DEBUG_LOG] Found GitHub data. Name candidate:", name);
+            }
+            if (!name) {
+              name = u.providerData[0].displayName || u.providerData[0].email;
+              console.log("[DEBUG_LOG] Using first provider data. Name candidate:", name);
+            }
+          }
+          
+          if (!name) name = u.email;
+          if (!name && u.email) name = u.email.split('@')[0];
+          
+          if (!name && u.reloadUserInfo) {
+             name = u.reloadUserInfo.screenName || u.reloadUserInfo.login;
+             console.log("[DEBUG_LOG] Checked reloadUserInfo. Name candidate:", name);
+          }
+
+          const result = {
+            displayName: name || 'User',
+            email: u.email,
+            uid: u.uid,
+            photoURL: u.photoURL
+          };
+          console.log("[DEBUG_LOG] Mapped user result:", JSON.stringify(result, null, 2));
+          return result;
+        };
+
+        this.user = mapUser(user);
+
+        if (this.user.displayName === 'User') {
+          console.log("[DEBUG_LOG] Name is still 'User', waiting for potential profile update...");
+          try {
+            await new Promise(r => setTimeout(r, 2000));
+            if (auth.currentUser) {
+              console.log("[DEBUG_LOG] Re-mapping auth.currentUser after delay...");
+              this.user = mapUser(auth.currentUser);
+            }
+          } catch (e) {
+            console.error("[DEBUG_LOG] Error during re-mapping:", e);
+          }
+        }
+      } else {
+        console.log("[DEBUG_LOG] User is null");
+        this.user = null;
+      }
+    });
   }
 }
 </script>
